@@ -7,7 +7,7 @@ import Fundo1 from "../assets/fundo.jpg";
 import Suporte from "../components/suporte";
 import Footer from "../components/footer"
 
-function home() {
+const Home =() => {
   const lidarComAdesao = () => {
     alert("Redirecionando para o formulário de adesão!");
   };
@@ -113,4 +113,4 @@ function home() {
   );
 }
 
-export default home;
+export default Home;

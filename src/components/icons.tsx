@@ -1,3 +1,40 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { 
+  faEye, 
+  faEyeSlash, 
+  faUser, 
+  faEnvelope, 
+  faPhone, 
+} from "@fortawesome/free-solid-svg-icons";
+
+interface IconProps {
+  className?: string;
+  onClick?: () => void;
+}
+export const IconOlhoAberto = ({ className, onClick }: IconProps) => (
+  <FontAwesomeIcon icon={faEye} className={className} onClick={onClick} />
+);
+
+export const IconOlhoFechado = ({ className, onClick }: IconProps) => (
+  <FontAwesomeIcon icon={faEyeSlash} className={className} onClick={onClick} />
+);
+
+export const IconUsuario = ({ className }: IconProps) => (
+  <FontAwesomeIcon icon={faUser} className={className} />
+);
+
+export const IconEmail = ({ className }: IconProps) => (
+  <FontAwesomeIcon icon={faEnvelope} className={className} />
+);
+
+export const IconTelefone = ({ className }: IconProps) => (
+  <FontAwesomeIcon icon={faPhone} className={className} />
+);
+
+
+
+
+
 export  const RepositoryIcon = () => {
   return (
     <svg

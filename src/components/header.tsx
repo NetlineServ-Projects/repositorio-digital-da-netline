@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ onPlanosClick }) => {
       </nav>
 
       <Link
-        to="/login"
+        to="/autenticacao"
         className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition"
       >
         Iniciar secção
