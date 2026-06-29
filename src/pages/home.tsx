@@ -90,7 +90,7 @@ const Home =() => {
         </div>
       </section>
 
-      <section id="suporte" className="bg-gray-200">
+      <section id="suporte" className="bg-gray-200 pt-12 pb-20 ">
         <div className="flex flex-col items-center p-20">
           <h2 className="text-5xl font-bold leading-4 text-center p-8">
             Suporte
@@ -107,6 +107,7 @@ const Home =() => {
         <div>
           <Suporte/>
         </div>
+        
       </section>
       <Footer/>
     </div>

@@ -1,11 +1,18 @@
+import logoNetline from "../assets/netline.jpg";
 
 const footer = () => {
   return (
-    <div className=" bg-blue-300">
+    <section className=" bg-blue-950 rounded-2xl">
+     
+      <div className=" grid grid-cols-1 md:grid-cols-3 ">
+        <div className="">
+          <img src={logoNetline} alt="Logotipo Netline" className="w-auto h-10" />
+        </div>
+     </div>
 
-      
-    </div>
-  )
-}
+    </section>
+  );
+    
+};
 
-export default footer
+export default footer;

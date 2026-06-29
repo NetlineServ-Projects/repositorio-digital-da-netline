@@ -21,7 +21,6 @@ type DadosDoForm = {
   email: string;
   telefone: string;
   senha: string;
-  confirmaSenha: string;
 };
 
 export default function Cadastro() {
@@ -40,7 +39,7 @@ export default function Cadastro() {
 
   const salvarCadastro = async (dados: DadosDoForm) => {
     try {
-      const response = await api.post("/funcionarios", dados);
+      const response = await api.post("/api/funcionario", dados);
 
       alert("Funcionário cadastrado com sucesso!");
       console.log(response.data);
@@ -169,7 +168,7 @@ export default function Cadastro() {
             )}
           </div>
           <br />
-          <div>
+          {/* <div>
             <p>Confirme a sua senha</p>
             <div className="relative flex items-center w-full">
               <input
@@ -202,7 +201,7 @@ export default function Cadastro() {
                 {errors.confirmaSenha.message}
               </span>
             )}
-          </div>
+          </div> */}
           <br />
 
           <br></br>
@@ -210,6 +209,7 @@ export default function Cadastro() {
           <div className="text-center">
             <Button
               title="Cadastrar"
+              type="submit"
               onClickButton={() => {
                 Cadastro;
               }}

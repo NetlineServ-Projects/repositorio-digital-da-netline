@@ -2,7 +2,7 @@ import SuporteTecnico from "../assets/suporte tecnio2.jpg";
 
 export default function Suporte() {
   return (
-    <section className=" bg-[#031e55] py-16 px-4 md:px-8 rounded-[40px] max-w-7xl mx-auto ">
+    <section className=" bg-[#031e55] py-16 px-4 md:px-8 rounded-[40px] max-w-7xl mx-auto  ">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <div className="flex flex-col gap-6">
           <div>

@@ -1,7 +1,9 @@
 import Button from "../components/button";
 import Fundo1 from "../assets/fundo.jpg";
 import logoNetline from "../assets/netline.jpg";
-import { useEffect, useState } from "react";
+import { useEffect, useState} from "react";
+import { useUsuario } from "../components/UsuarioContext";
+
 import {
   IconOlhoAberto,
   IconOlhoFechado,
@@ -14,6 +16,7 @@ export default function autenticacao() {
   const [erro, setErro] = useState(""); // Estado para guardar mensagens de erro do backend
   const [carregando, setCarregando] = useState(false); // Estado para controlar o clique duplo no botão
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const {fazerLogin} = useUsuario();  //puxa a funcao do contextp
 
   const entrar = async (e: React.FormEvent) => {
     e.preventDefault(); // Evita que a página recarregue ao enviar o formulário
@@ -23,29 +26,35 @@ export default function autenticacao() {
 
     try {
       // Faz o pedido para o backend
-      const resposta = await fetch("http://localhost:3000/funcionarios/login", {
+      const resposta = await fetch("http://localhost:3000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ email:email , senha: senha }),
       });
+console.log("resposta", resposta);
 
       const dados = await resposta.json();
+console.log("dados", dados);
 
       if (!resposta.ok) {
         // Se o backend retornar erro (ex: res.status(401)), joga para o catch
-        throw new Error(dados.erro || "Erro ao fazer login");
+        throw new Error(dados?.erro ||dados?.message ||dados?.mensagem|| "Email ou senha incorrectos");
       }
 
       // SE DEU CERTO: Guarda o token recebido no localStorage do navegador
       localStorage.setItem("token_sistema", dados.token);
-      localStorage.setItem("usuario_logado", JSON.stringify(dados.funcionario));
+      localStorage.setItem("usuario_logado", JSON.stringify(dados.user));
+
+
+     // Passamos o nome que veio lá de dentro do 'dados.funcionario' (ex: dados.funcionario.name)
+      // fazerLogin(dados.funcionario.name || dados.funcionario.nome);
 
       alert("Autenticação bem-sucedida!");
 
       // Redireciona o utilizador para a página principal/home
-      window.location.href = "/";
+      window.location.href = "/dashboard";
     } catch (err: any) {
       // Guarda a mensagem de erro que veio do backend ("E-mail ou senha incorretos")
       setErro(err.message);
@@ -110,10 +119,19 @@ export default function autenticacao() {
               )}
             </div>
           </div>
+          {erro && (
+            <div className="text-red-600 text-sm font-semibold text-center mt-2">
+              {erro}
+            </div>
+          )}
           <br></br>
 
           <div className="text-center">
-            <Button title="Entrar" onClickButton={() => entrar} />
+            <Button
+             title={carregando? "a carregar..." : "Entrar"} 
+             type="submit"
+             disabled={carregando}
+            />
           </div>
 
           <div className="signup-link text-center mt-4">
