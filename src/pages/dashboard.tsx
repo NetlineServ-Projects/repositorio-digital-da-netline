@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import logoNetline from "../assets/netline.jpg";
-import { IconUsuario, IconLogout } from "../components/icons";
+import { IconUsuario, IconLogout,IconTerminarSeccao } from "../components/icons";
 import Perfil from "../components/Perfil";
 import Configuracoes from "../components/configuracoes";
 import Documentos from "../components/documentos";
@@ -59,6 +59,56 @@ export default function Dashboard() {
     localStorage.removeItem("usuario_logado");
     window.location.href = "./"; // Redireciona para o login
   };
+  const terminarSeccao = async () => {
+    // 1. Confirmação de segurança (essencial já que vai apagar do banco de dados)
+    const confirmarExclusao = window.confirm(
+      "Atenção: Tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta?",
+    );
+
+    if (!confirmarExclusao) return;
+
+    try {
+      // Pega o token correto que você já está usando no useEffect
+      const token = localStorage.getItem("token_sistema");
+
+      if (!token) {
+        alert("Sessão não encontrada. Redirecionando...");
+        window.location.href = "./";
+        return;
+      }
+
+      // 2. Faz a chamada HTTP DELETE para o seu backend Node.js
+      const resposta = await fetch(
+        "http://localhost:3000/api/auth/delete-current",
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const dados = await resposta.json();
+
+      if (resposta.ok) {
+        // 3. Limpa o armazenamento local apenas após o banco deletar com sucesso
+        localStorage.removeItem("token_sistema");
+        localStorage.removeItem("usuario_logado");
+        sessionStorage.clear();
+
+        alert(
+          dados.message || "Conta excluída e sessão encerrada com sucesso.",
+        );
+        window.location.href = "./"; // Redireciona para o login
+      } else {
+        alert(dados.error || "Não foi possível eliminar a conta do servidor.");
+      }
+    } catch (error) {
+      console.error("Erro ao tentar eliminar conta:", error);
+      alert("Erro ao conectar com o servidor para excluir a conta.");
+    }
+  };
 
   // Tela de carregamento
   if (loading) {
@@ -80,22 +130,17 @@ export default function Dashboard() {
     );
   }
 
-
-   const renderConteudoPrincipal = () => {
+  const renderConteudoPrincipal = () => {
     switch (abaAtiva) {
-      case 'perfil':
+      case "perfil":
         return <Perfil />;
-      case 'configuracoes':
+      case "configuracoes":
         return <Configuracoes />;
-      case 'documentos':
+      case "documentos":
       default:
         return <Documentos />;
     }
   };
-
-
-
-
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -119,7 +164,6 @@ export default function Dashboard() {
               >
                 <IconUsuario /> Meu Perfil
               </button>
-              
             </li>
             <li>
               <button
@@ -148,13 +192,22 @@ export default function Dashboard() {
           </ul>
         </nav>
 
-        <button
-          onClick={lidarComLogout}
-          className="mt-auto flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:bg-red-950/40 hover:text-red-300 transition-colors font-medium text-left"
-        >
-          <IconLogout />
-          Sair da Conta
-        </button>
+        <div className="mt-auto flex flex-col gap-1">
+          <button
+            onClick={lidarComLogout}
+            className=" flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:bg-red-950/40 hover:text-red-300 transition-colors font-medium text-left"
+          >
+            <IconLogout />
+            Sair da Conta
+          </button>
+          <button
+            onClick={terminarSeccao}
+            className=" flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:bg-red-950/40 hover:text-red-300 transition-colors font-medium text-left"
+          >
+            <IconTerminarSeccao/>
+            Terminar Secção
+          </button>
+        </div>
       </aside>
 
       {/* Conteúdo Principal */}
@@ -205,9 +258,7 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-        <div className="mt-4">
-          {renderConteudoPrincipal()}
-        </div>
+        <div className="mt-4">{renderConteudoPrincipal()}</div>
       </main>
     </div>
   );

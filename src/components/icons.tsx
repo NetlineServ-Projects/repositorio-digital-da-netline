@@ -6,7 +6,8 @@ import {
   faEnvelope, 
   faPhone,
   faChartLine,
-  faRightFromBracket
+  faRightFromBracket,
+  faUserSlash
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IconProps {
@@ -37,6 +38,9 @@ export const IconDashbord =({className}:IconProps)=>(
 );
 export const IconLogout =({className}:IconProps)=>(
 <FontAwesomeIcon icon={faRightFromBracket} className={className}/>
+);
+export const IconTerminarSeccao =({className}:IconProps)=>(
+<FontAwesomeIcon icon={faUserSlash} className={className}/>
 );
 
 
