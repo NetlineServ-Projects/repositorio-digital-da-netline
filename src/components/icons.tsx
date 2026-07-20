@@ -7,7 +7,12 @@ import {
   faPhone,
   faChartLine,
   faRightFromBracket,
-  faUserSlash
+  faUserSlash,
+  faHome,
+  faFileLines,
+  faGear,
+  faFolderClosed,
+  faTrashCan
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IconProps {
@@ -42,7 +47,24 @@ export const IconLogout =({className}:IconProps)=>(
 export const IconTerminarSeccao =({className}:IconProps)=>(
 <FontAwesomeIcon icon={faUserSlash} className={className}/>
 );
-
+export const IconHome =({className}:IconProps)=>(
+<FontAwesomeIcon icon={faHome} className={className}/>
+);
+export const IconDocumento =({className}:IconProps)=>(
+<FontAwesomeIcon icon={faFileLines} className={className}/>
+);
+export const IconConfig=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faGear} className={className}/>
+);
+export const IconPasta=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faFolderClosed} className={className}/>
+);
+export const IconLixeira=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faTrashCan} className={className}/>
+);
+export const IconBarras=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faChartLine} className={className}/>
+);
 
 
 

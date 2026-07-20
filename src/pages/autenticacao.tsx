@@ -33,10 +33,10 @@ export default function autenticacao() {
         },
         body: JSON.stringify({ email:email , senha: senha }),
       });
-console.log("resposta", resposta);
+     console.log("resposta", resposta);
 
       const dados = await resposta.json();
-console.log("dados", dados);
+      console.log("dados", dados);
 
       if (!resposta.ok) {
         // Se o backend retornar erro (ex: res.status(401)), joga para o catch

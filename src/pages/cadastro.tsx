@@ -39,7 +39,7 @@ export default function Cadastro() {
 
   const salvarCadastro = async (dados: DadosDoForm) => {
     try {
-      const response = await api.post("/api/funcionario", dados);
+      const response = await api.post("/api/auth/register", dados);
 
       alert("Funcionário cadastrado com sucesso!");
       console.log(response.data);
