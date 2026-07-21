@@ -6,8 +6,17 @@ import Documentos from "../components/Documentos";
 import Categorias from "../components/Categorias";
 import Lixeira from "../components/Lixeira";
 import Aprovacoes from "../components/Aprovacoes";
-import { IconDocumento } from "../components/icons";
+import Sistemas from "../components/Sistemas";
+import Usuarios from "../components/Usuarios";
+import {
+  IconDocumento,
+  IconRelogio,
+  IconAprovado,
+  IconSistemas,
+  IconPasta,
+} from "../components/icons";
 
+// Interfaces de dados
 interface UsuarioData {
   nome: string;
   totalDocumentos: number;
@@ -17,11 +26,80 @@ interface UsuarioData {
   totalAprovado: number;
 }
 
+interface DocumentoRecente {
+  id: string;
+  nome: string;
+  categoria: string;
+  autor: string;
+  data: string;
+  status: "Pendente" | "Aprovado" | "Rejeitado";
+}
+
+interface Atividade {
+  id: string;
+  usuario: string;
+  acao: string;
+  alvo: string;
+  tempo: string;
+}
+
 export default function Dashboard() {
   const [abaAtiva, setAbaAtiva] = useState<string>("dashboard");
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [erro, setErro] = useState<string | null>(null);
+
+  // Estados de dados mockados para o painel
+  const [documentosRecentes] = useState<DocumentoRecente[]>([
+    {
+      id: "1",
+      nome: "Relatorio_Anual_Netline_2025.pdf",
+      categoria: "Relatórios",
+      autor: "Elisa Nhamuanzo",
+      data: "21/07/2026",
+      status: "Pendente",
+    },
+    {
+      id: "2",
+      nome: "Manual_de_Procedimentos.docx",
+      categoria: "Documentação",
+      autor: "Kevin Silva",
+      data: "20/07/2026",
+      status: "Aprovado",
+    },
+    {
+      id: "3",
+      nome: "Estrutura_BD_Repositorio.sql",
+      categoria: "Sistemas",
+      autor: "Elisa Nhamuanzo",
+      data: "19/07/2026",
+      status: "Aprovado",
+    },
+  ]);
+
+  const [atividades] = useState<Atividade[]>([
+    {
+      id: "1",
+      usuario: "Elisa Nhamuanzo",
+      acao: "submeteu um novo documento",
+      alvo: "Relatorio_Anual_Netline_2025.pdf",
+      tempo: "Há 10 min",
+    },
+    {
+      id: "2",
+      usuario: "Administrador",
+      acao: "aprovou a categoria",
+      alvo: "Sistemas Internos",
+      tempo: "Há 1 hora",
+    },
+    {
+      id: "3",
+      usuario: "Kevin Silva",
+      acao: "solicitou acesso ao sistema",
+      alvo: "Gestão de Redes",
+      tempo: "Há 3 horas",
+    },
+  ]);
 
   const buscarDadosDaAPI = async () => {
     setLoading(true);
@@ -114,6 +192,10 @@ export default function Dashboard() {
         return <Aprovacoes />;
       case "categorias":
         return <Categorias />;
+      case "sistemas":
+        return <Sistemas />;
+      case "usuarios":
+        return <Usuarios />;
       case "lixeira":
         return <Lixeira />;
       case "configuracoes":
@@ -122,6 +204,7 @@ export default function Dashboard() {
       default:
         return (
           <div className="space-y-6">
+            {/* Cabeçalho */}
             <header className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
               <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
               <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -133,6 +216,7 @@ export default function Dashboard() {
               </div>
             </header>
 
+            {/* Cards Métricas */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                 <div>
@@ -143,44 +227,185 @@ export default function Dashboard() {
                     {usuario?.totalDocumentos ?? 10}
                   </p>
                 </div>
-
                 <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100/50 flex items-center justify-center">
                   <IconDocumento className="w-6 h-6" />
                 </div>
               </div>
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h4 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-                  Pendentes de Aprovacao
-                </h4>
-                <p className="text-3xl font-bold text-slate-800 mt-2">
-                  {usuario?.pendentesAprovacao ?? 4}
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h4 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-                  Aprovados
-                </h4>
-                <p className="text-3xl font-bold text-slate-800 mt-2">
-                  {usuario?.totalAprovado ?? 0}
-                </p>
+
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Pendentes de Aprovação
+                  </h4>
+                  <p className="text-3xl font-bold text-slate-800 mt-1">
+                    {usuario?.pendentesAprovacao ?? 4}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-50 text-amber-600 rounded-xl border border-blue-100/50 flex items-center justify-center">
+                  <IconRelogio className="w-6 h-6" />
+                </div>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h4 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-                  Total de Sistemas
-                </h4>
-                <p className="text-3xl font-bold text-slate-800 mt-2">
-                  {usuario?.totalSistema || "11"}
-                </p>
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Aprovados
+                  </h4>
+                  <p className="text-3xl font-bold text-slate-800 mt-1">
+                    {usuario?.totalAprovado ?? 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-50 text-amber-400 rounded-xl border border-blue-100/50 flex items-center justify-center">
+                  <IconAprovado className="w-6 h-6" />
+                </div>
               </div>
 
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Total de Sistemas
+                  </h4>
+                  <p className="text-3xl font-bold text-slate-800 mt-2">
+                    {usuario?.totalSistema || "11"}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-50 text-blue-900 rounded-xl border border-blue-100/50 flex items-center justify-center">
+                  <IconSistemas className="w-6 h-6" />
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Categorias
+                  </h4>
+                  <p className="text-3xl font-bold text-slate-800 mt-2">
+                    {usuario?.categorias || "14"}
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-50 text-cyan-800 rounded-xl border border-blue-100/50 flex items-center justify-center">
+                  <IconPasta className="w-6 h-6" />
+                </div>
+              </div>
+            </div>
+
+            {/* Ações Rápidas */}
+            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-wrap gap-4 items-center justify-between">
+              <span className="text-sm font-semibold text-slate-700">
+                Ações Rápidas:
+              </span>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => setAbaAtiva("documentos")}
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  + Novo Documento
+                </button>
+                <button
+                  onClick={() => setAbaAtiva("usuarios")}
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  + Adicionar Usuários
+                </button>
+                <button
+                  onClick={() => setAbaAtiva("aprovacoes")}
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                >
+                  Gerir Aprovações
+                </button>
+                <button
+                  onClick={() => setAbaAtiva("categorias")}
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Ver Categorias
+                </button>
+                <button
+                  onClick={() => setAbaAtiva("sistemas")}
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Gerir Sistemas
+                </button>
+              </div>
+            </div>
+
+            {/* Secção Dupla: Tabela de Documentos + Feed de Atividades */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Tabela de Útimos Documentos (Ocupa 2 colunas) */}
+              <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold text-slate-800">
+                    Documentos Recentes
+                  </h3>
+                  <button
+                    onClick={() => setAbaAtiva("documentos")}
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    Ver Todos
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-slate-50 text-slate-400 uppercase text-xs">
+                      <tr>
+                        <th className="py-3 px-4 font-semibold">Nome</th>
+                        <th className="py-3 px-4 font-semibold">Categoria</th>
+                        <th className="py-3 px-4 font-semibold">Data</th>
+                        <th className="py-3 px-4 font-semibold">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {documentosRecentes.map((doc) => (
+                        <tr key={doc.id} className="hover:bg-slate-50/50">
+                          <td className="py-3 px-4 font-medium text-slate-800">
+                            {doc.nome}
+                          </td>
+                          <td className="py-3 px-4">{doc.categoria}</td>
+                          <td className="py-3 px-4">{doc.data}</td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                doc.status === "Aprovado"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : doc.status === "Pendente"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {doc.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Feed de Atividade Recente (Ocupa 1 coluna) */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h4 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
-                  Categorias
-                </h4>
-                <p className="text-3xl font-bold text-slate-800 mt-2">
-                  {usuario?.categorias || "14"}
-                </p>
+                <h3 className="text-lg font-bold text-slate-800 mb-4">
+                  Atividade Recente
+                </h3>
+                <div className="space-y-4">
+                  {atividades.map((item) => (
+                    <div key={item.id} className="flex items-start gap-3 text-xs">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="text-slate-700">
+                          <strong className="text-slate-900">{item.usuario}</strong>{" "}
+                          {item.acao}{" "}
+                          <span className="italic text-slate-500">
+                            "{item.alvo}"
+                          </span>
+                        </p>
+                        <span className="text-slate-400 text-[10px]">
+                          {item.tempo}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

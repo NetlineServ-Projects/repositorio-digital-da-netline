@@ -12,7 +12,15 @@ import {
   faFileLines,
   faGear,
   faFolderClosed,
-  faTrashCan
+  faTrashCan,
+  faClock,
+  faFileCircleCheck,
+  faDesktopAlt,
+  faUsers,
+  faCode,
+  faFolder,
+  faSearch,
+  faArrowLeft
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IconProps {
@@ -64,6 +72,38 @@ export const IconLixeira=({className}:IconProps)=>(
 );
 export const IconBarras=({className}:IconProps)=>(
 <FontAwesomeIcon icon={faChartLine} className={className}/>
+);
+export const IconRelogio=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faClock} className={className}/>
+);
+export const IconAprovado=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faFileCircleCheck} className={className}/>
+)
+export const IconSistemas=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faDesktopAlt} className={className}/>
+)
+export const IconUsuarios=({className}:IconProps)=>(
+<FontAwesomeIcon icon={faUsers} className={className}/>
+)
+
+export const IconPastaa = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faFolder} className={className} />
+);
+
+export const IconSistema = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faCode} className={className} />
+);
+
+export const IconPesquisa = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faSearch} className={className} />
+);
+
+export const IconVoltar = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faArrowLeft} className={className} />
+);
+
+export const IconVer = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faEye} className={className} />
 );
 
 

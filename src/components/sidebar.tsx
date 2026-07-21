@@ -10,13 +10,10 @@ import {
   IconConfig,
   IconPasta,
   IconLixeira,
-  IconBarras
+  IconBarras,
+  IconSistemas,
+  IconUsuarios,
 } from "../components/icons";
-import Perfil from "../components/Perfil";
-import Configuracoes from "../components/Configuracoes";
-import Documentos from "../components/Documentos";
-import Categorias from "../components/Categorias";
-import Lixeira from "../components/Lixeira";
 
 interface SidebarProps {
   abaAtiva: string;
@@ -24,10 +21,12 @@ interface SidebarProps {
   onDeletarConta?: () => void;
 }
 
-export default function Sidebar({ abaAtiva, setAbaAtiva, onDeletarConta }: SidebarProps) {
-
-
-   const lidarComLogout = () => {
+export default function Sidebar({
+  abaAtiva,
+  setAbaAtiva,
+  onDeletarConta,
+}: SidebarProps) {
+  const lidarComLogout = () => {
     localStorage.removeItem("token_sistema");
     localStorage.removeItem("usuario_logado");
     window.location.href = "./"; // Redireciona para o login
@@ -39,8 +38,7 @@ export default function Sidebar({ abaAtiva, setAbaAtiva, onDeletarConta }: Sideb
     );
 
     if (!confirmarExclusao) return;
-
-  }
+  };
 
   // Função auxiliar para evitar repetição de classes Tailwind
   const getClassBotao = (nomeAba: string) =>
@@ -50,55 +48,103 @@ export default function Sidebar({ abaAtiva, setAbaAtiva, onDeletarConta }: Sideb
         : "text-slate-300 hover:bg-slate-800 hover:text-white"
     }`;
 
-
   return (
-   <aside className="w-64 bg-[#092565] text-white flex flex-col justify-between p-4 min-h-screen">
+    <aside className="w-64 bg-[#092565] text-white flex flex-col justify-between p-4 min-h-screen">
       <div>
         {/* Logo */}
         <div className="flex items-center gap-3 font-bold text-xl tracking-wide border-b border-blue-900/50 pb-4 mb-6">
-          <img src={logoNetline} alt="Logo Netline" className="w-8 h-8 rounded" />
+          <img
+            src={logoNetline}
+            alt="Logo Netline"
+            className="w-8 h-8 rounded"
+          />
           <span>Netline Serv</span>
         </div>
 
         {/* Menu de Navegação */}
         <nav>
-          <p className=" text-gray-400 text-xs from-neutral-800 mb-1.5">PRINCIPAL</p>
+          <p className=" text-gray-400 text-xs from-neutral-800 mb-1.5">
+            PRINCIPAL
+          </p>
           <ul className="space-y-1">
             <li>
-              <button onClick={() => setAbaAtiva("dashboard")} className={getClassBotao("dashboard")}>
+              <button
+                onClick={() => setAbaAtiva("dashboard")}
+                className={getClassBotao("dashboard")}
+              >
                 <IconHome /> Dashboard
               </button>
             </li>
-           
+
             <li>
-              <button onClick={() => setAbaAtiva("documentos")} className={getClassBotao("documentos")}>
+              <button
+                onClick={() => setAbaAtiva("documentos")}
+                className={getClassBotao("documentos")}
+              >
                 <IconDocumento /> Documentos
               </button>
             </li>
 
             <li>
-              <button onClick={() => setAbaAtiva("categorias")} className={getClassBotao("categorias")}>
+              <button
+                onClick={() => setAbaAtiva("categorias")}
+                className={getClassBotao("categorias")}
+              >
                 <IconPasta /> Categorias
               </button>
             </li>
-             <li>
-              <button onClick={() => setAbaAtiva("aprovacoes")} className={getClassBotao("documentos")}>
-                <IconBarras /> Aprovações 
+            <li>
+              <button
+                onClick={() => setAbaAtiva("aprovacoes")}
+                className={getClassBotao("aprovacoes")}
+              >
+                <IconBarras /> Aprovações
               </button>
             </li>
             <li>
-              <button onClick={() => setAbaAtiva("lixeira")} className={getClassBotao("lixeira")}>
+              <button
+                onClick={() => setAbaAtiva("lixeira")}
+                className={getClassBotao("lixeira")}
+              >
                 <IconLixeira /> Lixeira
               </button>
             </li>
-            <p className=" text-gray-400 text-xs from-neutral-800 mb-1.5">CONFIGURAÇÕES </p>
-             <li>
-              <button onClick={() => setAbaAtiva("perfil")} className={getClassBotao("perfil")}>
+            <p className=" text-gray-400 text-xs from-neutral-800 mb-1.5">
+              SISTEMAS DA NETLINE{" "}
+            </p>
+            <li>
+              <button
+                onClick={() => setAbaAtiva("sistemas")}
+                className={getClassBotao("sistemas")}
+              >
+                <IconSistemas /> Sistemas Desenvolvidos
+              </button>
+            </li>
+
+            <p className=" text-gray-400 text-xs from-neutral-800 mb-1.5">
+              CONFIGURAÇÕES{" "}
+            </p>
+            <li>
+              <button
+                onClick={() => setAbaAtiva("perfil")}
+                className={getClassBotao("perfil")}
+              >
                 <IconUsuario /> Meu Perfil
               </button>
             </li>
+             <li>
+              <button
+                onClick={() => setAbaAtiva("usuarios")}
+                className={getClassBotao("usuarios")}
+              >
+                <IconUsuarios /> Usuários
+              </button>
+            </li>
             <li>
-              <button onClick={() => setAbaAtiva("configuracoes")} className={getClassBotao("configuracoes")}>
+              <button
+                onClick={() => setAbaAtiva("configuracoes")}
+                className={getClassBotao("configuracoes")}
+              >
                 <IconConfig /> Configurações
               </button>
             </li>
