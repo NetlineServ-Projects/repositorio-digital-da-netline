@@ -423,7 +423,7 @@ export default function Documentos({
                     return (
                       <tr key={doc.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3.5 px-4 text-slate-800 flex items-center gap-3">
-                          <span className="p-2 bg-blue-50 text-[#18357a] rounded-lg text-[11px] font-extrabold uppercase min-w-[42px] text-center shrink-0 border border-blue-100/50">
+                          <span className="p-2 bg-blue-50 text-[#18357a] rounded-lg text-[11px] font-extrabold uppercase min-w-10.5 text-center shrink-0 border border-blue-100/50">
                             {ext}
                           </span>
                           <div className="flex flex-col truncate max-w-xs md:max-w-sm">

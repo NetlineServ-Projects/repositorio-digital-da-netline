@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 interface DocumentoAprovacao {
   id: string | number;
@@ -48,7 +48,7 @@ export default function Aprovacoes() {
   ]);
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+
 
   // Filtros de controle
   const [busca, setBusca] = useState("");

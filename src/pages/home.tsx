@@ -1,7 +1,7 @@
-import React from "react";
+
 import Header from "../components/header";
 import Card from "../components/card";
-import  { CabinetDocsIcon, CameraIcon, FileIcon, RepositoryIcon } from "../components/icons";
+import  { CabinetDocsIcon, CameraIcon, FileIcon } from "../components/icons";
 import Principal from "../assets/principal.png";
 import Fundo1 from "../assets/fundo.jpg";
 import Suporte from "../components/suporte";

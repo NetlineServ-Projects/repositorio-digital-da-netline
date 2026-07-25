@@ -1,5 +1,4 @@
-import React from "react";
-import { FaUser, FaLock } from 'react-icons/fa';
+
 
 interface Props {
   title: string;

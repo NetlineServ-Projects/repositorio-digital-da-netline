@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "../components/button";
 import Fundo1 from "../assets/fundo.jpg";
-import { useForm, Watch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import logoNetline from "../assets/netline.jpg";
 import axios from "axios";
 import {
@@ -25,17 +25,17 @@ type DadosDoForm = {
 
 export default function Cadastro() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
+  //const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
 
   const {
     register,
     handleSubmit,
-    watch,
+   // watch,
     reset,
     formState: { errors },
   } = useForm<DadosDoForm>({ mode: "onChange" });
 
-  const senhaAtual = watch("senha");
+  //const senhaAtual = watch("senha");
 
   const salvarCadastro = async (dados: DadosDoForm) => {
     try {

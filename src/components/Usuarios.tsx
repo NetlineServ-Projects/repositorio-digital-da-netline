@@ -12,7 +12,6 @@ import {
   faShieldAlt,
   faSpinner,
   faSave,
-  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Tipos

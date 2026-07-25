@@ -21,7 +21,6 @@ import {
   faFolder,
   faSearch,
   faArrowLeft,
-  faBars,
   faPen,
   faDownload
 } from "@fortawesome/free-solid-svg-icons";

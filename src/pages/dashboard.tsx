@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/sidebar";
 import HeaderDashboard from "../components/HeaderDashboard"; // Importação do componente externo
 import Perfil from "../components/Perfil";
@@ -425,7 +425,7 @@ export default function Dashboard() {
                       key={item.id}
                       className="flex items-start gap-3 text-xs"
                     >
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
                       <div className="flex-1">
                         <p className="text-slate-700">
                           <strong className="text-slate-900">

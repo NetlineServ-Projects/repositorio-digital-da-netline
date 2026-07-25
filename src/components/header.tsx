@@ -1,13 +1,12 @@
 import React from "react";
 import logoNetline from "../assets/netline.jpg";
-import button from "./button";
 import { Link } from "react-router-dom";
 
 interface HeaderProps {
   onPlanosClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onPlanosClick }) => {
+const Header: React.FC<HeaderProps> = () => {
   return (
     <header className="shadow-2xs flex flex-row justify-between items-center px-4 py-4 bg-white sticky top-0 z-50 ">
       <div style={styles.logoContainer}>

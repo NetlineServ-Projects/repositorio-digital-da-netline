@@ -1,8 +1,8 @@
 import Button from "../components/button";
 import Fundo1 from "../assets/fundo.jpg";
 import logoNetline from "../assets/netline.jpg";
-import { useEffect, useState} from "react";
-import { useUsuario } from "../components/UsuarioContext";
+import {  useState} from "react";
+//import { useUsuario } from "../components/UsuarioContext";
 
 import {
   IconOlhoAberto,
@@ -16,7 +16,7 @@ export default function autenticacao() {
   const [erro, setErro] = useState(""); // Estado para guardar mensagens de erro do backend
   const [carregando, setCarregando] = useState(false); // Estado para controlar o clique duplo no botão
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const {fazerLogin} = useUsuario();  //puxa a funcao do contextp
+  //const {fazerLogin} = useUsuario();  //puxa a funcao do contextp
 
   const entrar = async (e: React.FormEvent) => {
     e.preventDefault(); // Evita que a página recarregue ao enviar o formulário
