@@ -20,7 +20,10 @@ import {
   faCode,
   faFolder,
   faSearch,
-  faArrowLeft
+  faArrowLeft,
+  faBars,
+  faPen,
+  faDownload
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IconProps {
@@ -105,6 +108,13 @@ export const IconVoltar = ({ className = "w-4 h-4" }: { className?: string }) =>
 export const IconVer = ({ className = "w-4 h-4" }: { className?: string }) => (
   <FontAwesomeIcon icon={faEye} className={className} />
 );
+export const IconCaneta = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faPen} className={className} />
+);
+export const IconDownload = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faDownload} className={className} />
+);
+
 
 
 

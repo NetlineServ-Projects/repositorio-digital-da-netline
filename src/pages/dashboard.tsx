@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/sidebar";
+import HeaderDashboard from "../components/HeaderDashboard"; // Importação do componente externo
 import Perfil from "../components/Perfil";
 import Configuracoes from "../components/Configuracoes";
 import Documentos from "../components/Documentos";
@@ -16,23 +17,23 @@ import {
   IconPasta,
 } from "../components/icons";
 
-// Interfaces de dados
+// Interfaces de dados reais
 interface UsuarioData {
   nome: string;
-  totalDocumentos: number;
-  pendentesAprovacao: number;
-  categorias: number;
-  totalSistema: number;
-  totalAprovado: number;
+  email?: string;
 }
 
-interface DocumentoRecente {
-  id: string;
-  nome: string;
-  categoria: string;
-  autor: string;
-  data: string;
-  status: "Pendente" | "Aprovado" | "Rejeitado";
+interface Documento {
+  id: string | number;
+  titulo?: string;
+  nome?: string;
+  autor?: string;
+  usuario?: { nome: string };
+  createdAt?: string;
+  dataUpload?: string;
+  status?: "Pendente" | "Aprovado" | "Rejeitado" | string;
+  categoria?: { nome: string };
+  categoriaNome?: string;
 }
 
 interface Atividade {
@@ -43,61 +44,25 @@ interface Atividade {
   tempo: string;
 }
 
+// --- COMPONENTE PRINCIPAL ---
 export default function Dashboard() {
   const [abaAtiva, setAbaAtiva] = useState<string>("dashboard");
+  const [sidebarFechada, setSidebarFechada] = useState<boolean>(false);
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
+  const [documentos, setDocumentos] = useState<Documento[]>([]);
+  const [totalCategorias, setTotalCategorias] = useState<number>(0);
+  const [totalSistemas, setTotalSistemas] = useState<number>(0);
+
   const [loading, setLoading] = useState<boolean>(true);
   const [erro, setErro] = useState<string | null>(null);
-
-  // Estados de dados mockados para o painel
-  const [documentosRecentes] = useState<DocumentoRecente[]>([
-    {
-      id: "1",
-      nome: "Relatorio_Anual_Netline_2025.pdf",
-      categoria: "Relatórios",
-      autor: "Elisa Nhamuanzo",
-      data: "21/07/2026",
-      status: "Pendente",
-    },
-    {
-      id: "2",
-      nome: "Manual_de_Procedimentos.docx",
-      categoria: "Documentação",
-      autor: "Kevin Silva",
-      data: "20/07/2026",
-      status: "Aprovado",
-    },
-    {
-      id: "3",
-      nome: "Estrutura_BD_Repositorio.sql",
-      categoria: "Sistemas",
-      autor: "Elisa Nhamuanzo",
-      data: "19/07/2026",
-      status: "Aprovado",
-    },
-  ]);
 
   const [atividades] = useState<Atividade[]>([
     {
       id: "1",
-      usuario: "Elisa Nhamuanzo",
-      acao: "submeteu um novo documento",
-      alvo: "Relatorio_Anual_Netline_2025.pdf",
-      tempo: "Há 10 min",
-    },
-    {
-      id: "2",
-      usuario: "Administrador",
-      acao: "aprovou a categoria",
-      alvo: "Sistemas Internos",
-      tempo: "Há 1 hora",
-    },
-    {
-      id: "3",
-      usuario: "Kevin Silva",
-      acao: "solicitou acesso ao sistema",
-      alvo: "Gestão de Redes",
-      tempo: "Há 3 horas",
+      usuario: "Sistema Netline",
+      acao: "repositório atualizado com sucesso",
+      alvo: "Métricas da API",
+      tempo: "Agora",
     },
   ]);
 
@@ -106,22 +71,42 @@ export default function Dashboard() {
     setErro(null);
 
     try {
-      const token = localStorage.getItem("token_sistema");
+      const token =
+        localStorage.getItem("token_sistema") || localStorage.getItem("token");
 
-      const resposta = await fetch("http://localhost:3000/api/auth/me", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
-      if (!resposta.ok) {
-        throw new Error("Não foi possível carregar os dados do usuário.");
+      const [resAuth, resDocs, resCats, resSist] = await Promise.all([
+        fetch("http://localhost:3000/api/auth/me", { headers }),
+        fetch("http://localhost:3000/api/documentos", { headers }),
+        fetch("http://localhost:3000/api/categorias", { headers }),
+        fetch("http://localhost:3000/api/sistemas", { headers }).catch(
+          () => null
+        ),
+      ]);
+
+      if (resAuth && resAuth.ok) {
+        const dadosAuth = await resAuth.json();
+        setUsuario(dadosAuth);
       }
 
-      const dados: UsuarioData = await resposta.json();
-      setUsuario(dados);
+      if (resDocs && resDocs.ok) {
+        const dadosDocs = await resDocs.json();
+        setDocumentos(dadosDocs);
+      }
+
+      if (resCats && resCats.ok) {
+        const dadosCats = await resCats.json();
+        setTotalCategorias(dadosCats.length);
+      }
+
+      if (resSist && resSist.ok) {
+        const dadosSist = await resSist.json();
+        setTotalSistemas(dadosSist.length);
+      }
     } catch (error) {
       console.error("Erro na requisição:", error);
       const mensagem =
@@ -140,13 +125,14 @@ export default function Dashboard() {
 
   const handleDeletarConta = async () => {
     const confirmarExclusao = window.confirm(
-      "Atenção: Tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta?",
+      "Atenção: Tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta?"
     );
 
     if (!confirmarExclusao) return;
 
     try {
-      const token = localStorage.getItem("token_sistema");
+      const token =
+        localStorage.getItem("token_sistema") || localStorage.getItem("token");
 
       if (!token) {
         alert("Sessão não encontrada.");
@@ -162,7 +148,7 @@ export default function Dashboard() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
       const dados = await resposta.json();
@@ -181,7 +167,17 @@ export default function Dashboard() {
     }
   };
 
-  // Renderiza a aba correspondente no centro da tela
+  // Cálculos dinâmicos
+  const totalDocumentos = documentos.length;
+  const pendentesAprovacao = documentos.filter(
+    (d) => d.status?.toLowerCase() === "pendente"
+  ).length;
+  const totalAprovados = documentos.filter(
+    (d) => d.status?.toLowerCase() === "aprovado" || !d.status
+  ).length;
+
+  const documentosRecentes = [...documentos].reverse().slice(0, 5);
+
   const renderConteudoPrincipal = () => {
     switch (abaAtiva) {
       case "perfil":
@@ -204,27 +200,40 @@ export default function Dashboard() {
       default:
         return (
           <div className="space-y-6">
-            {/* Cabeçalho */}
-            <header className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-              <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                Olá,{" "}
-                <span className="font-semibold text-slate-800">
-                  {usuario?.nome || "Usuário"}
+            {/* Banner Destaque (Hero) em tom Azul Netline */}
+            <div className="bg-blue-900 text-white p-6 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <span className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
+                  Repositório Digital
                 </span>
+                <h2 className="text-2xl font-bold mt-1">
+                  Explore os Documentos da Netline
+                </h2>
+                <p className="text-xs text-blue-100 mt-1">
+                  {totalDocumentos} documentos disponíveis · {totalSistemas}{" "}
+                  sistemas integrados
+                </p>
               </div>
-            </header>
+
+              <button
+                onClick={() => setAbaAtiva("documentos")}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-semibold text-white transition-colors flex items-center gap-2 backdrop-blur-xs cursor-pointer"
+              >
+                <IconDocumento className="w-4 h-4" />
+                Ver Todos Documentos
+              </button>
+            </div>
 
             {/* Cards Métricas */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+              {/* Card 1: Total de Documentos */}
+              <div className="bg-white p-6 rounded-xl border border-slate-100 border-t-4 border-t-blue-500 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Total de Documentos
                   </h4>
                   <p className="text-3xl font-extrabold text-slate-800 mt-1">
-                    {usuario?.totalDocumentos ?? 10}
+                    {totalDocumentos}
                   </p>
                 </div>
                 <div className="p-3 bg-blue-50 text-blue-600 rounded-xl border border-blue-100/50 flex items-center justify-center">
@@ -232,41 +241,44 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+              {/* Card 2: Pendentes de Aprovação */}
+              <div className="bg-white p-6 rounded-xl border border-slate-100 border-t-4 border-t-amber-500 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Pendentes de Aprovação
                   </h4>
                   <p className="text-3xl font-bold text-slate-800 mt-1">
-                    {usuario?.pendentesAprovacao ?? 4}
+                    {pendentesAprovacao}
                   </p>
                 </div>
-                <div className="p-3 bg-blue-50 text-amber-600 rounded-xl border border-blue-100/50 flex items-center justify-center">
+                <div className="p-3 bg-amber-50 text-amber-600 rounded-xl border border-amber-100/50 flex items-center justify-center">
                   <IconRelogio className="w-6 h-6" />
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+              {/* Card 3: Aprovados */}
+              <div className="bg-white p-6 rounded-xl border border-slate-100 border-t-4 border-t-emerald-500 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Aprovados
                   </h4>
                   <p className="text-3xl font-bold text-slate-800 mt-1">
-                    {usuario?.totalAprovado ?? 0}
+                    {totalAprovados}
                   </p>
                 </div>
-                <div className="p-3 bg-blue-50 text-amber-400 rounded-xl border border-blue-100/50 flex items-center justify-center">
+                <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100/50 flex items-center justify-center">
                   <IconAprovado className="w-6 h-6" />
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+              {/* Card 4: Total de Sistemas */}
+              <div className="bg-white p-6 rounded-xl border border-slate-100 border-t-4 border-t-indigo-600 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Total de Sistemas
                   </h4>
                   <p className="text-3xl font-bold text-slate-800 mt-2">
-                    {usuario?.totalSistema || "11"}
+                    {totalSistemas}
                   </p>
                 </div>
                 <div className="p-3 bg-blue-50 text-blue-900 rounded-xl border border-blue-100/50 flex items-center justify-center">
@@ -274,13 +286,14 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
+              {/* Card 5: Categorias */}
+              <div className="bg-white p-6 rounded-xl border border-slate-100 border-t-4 border-t-cyan-700 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     Categorias
                   </h4>
                   <p className="text-3xl font-bold text-slate-800 mt-2">
-                    {usuario?.categorias || "14"}
+                    {totalCategorias}
                   </p>
                 </div>
                 <div className="p-3 bg-blue-50 text-cyan-800 rounded-xl border border-blue-100/50 flex items-center justify-center">
@@ -296,41 +309,28 @@ export default function Dashboard() {
               </span>
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => setAbaAtiva("documentos")}
-                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm"
-                >
-                  + Novo Documento
-                </button>
-                <button
-                  onClick={() => setAbaAtiva("usuarios")}
-                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  + Adicionar Usuários
-                </button>
-                <button
                   onClick={() => setAbaAtiva("aprovacoes")}
-                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
                 >
                   Gerir Aprovações
                 </button>
                 <button
                   onClick={() => setAbaAtiva("categorias")}
-                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
                 >
                   Ver Categorias
                 </button>
                 <button
                   onClick={() => setAbaAtiva("sistemas")}
-                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
                 >
                   Gerir Sistemas
                 </button>
               </div>
             </div>
 
-            {/* Secção Dupla: Tabela de Documentos + Feed de Atividades */}
+            {/* Tabela de Documentos + Feed de Atividades */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Tabela de Útimos Documentos (Ocupa 2 colunas) */}
               <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-bold text-slate-800">
@@ -338,7 +338,7 @@ export default function Dashboard() {
                   </h3>
                   <button
                     onClick={() => setAbaAtiva("documentos")}
-                    className="text-xs font-semibold text-blue-600 hover:underline"
+                    className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
                   >
                     Ver Todos
                   </button>
@@ -355,45 +355,82 @@ export default function Dashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {documentosRecentes.map((doc) => (
-                        <tr key={doc.id} className="hover:bg-slate-50/50">
-                          <td className="py-3 px-4 font-medium text-slate-800">
-                            {doc.nome}
-                          </td>
-                          <td className="py-3 px-4">{doc.categoria}</td>
-                          <td className="py-3 px-4">{doc.data}</td>
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                doc.status === "Aprovado"
-                                  ? "bg-emerald-100 text-emerald-700"
-                                  : doc.status === "Pendente"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
+                      {documentosRecentes.length > 0 ? (
+                        documentosRecentes.map((doc) => {
+                          const nomeDoc =
+                            doc.titulo || doc.nome || "Documento sem nome";
+                          const catDoc =
+                            doc.categoria?.nome || doc.categoriaNome || "Geral";
+                          const dataDoc =
+                            doc.dataUpload ||
+                            (doc.createdAt
+                              ? new Date(doc.createdAt).toLocaleDateString(
+                                  "pt-PT"
+                                )
+                              : "-");
+                          const statusDoc = doc.status || "Aprovado";
+
+                          return (
+                            <tr
+                              key={doc.id}
+                              className="hover:bg-slate-50/50 transition-colors"
                             >
-                              {doc.status}
-                            </span>
+                              <td
+                                className="py-3 px-4 font-medium text-slate-800 truncate max-w-xs"
+                                title={nomeDoc}
+                              >
+                                {nomeDoc}
+                              </td>
+                              <td className="py-3 px-4">{catDoc}</td>
+                              <td className="py-3 px-4 text-xs">{dataDoc}</td>
+                              <td className="py-3 px-4">
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                    statusDoc === "Aprovado"
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : statusDoc === "Pendente"
+                                        ? "bg-amber-100 text-amber-700"
+                                        : "bg-red-100 text-red-700"
+                                  }`}
+                                >
+                                  {statusDoc}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="text-center py-6 text-slate-400 text-xs"
+                          >
+                            Nenhum documento registado no repositório.
                           </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              {/* Feed de Atividade Recente (Ocupa 1 coluna) */}
+              {/* Feed de Atividade Recente */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">
                   Atividade Recente
                 </h3>
                 <div className="space-y-4">
                   {atividades.map((item) => (
-                    <div key={item.id} className="flex items-start gap-3 text-xs">
+                    <div
+                      key={item.id}
+                      className="flex items-start gap-3 text-xs"
+                    >
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
                       <div className="flex-1">
                         <p className="text-slate-700">
-                          <strong className="text-slate-900">{item.usuario}</strong>{" "}
+                          <strong className="text-slate-900">
+                            {item.usuario}
+                          </strong>{" "}
                           {item.acao}{" "}
                           <span className="italic text-slate-500">
                             "{item.alvo}"
@@ -429,7 +466,7 @@ export default function Dashboard() {
         <p className="text-red-600 font-medium">Ocorreu um erro: {erro}</p>
         <button
           onClick={buscarDadosDaAPI}
-          className="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
+          className="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors cursor-pointer"
         >
           Tentar Novamente
         </button>
@@ -439,12 +476,23 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar */}
       <Sidebar
         abaAtiva={abaAtiva}
         setAbaAtiva={setAbaAtiva}
         onDeletarConta={handleDeletarConta}
+        fechada={sidebarFechada}
       />
-      <main className="flex-1 p-8">{renderConteudoPrincipal()}</main>
+
+      {/* Conteúdo à Direita: Header Fixo + Páginas */}
+      <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+        <HeaderDashboard
+          sidebarFechada={sidebarFechada}
+          setSidebarFechada={setSidebarFechada}
+          usuario={usuario}
+        />
+        <main className="p-8 flex-1">{renderConteudoPrincipal()}</main>
+      </div>
     </div>
   );
 }
