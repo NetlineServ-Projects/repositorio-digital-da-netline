@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useSistemasData, type Sistema } from "../hooks/useSistemasData";
-import SistemasHeader from "./sistemas/SistemasHeader";
-import SistemasGrid from "./sistemas/SistemasGrid";
-import SistemaFormulario from "./sistemas/SistemaFormulario";
-import SistemaDetalheHeader from "./sistemas/SistemaDetalheHeader";
-import SistemaFichaTecnica from "./sistemas/SistemaFichaTecnica";
-import AnexarDocumentoForm from "./sistemas/AnexarDocumentoForm";
-import DocumentosDoSistemaTabela from "./sistemas/DocumentosDoSistemaTabela";
+import SistemasHeader from "./sistemas/sistemasHeader";
+import SistemasGrid from "./sistemas/sistemasGrid";
+import SistemaFormulario from "./sistemas/sistemaFormulario";
+import SistemaDetalheHeader from "./sistemas/sistemaDetalheHeader";
+import SistemaFichaTecnica from "./sistemas/sistemaFichaTecnica";
+import AnexarDocumentoForm from "./sistemas/anexarDocumentoForm";
+import DocumentosDoSistemaTabela from "./sistemas/documentosDoSistemaTabela";
 
 export default function Sistemas() {
   const { sistemas, documentos, categorias, loading, criarSistema, anexarDocumento } = useSistemasData();

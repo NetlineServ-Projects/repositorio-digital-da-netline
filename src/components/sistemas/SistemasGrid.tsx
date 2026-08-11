@@ -1,5 +1,5 @@
 import type { Sistema, Documento } from "../../hooks/useSistemasData";
-import SistemaCard from "./SistemaCard";
+import SistemaCard from "./sistemaCard";
 
 interface SistemasGridProps {
   sistemas: Sistema[];

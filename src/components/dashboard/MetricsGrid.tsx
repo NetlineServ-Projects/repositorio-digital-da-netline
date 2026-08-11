@@ -1,4 +1,4 @@
-import MetricCard from "./MetricCard";
+import MetricCard from "./metricCard";
 import { IconDocumento, IconRelogio, IconAprovado, IconSistemas, IconPasta } from "../icons";
 
 interface MetricsGridProps {

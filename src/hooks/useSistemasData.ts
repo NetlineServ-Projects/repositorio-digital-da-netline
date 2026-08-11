@@ -48,9 +48,9 @@ export function useSistemasData() {
     setLoading(true);
     try {
       const [sist, docs, cats] = await Promise.all([
-        fetchComToken("/api/sistemas"),
-        fetchComToken("/api/documentos"),
-        fetchComToken("/api/categorias"),
+        fetchComToken("/sistemas"),
+        fetchComToken("/documentos"),
+        fetchComToken("/categorias"),
       ]);
       setSistemas(Array.isArray(sist) ? sist : []);
       setDocumentos(Array.isArray(docs) ? docs : []);
@@ -67,7 +67,7 @@ export function useSistemasData() {
   }, []);
 
   const criarSistema = async (dados: Record<string, unknown>) => {
-    await fetchComToken("/api/sistemas", {
+    await fetchComToken("/sistemas", {
       method: "POST",
       body: JSON.stringify(dados),
     });

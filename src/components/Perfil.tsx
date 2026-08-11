@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { IconUsuario } from "../components/icons";
+import { IconUsuario } from "./icons";
 
 interface UsuarioData {
   id?: string;

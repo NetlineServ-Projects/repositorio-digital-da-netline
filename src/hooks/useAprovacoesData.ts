@@ -1,24 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchComToken } from "../utils/api";
-
-export interface Documento {
-  id: number;
-  titulo: string;
-  descricao?: string;
-  nomeArquivo: string;
-  caminho: string;
-  tipoArquivo: string;
-  tamanho: string | number;
-  estado: "PENDENTE" | "APROVADO" | "REJEITADO";
-  dataSubmissao?: string;
-  usuario?: { nome: string };
-  categoria?: { id: number; nome: string };
-}
-
-export interface Categoria {
-  id: number;
-  nome: string;
-}
+import { API_ENDPOINTS } from "../data/client/endpoint";
+import type { Documento, Categoria } from "../types/documento";
 
 export function useAprovacoesData() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
@@ -31,8 +14,8 @@ export function useAprovacoesData() {
     setErro(null);
     try {
       const [docs, cats] = await Promise.all([
-        fetchComToken("/api/documentos"),
-        fetchComToken("/api/categorias"),
+        fetchComToken(API_ENDPOINTS.DOCUMENTOS),
+        fetchComToken(API_ENDPOINTS.CATEGORIAS),
       ]);
       setDocumentos(docs);
       setCategorias(cats);
@@ -51,7 +34,8 @@ export function useAprovacoesData() {
     const body: Record<string, string> = { estado: novoEstado };
     if (novoEstado === "REJEITADO" && motivo) body.motivo = motivo;
 
-    await fetchComToken(`/api/documentos/${id}`, {
+    // antes: `/api/documentos/${id}` — duplicava o /api e não batia com a rota real
+    await fetchComToken(API_ENDPOINTS.DOCUMENTO_BY_ID(id), {
       method: "PATCH",
       body: JSON.stringify(body),
     });

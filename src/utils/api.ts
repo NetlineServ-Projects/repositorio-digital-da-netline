@@ -1,4 +1,5 @@
 export const API_URL = "http://localhost:3000";
+export const API_BASE = `${API_URL}/api/v1`;
 
 export function obterToken(): string | null {
   return localStorage.getItem("token_sistema") || localStorage.getItem("token");
@@ -6,11 +7,12 @@ export function obterToken(): string | null {
 
 export async function fetchComToken(endpoint: string, options: RequestInit = {}) {
   const token = obterToken();
+  const ehFormData = options.body instanceof FormData;
 
-  const resposta = await fetch(`${API_URL}${endpoint}`, {
+  const resposta = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      ...(!ehFormData && { "Content-Type": "application/json" }),
       Authorization: `Bearer ${token}`,
       ...options.headers,
     },
@@ -22,5 +24,5 @@ export async function fetchComToken(endpoint: string, options: RequestInit = {})
     throw new Error(corpo?.mensagem || "Erro ao comunicar com o servidor.");
   }
 
-  return corpo.data; // já devolve só o "data", sem precisar repetir .data em todo lado
+  return corpo.data;
 }

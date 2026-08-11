@@ -22,7 +22,8 @@ import {
   faSearch,
   faArrowLeft,
   faPen,
-  faDownload
+  faDownload,
+  faArrowRight
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IconProps {
@@ -113,7 +114,9 @@ export const IconCaneta = ({ className = "w-4 h-4" }: { className?: string }) =>
 export const IconDownload = ({ className = "w-4 h-4" }: { className?: string }) => (
   <FontAwesomeIcon icon={faDownload} className={className} />
 );
-
+export const IconSetaDireita = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faArrowRight} className={className} />
+);
 
 
 

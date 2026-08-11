@@ -30,10 +30,10 @@ export function useDashboardData() {
 
     try {
       const [auth, docs, cats, sist] = await Promise.all([
-        fetchComToken("/api/auth/me"),
-        fetchComToken("/api/documentos"),
-        fetchComToken("/api/categorias"),
-        fetchComToken("/api/sistemas"),
+        fetchComToken("/auth/me"),
+        fetchComToken("/documentos"),
+        fetchComToken("/categorias"),
+        fetchComToken("/sistemas"),
       ]);
 
       setUsuario(auth);
