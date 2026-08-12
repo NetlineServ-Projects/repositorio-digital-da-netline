@@ -1,22 +1,8 @@
 import { useState, useEffect } from "react";
-import { fetchComToken, API_URL } from "../utils/api";
+import { fetchComToken } from "../utils/api";
+import type { Documento, Categoria } from "../types/documento";
 
-export interface Documento {
-  id: string | number;
-  titulo?: string;
-  nomeArquivo?: string;
-  usuario?: { nome: string };
-  tamanho?: string | number;
-  dataSubmissao?: string;
-  estado?: "PENDENTE" | "APROVADO" | "REJEITADO";
-  sistemaId?: string | number;
-  caminho?: string;
-}
-
-export interface Categoria {
-  id: string | number;
-  nome: string;
-}
+export type { Documento, Categoria };
 
 export interface Sistema {
   id: string | number;
@@ -67,24 +53,24 @@ export function useSistemasData() {
   }, []);
 
   const criarSistema = async (dados: Record<string, unknown>) => {
-    await fetchComToken("/sistemas", {
-      method: "POST",
-      body: JSON.stringify(dados),
-    });
+    await fetchComToken("/sistemas", { method: "POST", body: JSON.stringify(dados) });
     await fetchDados();
   };
 
   const anexarDocumento = async (formData: FormData) => {
-    const token = localStorage.getItem("token_sistema");
-    const resposta = await fetch(`${API_URL}/api/documentos`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const corpo = await resposta.json();
-    if (!resposta.ok) throw new Error(corpo?.mensagem || "Erro ao anexar o documento.");
+    await fetchComToken("/documentos", { method: "POST", body: formData });
     await fetchDados();
   };
 
-  return { sistemas, documentos, categorias, loading, criarSistema, anexarDocumento, recarregar: fetchDados };
+  const editarDocumento = async (id: number, dados: { titulo: string; descricao: string; categoriaId: string }) => {
+    await fetchComToken(`/documentos/${id}`, { method: "PATCH", body: JSON.stringify(dados) });
+    await fetchDados();
+  };
+
+  const apagarDocumento = async (id: number) => {
+    await fetchComToken(`/documentos/${id}`, { method: "DELETE" });
+    await fetchDados();
+  };
+
+  return { sistemas, documentos, categorias, loading, criarSistema, anexarDocumento, editarDocumento, apagarDocumento, recarregar: fetchDados };
 }

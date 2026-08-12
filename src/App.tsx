@@ -5,15 +5,15 @@ import Dashboard from "./pages/dashboard";
 import DashboardHome from "./pages/dashboardHome";
 import Documentos from "./pages/documentos/page";
 import Categorias from "./pages/categorias/page";
-import Sistemas from "./components/sistemas";
 import Usuarios from "./pages/admin/usuarios/page";
-import Perfil from "./components/perfil";
+import Perfil from "./pages/perfil/page";
 import Configuracoes from "./components/configuracoes";
 import Lixeira from "./pages/admin/lixeira/page";
 import AprovacoesPage from "./pages/admin/aprovacoes/page";
 import AprovacaoDetalhesPage from "./pages/admin/aprovacoes/details/page";
 import AprovacaoEditPage from "./pages/admin/aprovacoes/edit/page";
 import { UsuarioProvider, useUsuario } from "./components/usuarioContext";
+import SistemasPage from "./pages/sistemas/page";
 
 function RotaProtegida({ children }: { children: React.ReactNode }) {
   const { usuarioLogado } = useUsuario();
@@ -50,7 +50,7 @@ function App() {
             <Route index element={<DashboardHome />} />
             <Route path="documentos" element={<Documentos />} />
             <Route path="categorias" element={<Categorias />} />
-            <Route path="sistemas" element={<Sistemas />} />
+            <Route path="sistemas" element={<SistemasPage />} />
             <Route path="admin" element={<RotaAdmin><Outlet /></RotaAdmin>}></Route>
             <Route path="aprovacoes" element={<AprovacoesPage />} />
             <Route path="aprovacoes/details/:id" element={<AprovacaoDetalhesPage />} />

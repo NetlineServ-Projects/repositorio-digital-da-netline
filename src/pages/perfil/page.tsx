@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { IconUsuario } from "./icons";
+import { useState, useEffect } from "react";
+import { fetchComToken } from "../../utils/api";
+import { API_ENDPOINTS } from "../../data/client/endpoint";
+import { IconUsuario } from "../../components/icons";
 
 interface UsuarioData {
   id?: string;
@@ -10,11 +12,10 @@ interface UsuarioData {
   dataAdmissao?: string;
 }
 
-export default function Perfil() {
+export default function PerfilPage() {
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
   const [carregando, setCarregando] = useState<boolean>(true);
 
-  // Estados do formulário
   const [editando, setEditando] = useState<boolean>(false);
   const [formDados, setFormDados] = useState<UsuarioData>({
     nome: "",
@@ -23,7 +24,6 @@ export default function Perfil() {
     departamento: "",
   });
 
-  // Alteração de senha
   const [alterarSenha, setAlterarSenha] = useState<boolean>(false);
   const [senhaForm, setSenhaForm] = useState({
     senhaAtual: "",
@@ -31,32 +31,14 @@ export default function Perfil() {
     confirmarSenha: "",
   });
 
-  // Estados de feedback e envio
   const [mensagem, setMensagem] = useState<{ tipo: "sucesso" | "erro"; texto: string } | null>(null);
   const [salvando, setSalvando] = useState<boolean>(false);
-
-  // Endpoint base da sua API
-  const API_URL = "http://localhost:5000/api/usuarios/perfil";
 
   // Buscar dados do utilizador do backend ao carregar a página
   useEffect(() => {
     const carregarPerfil = async () => {
       try {
-        const token = localStorage.getItem("token"); // Token de autenticação JWT
-
-        const resposta = await fetch(API_URL, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!resposta.ok) {
-          throw new Error("Não foi possível carregar os dados do perfil.");
-        }
-
-        const dados: UsuarioData = await resposta.json();
+        const dados: UsuarioData = await fetchComToken(API_ENDPOINTS.PERFIL, { method: "GET" });
         setUsuario(dados);
         setFormDados(dados);
       } catch (err: any) {
@@ -89,13 +71,11 @@ export default function Perfil() {
     }));
   };
 
-  // Enviar os dados atualizados para a API
   const salvarAlteracoes = async (e: React.FormEvent) => {
     e.preventDefault();
     setSalvando(true);
     setMensagem(null);
 
-    // Validação de senha no frontend antes de disparar o request
     if (alterarSenha) {
       if (!senhaForm.senhaAtual || !senhaForm.novaSenha || !senhaForm.confirmarSenha) {
         setMensagem({ tipo: "erro", texto: "Preencha todos os campos da alteração de senha." });
@@ -110,9 +90,6 @@ export default function Perfil() {
     }
 
     try {
-      const token = localStorage.getItem("token");
-
-      // Payload contendo os dados do perfil + senha (se ativado)
       const payload = {
         ...formDados,
         ...(alterarSenha && {
@@ -121,23 +98,12 @@ export default function Perfil() {
         }),
       };
 
-      const resposta = await fetch(API_URL, {
+      const resultado: UsuarioData = await fetchComToken(API_ENDPOINTS.PERFIL, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(payload),
       });
 
-      const resultado = await resposta.json();
-
-      if (!resposta.ok) {
-        throw new Error(resultado.mensagem || "Falha ao atualizar o perfil.");
-      }
-
-      // Atualiza o estado da UI com a resposta do backend
-      setUsuario(resultado.usuario || formDados);
+      setUsuario(resultado || formDados);
       setEditando(false);
       setAlterarSenha(false);
       setSenhaForm({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
@@ -166,14 +132,12 @@ export default function Perfil() {
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-      {/* Banner */}
       <div className="h-32 bg-[#062869] relative">
         <div className="absolute -bottom-10 left-8 bg-slate-100 border-4 border-white p-4 rounded-full shadow-sm text-slate-600 flex items-center justify-center w-24 h-24">
           <IconUsuario className="w-12 h-12" />
         </div>
       </div>
 
-      {/* Alerta de Feedback */}
       {mensagem && (
         <div
           className={`mx-8 mt-12 p-3 rounded-lg text-xs font-semibold flex items-center justify-between transition-all ${
@@ -186,16 +150,11 @@ export default function Perfil() {
         </div>
       )}
 
-      {/* Formulário */}
       <form onSubmit={salvarAlteracoes} className={mensagem ? "p-8 pt-4" : "pt-14 p-8"}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">
-              {usuario?.nome || "Utilizador"}
-            </h2>
-            <p className="text-slate-500 font-medium text-sm">
-              {usuario?.cargo || "Colaborador"}
-            </p>
+            <h2 className="text-2xl font-bold text-slate-800">{usuario?.nome || "Utilizador"}</h2>
+            <p className="text-slate-500 font-medium text-sm">{usuario?.cargo || "Colaborador"}</p>
           </div>
 
           <div className="mt-4 sm:mt-0 space-x-2">
@@ -229,7 +188,6 @@ export default function Perfil() {
           </div>
         </div>
 
-        {/* Campos do Perfil */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
@@ -310,7 +268,6 @@ export default function Perfil() {
           </div>
         </div>
 
-        {/* Alteração de Senha */}
         {editando && (
           <div className="mt-8 pt-6 border-t border-slate-100">
             <div className="flex items-center justify-between mb-4">

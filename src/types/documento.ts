@@ -10,7 +10,8 @@ export interface Documento {
   dataSubmissao?: string;
   usuario?: { nome: string };
   categoria?: { id: number; nome: string };
-  apagadoEm?: string | null
+  apagadoEm?: string | null;
+  sistemaId?: number;
 }
 
 export interface Categoria {

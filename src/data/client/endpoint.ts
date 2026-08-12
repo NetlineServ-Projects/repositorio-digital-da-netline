@@ -3,6 +3,9 @@ export const API_ENDPOINTS = {
   USUARIOS: "/usuarios",
   USUARIO_BY_ID: (id: number | string) => `/usuarios/${id}`,
 
+  // Perfil
+  PERFIL: "/auth/me",
+
   // Documentos
   DOCUMENTOS: "/documentos",
   DOCUMENTO_BY_ID: (id: number | string) => `/documentos/${id}`,
@@ -12,4 +15,5 @@ export const API_ENDPOINTS = {
 
   // Categorias
   CATEGORIAS: "/categorias",
+
 };
