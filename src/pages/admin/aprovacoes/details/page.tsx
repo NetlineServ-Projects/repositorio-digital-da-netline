@@ -4,6 +4,7 @@ import StatusBadge from "../../../../components/statusBadge";
 import { obterUrlFicheiro, formatarExtensao, obterNomeExibicao, formatarTamanho } from "../../../../utils/documentos";
 import { API_URL } from "../../../../utils/api";
 import { IconDownload } from "../../../../components/icons";
+import { toast } from "sonner";
 
 export default function AprovacaoDetalhesPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,9 +14,9 @@ export default function AprovacaoDetalhesPage() {
   const handleAprovar = async () => {
     try {
       await alterarEstado("APROVADO");
-      navigate("/aprovacoes");
+      navigate("/dashboard/aprovacoes");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao aprovar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao aprovar documento.");
     }
   };
 
@@ -23,9 +24,9 @@ export default function AprovacaoDetalhesPage() {
     const motivo = prompt("Motivo da rejeição (opcional):") || undefined;
     try {
       await alterarEstado("REJEITADO", motivo);
-      navigate("/aprovacoes");
+      navigate("/dashboard/aprovacoes");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao rejeitar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao rejeitar documento.");
     }
   };
 
@@ -37,7 +38,7 @@ export default function AprovacaoDetalhesPage() {
     return (
       <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
         <p className="text-red-600 text-sm font-medium">{erro || "Documento não encontrado."}</p>
-        <Link to="/aprovacoes" className="text-sm text-[#18357a] font-semibold hover:underline">Voltar às Aprovações</Link>
+        <Link to="/dashboard/aprovacoes" className="text-sm text-[#18357a] font-semibold hover:underline">Voltar às Aprovações</Link>
       </div>
     );
   }
@@ -47,7 +48,7 @@ export default function AprovacaoDetalhesPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <Link to="/aprovacoes" className="text-sm text-slate-500 hover:text-slate-800 font-medium">← Voltar às Aprovações</Link>
+      <Link to="/dashboard/aprovacoes" className="text-sm text-slate-500 hover:text-slate-800 font-medium">← Voltar às Aprovações</Link>
 
       <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-5">
         <div className="flex items-start justify-between gap-3">

@@ -16,11 +16,20 @@ export interface Documento {
   categoria?: { nome: string };
 }
 
+export interface Atividade {
+  id: string;
+  usuario: string;
+  acao: string;
+  alvo: string | null;
+  criadoEm: string;
+}
+
 export function useDashboardData() {
   const [usuario, setUsuario] = useState<UsuarioData | null>(null);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [totalCategorias, setTotalCategorias] = useState(0);
   const [totalSistemas, setTotalSistemas] = useState(0);
+  const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -29,17 +38,19 @@ export function useDashboardData() {
     setErro(null);
 
     try {
-      const [auth, docs, cats, sist] = await Promise.all([
+      const [auth, docs, cats, sist, ativ] = await Promise.all([
         fetchComToken("/auth/me"),
         fetchComToken("/documentos"),
         fetchComToken("/categorias"),
         fetchComToken("/sistemas"),
+        fetchComToken("/dashboard/atividades"),
       ]);
 
       setUsuario(auth);
       setDocumentos(docs);
       setTotalCategorias(cats.length);
       setTotalSistemas(sist.length);
+      setAtividades(ativ);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao conectar com o servidor.");
     } finally {
@@ -66,6 +77,7 @@ export function useDashboardData() {
     pendentesAprovacao,
     totalAprovados,
     documentosRecentes,
+    atividades,
     loading,
     erro,
     recarregar: buscarDados,

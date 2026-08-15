@@ -5,10 +5,11 @@ import Principal from "../../assets/principal.png";
 import Fundo1 from "../../assets/fundo.jpg";
 import Suporte from "../../components/suporte";
 import Footer from "../../components/footer";
+import { toast } from "sonner";
 
 const Home = () => {
   const lidarComAdesao = () => {
-    alert("Redirecionando para o formulário de adesão!");
+    toast.error("Redirecionando para o formulário de adesão!");
   };
 
   return (

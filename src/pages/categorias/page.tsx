@@ -9,6 +9,7 @@ import { IconVer, IconPasta,IconSetaDireita } from "../../components/icons";
 import { obterUrlFicheiro } from "../../utils/documentos";
 import { API_URL } from "../../utils/api";
 import type { Documento, Categoria } from "../../types/documento";
+import { toast } from "sonner";
 
 export default function CategoriasPage() {
   const {
@@ -71,7 +72,7 @@ export default function CategoriasPage() {
     try {
       await apagarDocumento(id);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao apagar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar documento.");
     }
   };
 

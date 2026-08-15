@@ -1,10 +1,10 @@
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import MetricsGrid from "../components/dashboard/metricsGrid"; // ajusta ao import real que tinhas
 import HeroBanner from "../components/dashboard/heroBanner";
-import MetricsGrid from "../components/dashboard/metricsGrid";
 import AcoesRapidas from "../components/dashboard/acoesRapidas";
 import DocumentosRecentes from "../components/dashboard/documentosRecentes";
 import AtividadeRecente from "../components/dashboard/atividadeRecente";
-import { useNavigate } from "react-router-dom";
+import type { Atividade } from "../components/dashboard/atividadeRecente";
 
 interface DashboardContext {
   totalCategorias: number;
@@ -13,11 +13,15 @@ interface DashboardContext {
   pendentesAprovacao: number;
   totalAprovados: number;
   documentosRecentes: any[];
+  atividades: Atividade[];
 }
 
 export default function DashboardHome() {
-  const { totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes } =
-    useOutletContext<DashboardContext>();
+  const {
+    totalCategorias, totalSistemas, totalDocumentos,
+    pendentesAprovacao, totalAprovados, documentosRecentes,
+    atividades,
+  } = useOutletContext<DashboardContext>();
   const navigate = useNavigate();
 
   return (
@@ -33,7 +37,7 @@ export default function DashboardHome() {
       <AcoesRapidas onNavegar={(aba: string) => navigate(`/dashboard/${aba}`)} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DocumentosRecentes documentos={documentosRecentes} onVerTodos={() => navigate("/dashboard/documentos")} />
-        <AtividadeRecente />
+        <AtividadeRecente atividades={atividades} />
       </div>
     </div>
   );

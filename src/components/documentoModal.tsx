@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Documento, Categoria } from "../types/documento";
+import { toast } from "sonner";
 
 interface DocumentoModalProps {
   aberto: boolean;
@@ -38,7 +39,7 @@ export default function DocumentoModal({ aberto, documento, categorias,categoria
       await onSalvar({ titulo, descricao, categoriaId, ficheiro: ficheiro ?? undefined });
       onFechar();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao guardar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao guardar documento.");
     } finally {
       setSalvando(false);
     }

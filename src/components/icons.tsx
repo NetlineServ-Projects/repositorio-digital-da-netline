@@ -23,7 +23,8 @@ import {
   faArrowLeft,
   faPen,
   faDownload,
-  faArrowRight
+  faArrowRight,
+  faUpload
 } from "@fortawesome/free-solid-svg-icons";
 
 interface IconProps {
@@ -117,6 +118,10 @@ export const IconDownload = ({ className = "w-4 h-4" }: { className?: string }) 
 export const IconSetaDireita = ({ className = "w-5 h-5" }: { className?: string }) => (
   <FontAwesomeIcon icon={faArrowRight} className={className} />
 );
+export const IconUpload = ({ className = "w-5 h-5" }: { className?: string }) => (
+  <FontAwesomeIcon icon={faUpload} className={className} />
+);
+
 
 
 

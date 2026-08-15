@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Categoria } from "../../hooks/useSistemasData";
+import { toast } from "sonner";
 
 interface AnexarDocumentoFormProps {
   categorias: Categoria[];
@@ -15,8 +16,8 @@ export default function AnexarDocumentoForm({ categorias, enviando, onSubmit }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ficheiro) return alert("Selecione um ficheiro primeiro!");
-    if (!categoriaId) return alert("Selecione uma categoria!");
+    if (!ficheiro) return toast.error("Selecione um ficheiro primeiro!");
+    if (!categoriaId) return toast.error("Selecione uma categoria!");
 
     await onSubmit({ ficheiro, categoriaId, titulo: titulo || ficheiro.name, descricao });
 

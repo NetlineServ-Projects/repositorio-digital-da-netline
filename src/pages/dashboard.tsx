@@ -4,9 +4,12 @@ import Sidebar from "../components/sidebar";
 import HeaderDashboard from "../components/headerDashboard";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { fetchComToken } from "../utils/api";
+import { toast } from "sonner";
+import ModalConfirmacao from "../components/modalConfirmacaoprops";
 
 export default function Dashboard() {
   const [sidebarFechada, setSidebarFechada] = useState(false);
+  const [modalApagarContaAberto, setModalApagarContaAberto] = useState(false);
 
   const {
     usuario,
@@ -16,25 +19,30 @@ export default function Dashboard() {
     pendentesAprovacao,
     totalAprovados,
     documentosRecentes,
+    atividades,
     loading,
     erro,
     recarregar,
   } = useDashboardData();
 
-  const handleDeletarConta = async () => {
-    if (!window.confirm("Atenção: Tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta?")) return;
+  const confirmarDeletarConta = async () => {
+    setModalApagarContaAberto(false);
     try {
       await fetchComToken("/usuarios/me", { method: "DELETE" });
       localStorage.clear();
       sessionStorage.clear();
       window.location.href = "/";
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao excluir a conta.");
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir a conta.");
     }
   };
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center bg-slate-50"><p className="text-slate-600 font-medium animate-pulse">Carregando painel...</p></div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-slate-600 font-medium animate-pulse">Carregando painel...</p>
+      </div>
+    );
   }
 
   if (erro) {
@@ -50,15 +58,25 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar onDeletarConta={handleDeletarConta} fechada={sidebarFechada} />
+      <Sidebar onDeletarConta={() => setModalApagarContaAberto(true)} fechada={sidebarFechada} />
       <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
         <HeaderDashboard sidebarFechada={sidebarFechada} setSidebarFechada={setSidebarFechada} usuario={usuario} />
         <main className="p-8 flex-1">
           <Outlet
-            context={{ totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes }}
+            context={{ totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes, atividades }}
           />
         </main>
       </div>
+
+      <ModalConfirmacao
+        aberto={modalApagarContaAberto}
+        titulo="Apagar Conta"
+        mensagem="Atenção: tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta? Esta ação não pode ser desfeita."
+        textoConfirmar="Apagar conta"
+        perigoso
+        onConfirmar={confirmarDeletarConta}
+        onCancelar={() => setModalApagarContaAberto(false)}
+      />
     </div>
   );
 }

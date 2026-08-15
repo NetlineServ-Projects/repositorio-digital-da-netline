@@ -9,6 +9,8 @@ import SistemaFichaTecnica from "../../components/sistemas/sistemaFichaTecnica";
 import AnexarDocumentoForm from "../../components/sistemas/anexarDocumentoForm";
 import DocumentosDoSistemaTabela from "../../components/sistemas/documentosDoSistemaTabela";
 import DocumentoModal from "../../components/documentoModal";
+import { toast } from "sonner";
+
 
 export default function SistemasPage() {
   const { sistemas, documentos, categorias, loading, criarSistema, anexarDocumento, editarDocumento, apagarDocumento } = useSistemasData();
@@ -28,7 +30,7 @@ export default function SistemasPage() {
       await criarSistema(dados);
       setCriandoSistema(false);
     } catch {
-      alert("Erro ao registar o sistema.");
+      toast.error("Erro ao registar o sistema.");
     } finally {
       setSalvando(false);
     }
@@ -46,7 +48,7 @@ export default function SistemasPage() {
       formData.append("descricao", dados.descricao);
       await anexarDocumento(formData);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao anexar o documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao anexar o documento.");
     } finally {
       setEnviandoDoc(false);
     }
@@ -67,7 +69,7 @@ export default function SistemasPage() {
     try {
       await apagarDocumento(id);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao apagar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar documento.");
     }
   };
 

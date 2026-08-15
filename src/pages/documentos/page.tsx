@@ -1,53 +1,30 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useDocumentosData } from "../../hooks/useDocumentosData";
 import SearchInput from "../../components/searchInput";
 import ViewToggle from "../../components/viewToggle";
 import DocumentoRow from "../../components/documentoRow";
 import DocumentoCard from "../../components/documentoCard";
-import DocumentoModal from "../../components/documentoModal";
+import ModalConfirmacao from "../../components/modalConfirmacaoprops";
 import { IconVer } from "../../components/icons";
-import { obterUrlFicheiro } from "../../utils/documentos";
-import { API_URL } from "../../utils/api";
-import type { Documento } from "../../types/documento";
+import { toast } from "sonner";
 
 export default function DocumentosPage() {
-  const { documentos, categorias, loading, erro, recarregar, criarDocumento, editarDocumento, apagarDocumento } = useDocumentosData();
+  const { documentos, categorias, loading, erro, recarregar, apagarDocumento } = useDocumentosData();
 
   const [busca, setBusca] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
   const [modoExibicao, setModoExibicao] = useState<"tabela" | "cards">("tabela");
-  const [modalAberto, setModalAberto] = useState(false);
-  const [documentoEmEdicao, setDocumentoEmEdicao] = useState<Documento | null>(null);
+  const [documentoParaApagar, setDocumentoParaApagar] = useState<number | null>(null);
 
-  const abrirCriar = () => {
-    setDocumentoEmEdicao(null);
-    setModalAberto(true);
-  };
-
-  const abrirEditar = (doc: Documento) => {
-    setDocumentoEmEdicao(doc);
-    setModalAberto(true);
-  };
-
-  const handleSalvar = async (dados: { titulo: string; descricao: string; categoriaId: string; ficheiro?: File }) => {
-    if (documentoEmEdicao) {
-      await editarDocumento(documentoEmEdicao.id, { titulo: dados.titulo, descricao: dados.descricao, categoriaId: dados.categoriaId });
-    } else {
-      const formData = new FormData();
-      formData.append("titulo", dados.titulo);
-      formData.append("descricao", dados.descricao);
-      formData.append("categoriaId", dados.categoriaId);
-      if (dados.ficheiro) formData.append("ficheiro", dados.ficheiro);
-      await criarDocumento(formData);
-    }
-  };
-
-  const handleApagar = async (id: number) => {
-    if (!window.confirm("Tem a certeza que deseja apagar este documento?")) return;
+  const confirmarApagar = async () => {
+    if (documentoParaApagar === null) return;
+    const id = documentoParaApagar;
+    setDocumentoParaApagar(null);
     try {
       await apagarDocumento(id);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao apagar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao apagar documento.");
     }
   };
 
@@ -81,9 +58,9 @@ export default function DocumentosPage() {
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">Documentos</h1>
           <p className="text-sm text-blue-100/80 mt-1">Consulte e gira os documentos publicados</p>
         </div>
-        <button onClick={abrirCriar} className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto">
+        <Link to="/dashboard/documentos/new" className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto">
           + Novo Documento
-        </button>
+        </Link>
       </div>
 
       <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -121,11 +98,13 @@ export default function DocumentosPage() {
                       doc={doc}
                       acoes={
                         <>
-                          <a href={obterUrlFicheiro(doc.caminho, API_URL)} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60" title="Ver documento">
+                          <Link to={`/dashboard/documentos/${doc.id}`} className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60" title="Ver documento">
                             <IconVer />
-                          </a>
-                          <button onClick={() => abrirEditar(doc)} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100">Editar</button>
-                          <button onClick={() => handleApagar(doc.id)} className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors">Apagar</button>
+                          </Link>
+                          <Link to={`/dashboard/documentos/${doc.id}/editar`} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100">
+                            Editar
+                          </Link>
+                          <button onClick={() => setDocumentoParaApagar(doc.id)} className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors">Apagar</button>
                         </>
                       }
                     />
@@ -146,11 +125,13 @@ export default function DocumentosPage() {
                 doc={doc}
                 acoes={
                   <>
-                    <a href={obterUrlFicheiro(doc.caminho, API_URL)} target="_blank" rel="noopener noreferrer" className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60" title="Ver">
+                    <Link to={`/dashboard/documentos/${doc.id}`} className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60" title="Ver">
                       <IconVer />
-                    </a>
-                    <button onClick={() => abrirEditar(doc)} className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100">Editar</button>
-                    <button onClick={() => handleApagar(doc.id)} className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60">Apagar</button>
+                    </Link>
+                    <Link to={`/dashboard/documentos/${doc.id}/editar`} className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100">
+                      Editar
+                    </Link>
+                    <button onClick={() => setDocumentoParaApagar(doc.id)} className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60">Apagar</button>
                   </>
                 }
               />
@@ -161,12 +142,14 @@ export default function DocumentosPage() {
         </div>
       )}
 
-      <DocumentoModal
-        aberto={modalAberto}
-        documento={documentoEmEdicao}
-        categorias={categorias}
-        onSalvar={handleSalvar}
-        onFechar={() => setModalAberto(false)}
+      <ModalConfirmacao
+        aberto={documentoParaApagar !== null}
+        titulo="Apagar documento"
+        mensagem="Tem a certeza que deseja apagar este documento? Esta ação não pode ser desfeita."
+        textoConfirmar="Apagar"
+        perigoso
+        onConfirmar={confirmarApagar}
+        onCancelar={() => setDocumentoParaApagar(null)}
       />
     </div>
   );

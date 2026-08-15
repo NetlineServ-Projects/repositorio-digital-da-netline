@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { IconVoltar } from "../icons";
+import { toast } from "sonner";
 
 interface SistemaFormularioProps {
   salvando: boolean;
@@ -65,7 +66,7 @@ export default function SistemaFormulario({ salvando, onCancelar, onSubmit }: Si
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim()) return alert("O nome do sistema é obrigatório!");
+    if (!nome.trim()) return toast.error("O nome do sistema é obrigatório!");
 
     await onSubmit({
       nome,

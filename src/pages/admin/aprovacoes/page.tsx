@@ -6,7 +6,8 @@ import SearchInput from "../../../components/searchInput";
 import ViewToggle from "../../../components/viewToggle";
 import DocumentoRow from "../../../components/documentoRow";
 import DocumentoCard from "../../../components/documentoCard";
-import ModalMotivoRejeicao from "../../../components/modalMotivoRejeicao";
+import ModalMotivoRejeicao from "../../../components/modalMotivoRejeicao"
+import { toast } from "sonner";
 
 export default function AprovacoesPage() {
   const { documentos, categorias, loading, erro, recarregar, alterarEstado } =
@@ -24,7 +25,7 @@ export default function AprovacoesPage() {
     try {
       await alterarEstado(id, "APROVADO");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao aprovar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao aprovar documento.");
     }
   };
 
@@ -33,7 +34,7 @@ export default function AprovacoesPage() {
     try {
       await alterarEstado(idParaRejeitar, "REJEITADO", motivo || undefined);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao rejeitar documento.");
+      toast.error(err instanceof Error ? err.message : "Erro ao rejeitar documento.");
     } finally {
       setIdParaRejeitar(null);
     }
