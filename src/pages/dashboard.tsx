@@ -58,12 +58,12 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar onDeletarConta={() => setModalApagarContaAberto(true)} fechada={sidebarFechada} />
+      <Sidebar fechada={sidebarFechada} />
       <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
-        <HeaderDashboard sidebarFechada={sidebarFechada} setSidebarFechada={setSidebarFechada} usuario={usuario} />
+        <HeaderDashboard sidebarFechada={sidebarFechada} setSidebarFechada={setSidebarFechada} usuario={usuario} onDeletarConta={()=> setModalApagarContaAberto(true)} />
         <main className="p-8 flex-1">
           <Outlet
-            context={{ totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes, atividades }}
+            context={{ usuario,totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes, atividades }}
           />
         </main>
       </div>

@@ -5,13 +5,15 @@ import ViewToggle from "../../components/viewToggle";
 import DocumentoRow from "../../components/documentoRow";
 import DocumentoCard from "../../components/documentoCard";
 import DocumentoModal from "../../components/documentoModal";
-import { IconVer, IconPasta,IconSetaDireita } from "../../components/icons";
+import { IconVer, IconPasta, IconSetaDireita } from "../../components/icons";
 import { obterUrlFicheiro } from "../../utils/documentos";
 import { API_URL } from "../../utils/api";
 import type { Documento, Categoria } from "../../types/documento";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function CategoriasPage() {
+  const navigate = useNavigate();
   const {
     documentos,
     categorias,
@@ -33,10 +35,8 @@ export default function CategoriasPage() {
   const [documentoEmEdicao, setDocumentoEmEdicao] = useState<Documento | null>(
     null,
   );
-
   const abrirCriar = () => {
-    setDocumentoEmEdicao(null);
-    setModalAberto(true);
+    navigate(`/dashboard/documentos/new?categoria=${categoriaAtiva?.id}`);
   };
 
   const abrirEditar = (doc: Documento) => {
@@ -72,7 +72,9 @@ export default function CategoriasPage() {
     try {
       await apagarDocumento(id);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao apagar documento.");
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao apagar documento.",
+      );
     }
   };
 
@@ -187,7 +189,7 @@ export default function CategoriasPage() {
                 {/* Rodapé com indicador de navegação */}
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-blue-600 transition-colors">
                   <span>Aceder categoria</span>
-                  <IconSetaDireita/>
+                  <IconSetaDireita />
                 </div>
               </button>
             );

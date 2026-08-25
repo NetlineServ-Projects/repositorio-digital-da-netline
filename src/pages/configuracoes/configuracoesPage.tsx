@@ -1,38 +1,45 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import type { FormEvent } from "react";
+import { fetchComToken } from "../../utils/api";
 
-export default function Configuracoes() {
-  // Estado simples para as configurações leves
+export default function ConfiguracoesPage() {
+  // Estado das configurações (agora vindo do backend, não do localStorage)
   const [darkTheme, setDarkTheme] = useState<boolean>(false);
   const [notificacoesEmail, setNotificacoesEmail] = useState<boolean>(true);
   const [idioma, setIdioma] = useState<string>("pt");
 
+  const [loading, setLoading] = useState(true);
+  const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
 
-  // Carregar do localStorage ao iniciar
+  // Carregar preferências do usuário autenticado
   useEffect(() => {
-    const temaGuardado = localStorage.getItem("tema_escuro");
-    if (temaGuardado !== null) {
-      const eEscuro = JSON.parse(temaGuardado);
-      setDarkTheme(eEscuro);
-    }
+    const carregarPreferencias = async () => {
+      try {
+        const usuario = await fetchComToken("/auth/me");
+        setDarkTheme(Boolean(usuario.temaEscuro));
+        setNotificacoesEmail(usuario.notificacoesEmail ?? true);
+        setIdioma(usuario.idioma || "pt");
 
-    const notifGuardada = localStorage.getItem("notificacoes_email");
-    if (notifGuardada !== null) {
-      setNotificacoesEmail(JSON.parse(notifGuardada));
-    }
+        if (usuario.temaEscuro) {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (err) {
+        setErro(err instanceof Error ? err.message : "Não foi possível carregar as configurações.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const idiomaGuardado = localStorage.getItem("idioma_sistema");
-    if (idiomaGuardado) {
-      setIdioma(idiomaGuardado);
-    }
+    carregarPreferencias();
   }, []);
 
-  // Alternar o tema visual
+  // Alternar o tema visual (só o estado local + classe no <html>; a persistência acontece no Salvar)
   const handleToggleTema = () => {
     const novoEstado = !darkTheme;
     setDarkTheme(novoEstado);
-    
-    // Opcional: Se usares a classe 'dark' no HTML/Tailwind para o modo escuro
+
     if (novoEstado) {
       document.documentElement.classList.add("dark");
     } else {
@@ -40,21 +47,41 @@ export default function Configuracoes() {
     }
   };
 
-  // Guardar todas as configurações de uma vez
-  const salvarConfiguracoes = (e: React.FormEvent) => {
+  // Guardar todas as configurações de uma vez, agora via API
+  const salvarConfiguracoes = async (e: FormEvent) => {
     e.preventDefault();
+    setSalvando(true);
+    setErro(null);
 
-    localStorage.setItem("tema_escuro", JSON.stringify(darkTheme));
-    localStorage.setItem("notificacoes_email", JSON.stringify(notificacoesEmail));
-    localStorage.setItem("idioma_sistema", idioma);
+    try {
+      await fetchComToken("/usuarios/me/preferencias", {
+        method: "PATCH",
+        body: JSON.stringify({
+          temaEscuro: darkTheme,
+          notificacoesEmail,
+          idioma,
+        }),
+      });
 
-    setMensagem("Configurações salvas!");
-    setTimeout(() => setMensagem(null), 2500);
+      setMensagem("Configurações salvas!");
+      setTimeout(() => setMensagem(null), 2500);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Não foi possível salvar as configurações.");
+    } finally {
+      setSalvando(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
+        <p className="text-slate-500 text-sm animate-pulse">A carregar configurações...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
-      {/* Cabeçalho */}
       <div className="border-b border-slate-100 pb-4 mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-slate-800">Configurações</h2>
@@ -69,6 +96,12 @@ export default function Configuracoes() {
           </span>
         )}
       </div>
+
+      {erro && (
+        <div className="mb-4 text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-lg">
+          {erro}
+        </div>
+      )}
 
       <form onSubmit={salvarConfiguracoes} className="space-y-6">
         {/* 1. Modo Escuro / Claro */}
@@ -134,9 +167,10 @@ export default function Configuracoes() {
         <div className="pt-4 border-t border-slate-100 flex justify-end">
           <button
             type="submit"
-            className="px-5 py-2 bg-[#062869] hover:bg-blue-900 text-white font-semibold rounded-lg text-xs transition-colors shadow-sm"
+            disabled={salvando}
+            className="px-5 py-2 bg-[#062869] hover:bg-blue-900 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-xs transition-colors shadow-sm"
           >
-            Salvar
+            {salvando ? "A salvar..." : "Salvar"}
           </button>
         </div>
       </form>

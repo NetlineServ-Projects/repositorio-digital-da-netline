@@ -16,4 +16,7 @@ export const API_ENDPOINTS = {
   // Categorias
   CATEGORIAS: "/categorias",
 
+  // Sistemas
+  SISTEMAS: "/sistemas",
+  SISTEMA_BY_ID: (id: number | string) => `/sistemas/${id}`,
 };

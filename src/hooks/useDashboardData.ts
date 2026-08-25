@@ -4,6 +4,7 @@ import { fetchComToken } from "../utils/api";
 export interface UsuarioData {
   nome: string;
   email?: string;
+  perfil?: string;
 }
 
 export interface Documento {
@@ -63,10 +64,13 @@ export function useDashboardData() {
   }, [buscarDados]);
 
   // Cálculos derivados
-  const totalDocumentos = documentos.length;
+  const ehAdmin = usuario?.perfil === "ADMIN";
+  const documentosVisiveis = ehAdmin ? documentos : documentos.filter((d) => d.estado === "APROVADO");
+
+  const totalDocumentos = documentosVisiveis.length;
   const pendentesAprovacao = documentos.filter((d) => d.estado === "PENDENTE").length;
   const totalAprovados = documentos.filter((d) => d.estado === "APROVADO").length;
-  const documentosRecentes = [...documentos].reverse().slice(0, 5);
+  const documentosRecentes = [...documentosVisiveis].reverse().slice(0, 5);
 
   return {
     usuario,

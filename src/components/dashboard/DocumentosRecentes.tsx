@@ -3,6 +3,7 @@ import type { Documento } from "../../hooks/useDashboardData";
 interface DocumentosRecentesProps {
   documentos: Documento[];
   onVerTodos: () => void;
+  ehAdmin: boolean;
 }
 
 const rotuloEstado: Record<string, string> = {
@@ -17,7 +18,7 @@ const corEstado: Record<string, string> = {
   REJEITADO: "bg-red-100 text-red-700",
 };
 
-export default function DocumentosRecentes({ documentos, onVerTodos }: DocumentosRecentesProps) {
+export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: DocumentosRecentesProps) {
   return (
     <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
       <div className="flex justify-between items-center mb-4">
@@ -34,7 +35,7 @@ export default function DocumentosRecentes({ documentos, onVerTodos }: Documento
               <th className="py-3 px-4 font-semibold">Nome</th>
               <th className="py-3 px-4 font-semibold">Categoria</th>
               <th className="py-3 px-4 font-semibold">Data</th>
-              <th className="py-3 px-4 font-semibold">Status</th>
+              {ehAdmin && <th className="py-3 px-4 font-semibold">Status</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -50,17 +51,19 @@ export default function DocumentosRecentes({ documentos, onVerTodos }: Documento
                     <td className="py-3 px-4 text-xs">
                       {doc.dataSubmissao ? new Date(doc.dataSubmissao).toLocaleDateString("pt-PT") : "-"}
                     </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${corEstado[estado]}`}>
-                        {rotuloEstado[estado]}
-                      </span>
-                    </td>
+                    {ehAdmin && (
+                      <td className="py-3 px-4">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${corEstado[estado]}`}>
+                          {rotuloEstado[estado]}
+                        </span>
+                      </td>
+                    )}
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={4} className="text-center py-6 text-slate-400 text-xs">
+                <td colSpan={ehAdmin ? 4 : 3} className="text-center py-6 text-slate-400 text-xs">
                   Nenhum documento registado no repositório.
                 </td>
               </tr>

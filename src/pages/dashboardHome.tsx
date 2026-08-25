@@ -1,5 +1,5 @@
 import { useOutletContext, useNavigate } from "react-router-dom";
-import MetricsGrid from "../components/dashboard/metricsGrid"; // ajusta ao import real que tinhas
+import MetricsGrid from "../components/dashboard/metricsGrid";
 import HeroBanner from "../components/dashboard/heroBanner";
 import AcoesRapidas from "../components/dashboard/acoesRapidas";
 import DocumentosRecentes from "../components/dashboard/documentosRecentes";
@@ -7,6 +7,8 @@ import AtividadeRecente from "../components/dashboard/atividadeRecente";
 import type { Atividade } from "../components/dashboard/atividadeRecente";
 
 interface DashboardContext {
+  usuario: { nome: string; perfil?: string } | null;
+  ehAdmin: boolean;
   totalCategorias: number;
   totalSistemas: number;
   totalDocumentos: number;
@@ -18,7 +20,7 @@ interface DashboardContext {
 
 export default function DashboardHome() {
   const {
-    totalCategorias, totalSistemas, totalDocumentos,
+    usuario, ehAdmin, totalCategorias, totalSistemas, totalDocumentos,
     pendentesAprovacao, totalAprovados, documentosRecentes,
     atividades,
   } = useOutletContext<DashboardContext>();
@@ -33,11 +35,12 @@ export default function DashboardHome() {
         totalAprovados={totalAprovados}
         totalSistemas={totalSistemas}
         totalCategorias={totalCategorias}
+        ehAdmin={ehAdmin}
       />
-      <AcoesRapidas onNavegar={(aba: string) => navigate(`/dashboard/${aba}`)} />
+      <AcoesRapidas ehAdmin={ehAdmin} onNavegar={(aba: string) => navigate(`/dashboard/${aba}`)} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DocumentosRecentes documentos={documentosRecentes} onVerTodos={() => navigate("/dashboard/documentos")} />
-        <AtividadeRecente atividades={atividades} />
+        <DocumentosRecentes documentos={documentosRecentes} onVerTodos={() => navigate("/dashboard/documentos")} ehAdmin={ehAdmin} />
+        <AtividadeRecente atividades={ehAdmin ? atividades : atividades.filter((a) => a.usuario === usuario?.nome)} />
       </div>
     </div>
   );

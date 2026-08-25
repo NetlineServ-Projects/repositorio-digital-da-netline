@@ -3,20 +3,20 @@ import { useSistemasData, type Sistema } from "../../hooks/useSistemasData";
 import type { Documento } from "../../types/documento";
 import SistemasHeader from "../../components/sistemas/sistemasHeader";
 import SistemasGrid from "../../components/sistemas/sistemasGrid";
-import SistemaFormulario from "../../components/sistemas/sistemaFormulario";
+import SistemaFormulario from "./formulario/page";
 import SistemaDetalheHeader from "../../components/sistemas/sistemaDetalheHeader";
 import SistemaFichaTecnica from "../../components/sistemas/sistemaFichaTecnica";
 import AnexarDocumentoForm from "../../components/sistemas/anexarDocumentoForm";
 import DocumentosDoSistemaTabela from "../../components/sistemas/documentosDoSistemaTabela";
 import DocumentoModal from "../../components/documentoModal";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-
 export default function SistemasPage() {
-  const { sistemas, documentos, categorias, loading, criarSistema, anexarDocumento, editarDocumento, apagarDocumento } = useSistemasData();
-
+  const { sistemas, documentos, categorias, loading, criarSistema, editarSistema, anexarDocumento, editarDocumento, apagarDocumento } = useSistemasData();
+  const navigate = useNavigate();
   const [sistemaAtivo, setSistemaAtivo] = useState<Sistema | null>(null);
-  const [criandoSistema, setCriandoSistema] = useState(false);
+  const [formularioAberto, setFormularioAberto] = useState<"novo" | Sistema | null>(null);
   const [salvando, setSalvando] = useState(false);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
   const [busca, setBusca] = useState("");
@@ -24,13 +24,19 @@ export default function SistemasPage() {
   const [modalEditarAberto, setModalEditarAberto] = useState(false);
   const [documentoEmEdicao, setDocumentoEmEdicao] = useState<Documento | null>(null);
 
-  const handleCriarSistema = async (dados: Record<string, unknown>) => {
+  const handleSalvarSistema = async (dados: Record<string, unknown>) => {
     setSalvando(true);
     try {
-      await criarSistema(dados);
-      setCriandoSistema(false);
+      if (formularioAberto && formularioAberto !== "novo") {
+        await editarSistema(formularioAberto.id, dados);
+        // mantém o sistemaAtivo atualizado após editar, sem precisar voltar à lista
+        setSistemaAtivo({ ...formularioAberto, ...dados } as Sistema);
+      } else {
+        await criarSistema(dados);
+      }
+      setFormularioAberto(null);
     } catch {
-      toast.error("Erro ao registar o sistema.");
+      toast.error(formularioAberto !== "novo" ? "Erro ao guardar as alterações." : "Erro ao registar o sistema.");
     } finally {
       setSalvando(false);
     }
@@ -91,14 +97,21 @@ export default function SistemasPage() {
     return <div className="flex justify-center items-center p-12"><p className="text-slate-500 text-sm animate-pulse">A carregar sistemas...</p></div>;
   }
 
-  if (criandoSistema) {
-    return <SistemaFormulario salvando={salvando} onCancelar={() => setCriandoSistema(false)} onSubmit={handleCriarSistema} />;
+  if (formularioAberto) {
+    return (
+      <SistemaFormulario
+        sistemaExistente={formularioAberto === "novo" ? null : formularioAberto}
+        salvando={salvando}
+        onCancelar={() => setFormularioAberto(null)}
+        onSubmit={handleSalvarSistema}
+      />
+    );
   }
 
   if (!sistemaAtivo) {
     return (
       <div className="space-y-6">
-        <SistemasHeader total={sistemas.length} busca={busca} onBuscaChange={setBusca} onNovoSistema={() => setCriandoSistema(true)} />
+        <SistemasHeader total={sistemas.length} busca={busca} onBuscaChange={setBusca} onNovoSistema={() => setFormularioAberto("novo")} />
         <SistemasGrid sistemas={sistemasFiltrados} documentos={documentos} onSelecionar={(sis) => { setSistemaAtivo(sis); setBuscaDoc(""); }} />
       </div>
     );
@@ -108,7 +121,7 @@ export default function SistemasPage() {
 
   return (
     <div className="space-y-6">
-      <SistemaDetalheHeader sistema={sistema} onVoltar={() => setSistemaAtivo(null)} />
+      <SistemaDetalheHeader sistema={sistema} onVoltar={() => setSistemaAtivo(null)} onEditar={() => navigate(`/dashboard/sistemas/${sistema.id}/editar`)} />
       <SistemaFichaTecnica sistema={sistemaAtivo} />
       <AnexarDocumentoForm categorias={categorias.filter((c) => !c.sensivel)} enviando={enviandoDoc} onSubmit={handleAnexar} />
       <DocumentosDoSistemaTabela

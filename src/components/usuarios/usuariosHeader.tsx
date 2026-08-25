@@ -8,7 +8,7 @@ interface UsuariosHeaderProps {
 
 export default function UsuariosHeader({ total, onNovoUsuario }: UsuariosHeaderProps) {
   return (
-    <div className="bg-[#1B2A4A] p-8 rounded-2xl shadow-sm text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="bg-[#18357a] p-8 rounded-2xl shadow-sm text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
         <span className="text-xs uppercase font-semibold text-blue-200/80 tracking-widest block mb-1">GESTÃO DE ACESSOS</span>
         <h2 className="text-3xl font-bold">Usuários</h2>

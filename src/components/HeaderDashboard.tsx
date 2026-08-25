@@ -1,8 +1,12 @@
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { IconUsuario, IconLogout} from "./icons";
 
 interface HeaderDashboardProps {
   sidebarFechada: boolean;
   setSidebarFechada: (fechada: boolean) => void;
-  usuario?: { nome: string; email?: string } | null;
+  usuario?: { nome: string; email?: string; perfil?: string } | null;
+  onDeletarConta?: () => void;
 }
 
 export default function HeaderDashboard({
@@ -10,7 +14,10 @@ export default function HeaderDashboard({
   setSidebarFechada,
   usuario,
 }: HeaderDashboardProps) {
-  // Pega as iniciais do nome para o avatar
+  const navigate = useNavigate();
+  const [menuAberto, setMenuAberto] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const nomeUsuario = usuario?.nome || "Usuário";
   const iniciais = nomeUsuario
     .split(" ")
@@ -18,6 +25,22 @@ export default function HeaderDashboard({
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  useEffect(() => {
+    function aoClicarFora(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", aoClicarFora);
+    return () => document.removeEventListener("mousedown", aoClicarFora);
+  }, []);
+
+  const lidarComLogout = () => {
+    localStorage.removeItem("token_sistema");
+    localStorage.removeItem("usuario_logado");
+    window.location.href = "./";
+  };
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
@@ -42,24 +65,63 @@ export default function HeaderDashboard({
           </svg>
         </button>
 
-        {/* Campo com pill-shape parecido com a imagem de referência */}
         <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium border border-slate-200">
           <span className="w-2 h-2 rounded-full bg-blue-600"></span>
           <span>Repositório Interno da Netline</span>
         </div>
       </div>
 
-      {/* Canto Direito: Notificações + Perfil do Usuário */}
+      {/* Canto Direito: Avatar + Dropdown do Usuário */}
       <div className="flex items-center gap-4">
-        
-        {/* Avatar e Nome do Usuário */}
-        <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-          <div className="w-8 h-8 rounded-full bg-blue-900 text-white font-semibold flex items-center justify-center text-xs shadow-xs">
-            {iniciais}
-          </div>
-          <span className="text-sm font-medium text-slate-700 hidden sm:inline">
-            {nomeUsuario}
-          </span>
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuAberto((v) => !v)}
+            className="flex items-center gap-3 border-l border-slate-200 pl-4 cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-full bg-blue-900 text-white font-semibold flex items-center justify-center text-xs shadow-xs">
+              {iniciais}
+            </div>
+            <span className="text-sm font-medium text-slate-700 hidden sm:inline">
+              {nomeUsuario}
+            </span>
+          </button>
+
+          {menuAberto && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-2 z-20">
+              <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-100">
+                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-900 font-semibold flex items-center justify-center text-sm shrink-0">
+                  {iniciais}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 truncate">{nomeUsuario}</p>
+                  {usuario?.email && (
+                    <p className="text-xs text-slate-400 truncate">{usuario.email}</p>
+                  )}
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                    {usuario?.perfil === "ADMIN" ? "Admin" : "Usuário"}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => { setMenuAberto(false); navigate("/dashboard/perfil"); }}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors text-left cursor-pointer"
+              >
+                <IconUsuario className="w-4 h-4" />
+                Meu Perfil
+              </button>
+
+              <button
+                onClick={lidarComLogout}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors text-left cursor-pointer"
+              >
+                <IconLogout className="w-4 h-4" />
+                Sair da Conta
+              </button>
+
+              
+            </div>
+          )}
         </div>
       </div>
     </header>

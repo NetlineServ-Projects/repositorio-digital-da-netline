@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import { useDocumentosData } from "../../hooks/useDocumentosData";
 import SearchInput from "../../components/searchInput";
 import ViewToggle from "../../components/viewToggle";
@@ -9,8 +9,14 @@ import ModalConfirmacao from "../../components/modalConfirmacaoprops";
 import { IconVer } from "../../components/icons";
 import { toast } from "sonner";
 
+interface DashboardContext {
+  usuario: { nome: string; perfil?: string } | null;
+}
+
 export default function DocumentosPage() {
   const { documentos, categorias, loading, erro, recarregar, apagarDocumento } = useDocumentosData();
+  const { usuario } = useOutletContext<DashboardContext>();
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   const [busca, setBusca] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState("Todas");
@@ -58,9 +64,11 @@ export default function DocumentosPage() {
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">Documentos</h1>
           <p className="text-sm text-blue-100/80 mt-1">Consulte e gira os documentos publicados</p>
         </div>
-        <Link to="/dashboard/documentos/new" className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto">
-          + Novo Documento
-        </Link>
+        {ehAdmin && (
+          <Link to="/dashboard/documentos/new" className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto">
+            + Novo Documento
+          </Link>
+        )}
       </div>
 
       <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -101,10 +109,14 @@ export default function DocumentosPage() {
                           <Link to={`/dashboard/documentos/${doc.id}`} className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60" title="Ver documento">
                             <IconVer />
                           </Link>
-                          <Link to={`/dashboard/documentos/${doc.id}/editar`} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100">
-                            Editar
-                          </Link>
-                          <button onClick={() => setDocumentoParaApagar(doc.id)} className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors">Apagar</button>
+                          {ehAdmin && (
+                            <>
+                              <Link to={`/dashboard/documentos/${doc.id}/editar`} className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100">
+                                Editar
+                              </Link>
+                              <button onClick={() => setDocumentoParaApagar(doc.id)} className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors">Apagar</button>
+                            </>
+                          )}
                         </>
                       }
                     />
@@ -128,10 +140,14 @@ export default function DocumentosPage() {
                     <Link to={`/dashboard/documentos/${doc.id}`} className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60" title="Ver">
                       <IconVer />
                     </Link>
-                    <Link to={`/dashboard/documentos/${doc.id}/editar`} className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100">
-                      Editar
-                    </Link>
-                    <button onClick={() => setDocumentoParaApagar(doc.id)} className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60">Apagar</button>
+                    {ehAdmin && (
+                      <>
+                        <Link to={`/dashboard/documentos/${doc.id}/editar`} className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100">
+                          Editar
+                        </Link>
+                        <button onClick={() => setDocumentoParaApagar(doc.id)} className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60">Apagar</button>
+                      </>
+                    )}
                   </>
                 }
               />

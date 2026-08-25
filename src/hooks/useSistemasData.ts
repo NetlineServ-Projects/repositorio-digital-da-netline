@@ -56,6 +56,10 @@ export function useSistemasData() {
     await fetchComToken("/sistemas", { method: "POST", body: JSON.stringify(dados) });
     await fetchDados();
   };
+  const editarSistema = async (id: string | number, dados: Record<string, unknown>) => {
+  await fetchComToken(`/sistemas/${id}`, { method: "PATCH", body: JSON.stringify(dados) });
+  await fetchDados();
+};
 
   const anexarDocumento = async (formData: FormData) => {
     await fetchComToken("/documentos", { method: "POST", body: formData });
@@ -72,5 +76,5 @@ export function useSistemasData() {
     await fetchDados();
   };
 
-  return { sistemas, documentos, categorias, loading, criarSistema, anexarDocumento, editarDocumento, apagarDocumento, recarregar: fetchDados };
+  return { sistemas, documentos, categorias, loading, criarSistema ,editarSistema,anexarDocumento, editarDocumento, apagarDocumento, recarregar: fetchDados };
 }
