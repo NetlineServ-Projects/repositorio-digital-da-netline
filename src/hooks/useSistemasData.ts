@@ -17,11 +17,23 @@ export interface Sistema {
   tecnologiasFrontend?: string[];
   tecnologiasBackend?: string[];
   tecnologiasInfraestrutura?: string[];
+  tecnologias?: string[]; // calculado: junção de frontend + backend + infraestrutura
   repositorioUrl?: string;
   urlProducao?: string;
   responsavelTecnico?: string;
   versaoAtual?: string;
   totalDocumentos?: number;
+}
+
+function comTecnologiasCombinadas(sis: Sistema): Sistema {
+  return {
+    ...sis,
+    tecnologias: [
+      ...(sis.tecnologiasFrontend || []),
+      ...(sis.tecnologiasBackend || []),
+      ...(sis.tecnologiasInfraestrutura || []),
+    ],
+  };
 }
 
 export function useSistemasData() {
@@ -38,7 +50,7 @@ export function useSistemasData() {
         fetchComToken("/documentos"),
         fetchComToken("/categorias"),
       ]);
-      setSistemas(Array.isArray(sist) ? sist : []);
+      setSistemas(Array.isArray(sist) ? sist.map(comTecnologiasCombinadas) : []);
       setDocumentos(Array.isArray(docs) ? docs : []);
       setCategorias(Array.isArray(cats) ? cats : []);
     } catch (error) {
@@ -56,10 +68,11 @@ export function useSistemasData() {
     await fetchComToken("/sistemas", { method: "POST", body: JSON.stringify(dados) });
     await fetchDados();
   };
+
   const editarSistema = async (id: string | number, dados: Record<string, unknown>) => {
-  await fetchComToken(`/sistemas/${id}`, { method: "PATCH", body: JSON.stringify(dados) });
-  await fetchDados();
-};
+    await fetchComToken(`/sistemas/${id}`, { method: "PATCH", body: JSON.stringify(dados) });
+    await fetchDados();
+  };
 
   const anexarDocumento = async (formData: FormData) => {
     await fetchComToken("/documentos", { method: "POST", body: formData });
@@ -76,5 +89,5 @@ export function useSistemasData() {
     await fetchDados();
   };
 
-  return { sistemas, documentos, categorias, loading, criarSistema ,editarSistema,anexarDocumento, editarDocumento, apagarDocumento, recarregar: fetchDados };
+  return { sistemas, documentos, categorias, loading, criarSistema, editarSistema, anexarDocumento, editarDocumento, apagarDocumento, recarregar: fetchDados };
 }

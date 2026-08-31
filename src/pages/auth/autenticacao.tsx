@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useUsuario } from "../../components/usuarioContext";
 import Button from "../../components/button";
 import Fundo1 from "../../assets/fundo.jpg";
@@ -11,6 +12,7 @@ import {
 import { API_BASE } from "../../utils/api";
 
 export default function Autenticacao() {
+  const { t, i18n } = useTranslation();
   const { fazerLogin } = useUsuario();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -18,34 +20,38 @@ export default function Autenticacao() {
   const [carregando, setCarregando] = useState(false);
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
- const entrar = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setErro("");
-  setCarregando(true);
+  const trocarIdioma = (novoIdioma: string) => {
+    i18n.changeLanguage(novoIdioma); // já persiste em localStorage["idioma"]
+  };
 
-  try {
-    const resposta = await fetch(`${API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, senha }),
-    });
+  const entrar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro("");
+    setCarregando(true);
 
-    const corpo = await resposta.json();
-    if (!resposta.ok) throw new Error(corpo?.mensagem || "E-mail ou senha incorretos");
+    try {
+      const resposta = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
 
-    const { token, user } = corpo.data;
+      const corpo = await resposta.json();
+      if (!resposta.ok) throw new Error(corpo?.mensagem || t("auth.erroCredenciais"));
 
-    localStorage.setItem("token_sistema", token);
-    localStorage.setItem("usuario_logado", JSON.stringify(user));
-    fazerLogin({ name: user.name || user.nome, perfil: user.perfil });
+      const { token, user } = corpo.data;
 
-    window.location.href = "/dashboard";
-  } catch (err: any) {
-    setErro(err.message || "Ocorreu um erro ao tentar entrar.");
-  } finally {
-    setCarregando(false);
-  }
-};
+      localStorage.setItem("token_sistema", token);
+      localStorage.setItem("usuario_logado", JSON.stringify(user));
+      fazerLogin({ name: user.name || user.nome, perfil: user.perfil });
+
+      window.location.href = "/dashboard";
+    } catch (err: any) {
+      setErro(err.message || t("auth.erroPadrao"));
+    } finally {
+      setCarregando(false);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen flex flex-col md:flex-row">
@@ -57,21 +63,41 @@ export default function Autenticacao() {
 
         <div className="relative z-10 text-center max-w-xl">
           <h2 className="text-sm font-semibold uppercase tracking-wider opacity-80 mb-2">
-            Netline Serv
+            {t("auth.marca")}
           </h2>
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
-            Ligar Pessoas, Partilhar Conhecimento.
+            {t("auth.heroTitulo")}
           </h1>
           <p className="text-lg opacity-90 leading-relaxed">
-            Bem-vindo ao Repositório Interno da Netline. Este é o seu portal
-            centralizado para aceder a documentos técnicos, recursos partilhados e
-            ferramentas exclusivas. Autentique-se para aceder ao sistema com
-            segurança.
+            {t("auth.heroTexto")}
           </p>
         </div>
       </div>
 
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-white p-8 md:p-12">
+      <div className="w-full md:w-1/2 flex items-center justify-center bg-white p-8 md:p-12 relative">
+        {/* Seletor de idioma */}
+        <div className="absolute top-6 right-6 flex items-center gap-1 text-xs font-semibold">
+          <button
+            type="button"
+            onClick={() => trocarIdioma("pt")}
+            className={`px-2 py-1 rounded-md transition-colors ${
+              i18n.language === "pt" ? "bg-blue-50 text-blue-700" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            PT
+          </button>
+          <span className="text-gray-300">|</span>
+          <button
+            type="button"
+            onClick={() => trocarIdioma("en")}
+            className={`px-2 py-1 rounded-md transition-colors ${
+              i18n.language === "en" ? "bg-blue-50 text-blue-700" : "text-gray-400 hover:text-gray-600"
+            }`}
+          >
+            EN
+          </button>
+        </div>
+
         <div className="w-full max-w-md p-10 bg-white border border-gray-100 rounded-2xl shadow-lg transition-all">
           <div className="flex flex-col items-center mb-8">
             <img
@@ -80,22 +106,22 @@ export default function Autenticacao() {
               className="h-16 w-auto object-contain mb-5 rounded-lg"
             />
             <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-700 mb-1">
-              Painel de Acesso
+              {t("auth.painelAcesso")}
             </h2>
             <h1 className="text-2xl font-bold text-gray-800">
-              Aceda à Sua Conta
+              {t("auth.acederConta")}
             </h1>
           </div>
 
           <form onSubmit={entrar} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                E-mail Profissional
+                {t("auth.emailLabel")}
               </label>
               <div className="relative flex items-center">
                 <input
                   type="email"
-                  placeholder="nome@netline.co.mz"
+                  placeholder={t("auth.emailPlaceholder")}
                   className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -107,7 +133,7 @@ export default function Autenticacao() {
 
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                Palavra-passe
+                {t("auth.senhaLabel")}
               </label>
               <div className="relative flex items-center">
                 <input
@@ -140,7 +166,7 @@ export default function Autenticacao() {
 
             <div className="pt-3">
               <Button
-                title={carregando ? "A processar..." : "Entrar"}
+                title={carregando ? t("auth.processando") : t("auth.entrar")}
                 type="submit"
                 disabled={carregando}
               />
@@ -148,7 +174,7 @@ export default function Autenticacao() {
           </form>
 
           <p className="text-xs text-center text-gray-400 mt-10">
-            © {new Date().getFullYear()} Netline.Serv,Lda. Todos os direitos reservados.
+            {t("auth.direitosReservados", { ano: new Date().getFullYear() })}
           </p>
         </div>
       </div>

@@ -1,0 +1,233 @@
+{
+  "configuracoes": {
+    "titulo": "Configurações do Sistema",
+    "subtitulo": "Gerencie as preferências de interface e notificações da sua conta.",
+    "preferencias": "PREFERÊNCIAS",
+    "aparencia": "Aparência da Plataforma",
+    "modoEscuro": "Modo Escuro ativado",
+    "modoClaro": "Modo Claro ativado (Padrão)",
+    "notificacoesEmail": "Notificações por E-mail",
+    "notificacoesEmailDesc": "Receber alertas no e-mail quando novos documentos forem adicionados",
+    "idioma": "Idioma da Plataforma",
+    "idiomaDesc": "Selecione o idioma de preferência",
+    "salvar": "Salvar Alterações",
+    "salvando": "A salvar...",
+    "salvoComSucesso": "Configurações salvas com sucesso!",
+    "erroCarregar": "Não foi possível carregar as configurações.",
+    "erroSalvar": "Não foi possível salvar as configurações.",
+    "carregando": "A carregar configurações..."
+  },
+
+  "documentos": {
+    "novoDocumento": "Novo Documento",
+    "guardar": "Guardar",
+    "aGuardar": "A guardar...",
+    "submeter": "Submeter Documento",
+    "aSubmeter": "A submeter...",
+    "publicadoComSucesso": "Documento publicado com sucesso.",
+    "submetidoParaAprovacao": "Documento submetido para aprovação.",
+    "avisoAprovacao": "O seu documento será enviado para aprovação de um administrador antes de ser publicado no repositório.",
+
+    "repositorio": "Repositório",
+    "titulo": "Documentos",
+    "subtitulo": "Consulte e gira os documentos publicados",
+    "botaoNovo": "+ Novo Documento",
+    "pesquisarPlaceholder": "Pesquisar por documento ou autor...",
+    "categoria": "Categoria",
+    "todasCategorias": "Todas as Categorias",
+    "carregando": "A carregar documentos...",
+    "nenhumDocumento": "Nenhum documento encontrado.",
+    "tabela": {
+      "documento": "Documento",
+      "categoria": "Categoria",
+      "submetidoPor": "Submetido Por",
+      "data": "Data"
+    },
+
+    "form": {
+      "voltar": "Voltar aos Documentos",
+      "tituloLabel": "Título",
+      "tituloPlaceholder": "Ex: Guia de Procedimentos Externa",
+      "tituloObrigatorio": "Por favor, insira o título do documento.",
+      "descricaoLabel": "Descrição",
+      "descricaoPlaceholder": "Breve resumo sobre o conteúdo do documento...",
+      "categoriaLabel": "Categoria",
+      "semCategoria": "Sem Categoria",
+      "ficheiroLabel": "Ficheiro",
+      "ficheiroObrigatorio": "Por favor, selecione um ficheiro para carregar.",
+      "clicarOuArrastar": "Clique aqui para escolher ou arraste o ficheiro",
+      "formatosAceites": "PDF, PNG, JPG, DOCX até 50MB",
+      "erroCriar": "Erro ao criar documento.",
+      "cancelar": "Cancelar"
+    },
+
+    "detalhes": {
+     "carregando": "A carregar documento...",
+     "naoEncontrado": "Documento não encontrado.",
+     "voltar": "Voltar aos Documentos",
+     "categoria": "Categoria",
+     "semCategoria": "Sem Categoria",
+      "submetidoPor": "Submetido por",
+     "sistema": "Sistema",
+     "data": "Data",
+     "tamanho": "Tamanho",
+     "baixarFicheiro": "Baixar ficheiro"
+},
+
+   "editar": {
+     "titulo": "Editar Documento",
+     "tituloLabel": "Título",
+     "descricaoLabel": "Descrição",
+     "categoriaLabel": "Categoria",
+     "atualizadoComSucesso": "Documento atualizado com sucesso.",
+     "erroAtualizar": "Erro ao atualizar documento."
+}
+
+
+
+
+  },
+
+  "comum": {
+    "acoes": "Ações",
+    "editar": "Editar",
+    "apagar": "Apagar",
+    "ver": "Ver",
+    "verDocumento": "Ver documento",
+    "tentarNovamente": "Tentar Novamente",
+    "limparFiltros": "Limpar filtros",
+    "autor": "Autor",
+    "todosAutores": "Todos os Autores",
+    "tipoFicheiro": "Tipo de Ficheiro",
+    "todosTipos": "Todos os Tipos",
+    "mes": "Mês",
+    "todosMeses": "Todos os Meses",
+    "ano": "Ano",
+    "todosAnos": "Todos os Anos",
+    "meses": {
+      "0": "Janeiro", "1": "Fevereiro", "2": "Março", "3": "Abril",
+      "4": "Maio", "5": "Junho", "6": "Julho", "7": "Agosto",
+      "8": "Setembro", "9": "Outubro", "10": "Novembro", "11": "Dezembro"
+    },
+    "modalApagarDocumento": {
+      "titulo": "Apagar documento",
+      "mensagem": "Tem a certeza que deseja apagar este documento? Esta ação não pode ser desfeita.",
+      "confirmar": "Apagar"
+    },
+    "erroApagarDocumento": "Erro ao apagar documento.",
+         "status": {
+       "PENDENTE": "Pendente",
+       "APROVADO": "Aprovado",
+       "REJEITADO": "Rejeitado"
+     }
+  },
+
+  "categorias": {
+    "carregando": "A carregar categorias...",
+    "repositorio": "Repositório",
+    "titulo": "Categorias",
+    "contagemDisponivel_one": "{{count}} categoria disponível",
+    "contagemDisponivel_other": "{{count}} categorias disponíveis",
+    "pesquisarCategoria": "Pesquisar categoria...",
+    "contagemDocumentos_one": "{{count}} documento",
+    "contagemDocumentos_other": "{{count}} documentos",
+    "acederCategoria": "Aceder categoria",
+    "voltar": "Voltar às Categorias",
+    "contagemNestaCategoria_one": "{{count}} documento nesta categoria",
+    "contagemNestaCategoria_other": "{{count}} documento(s) nesta categoria",
+    "novoDocumento": "+ Novo Documento",
+    "pesquisarDocumento": "Pesquisar documento nesta categoria...",
+    "tabela": {
+      "documento": "Documento",
+      "submetidoPor": "Submetido Por",
+      "data": "Data"
+    },
+    "nenhumDocumento": "Nenhum documento encontrado nesta categoria."
+  },
+
+  "layout": {
+  "carregandoPainel": "Carregando painel...",
+  "erroOcorreu": "Ocorreu um erro: {{erro}}",
+  "erroApagarConta": "Erro ao excluir a conta.",
+  "modalApagarConta": {
+    "titulo": "Apagar Conta",
+    "mensagem": "Atenção: tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta? Esta ação não pode ser desfeita.",
+    "confirmar": "Apagar conta"
+  }
+ },
+
+
+   "dashboard": {
+    "acoesRapidas": {
+    "label": "Ações Rápidas:",
+    "gerirAprovacoes": "Gerir Aprovações",
+    "verCategorias": "Ver Categorias",
+    "gerirSistemas": "Gerir Sistemas",
+    "verDocumentos": "Ver Documentos",
+    "verSistemas": "Ver Sistemas"
+    },
+      "atividadeRecente": {
+    "titulo": "Atividade Recente",
+    "semAtividade": "Sem atividade recente."
+    }, 
+
+       "documentosRecentes": {
+    "titulo": "Documentos Recentes",
+    "verTodos": "Ver Todos",
+    "nome": "Nome",
+    "categoria": "Categoria",
+    "data": "Data",
+    "statusHeader": "Status",
+    "semNome": "Documento sem nome",
+    "geral": "Geral",
+    "nenhumDocumento": "Nenhum documento registado no repositório."
+    },
+
+     "heroBanner": {
+          "eyebrow": "Repositório Digital",
+          "titulo": "Explore os Documentos da Netline",
+         "documentosDisponiveis_one": "{{count}} documento disponível",
+         "documentosDisponiveis_other": "{{count}} documentos disponíveis",
+         "sistemasIntegrados_one": "{{count}} sistema integrado",
+         "sistemasIntegrados_other": "{{count}} sistemas integrados",
+         "verTodos": "Ver Todos Documentos"
+   }
+
+
+  },
+  "auth": {
+  "marca": "Netline Serv",
+  "heroTitulo": "Ligar Pessoas, Partilhar Conhecimento.",
+  "heroTexto": "Bem-vindo ao Repositório Interno da Netline. Este é o seu portal centralizado para aceder a documentos técnicos, recursos partilhados e ferramentas exclusivas. Autentique-se para aceder ao sistema com segurança.",
+  "painelAcesso": "Painel de Acesso",
+  "acederConta": "Aceda à Sua Conta",
+  "emailLabel": "E-mail Profissional",
+  "emailPlaceholder": "nome@netline.co.mz",
+  "senhaLabel": "Palavra-passe",
+  "processando": "A processar...",
+  "entrar": "Entrar",
+  "erroPadrao": "Ocorreu um erro ao tentar entrar.",
+  "erroCredenciais": "E-mail ou senha incorretos",
+  "direitosReservados": "© {{ano}} Netline.Serv,Lda. Todos os direitos reservados."
+   },
+   "sidebar": {
+   "marca": "Netline Serv",
+   "seccoes": {
+     "principal": "PRINCIPAL",
+     "sistemasNetline": "SISTEMAS DA NETLINE",
+     "configuracoes": "CONFIGURAÇÕES"
+   },
+   "itens": {
+    "dashboard": "Dashboard",
+    "documentos": "Documentos",
+    "categorias": "Categorias",
+    "aprovacoes": "Aprovações",
+    "lixeira": "Lixeira",
+    "sistemasDesenvolvidos": "Sistemas Desenvolvidos",
+    "usuarios": "Usuários",
+    "configuracoes": "Configurações"
+   }
+ }
+
+
+}

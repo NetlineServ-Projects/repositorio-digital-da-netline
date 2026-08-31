@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export interface Atividade {
   id: string;
   usuario: string;
@@ -11,12 +13,14 @@ interface AtividadeRecenteProps {
 }
 
 export default function AtividadeRecente({ atividades }: AtividadeRecenteProps) {
+  const { t, i18n } = useTranslation();
+
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-      <h3 className="text-lg font-bold text-slate-800 mb-4">Atividade Recente</h3>
+      <h3 className="text-lg font-bold text-slate-800 mb-4">{t("dashboard.atividadeRecente.titulo")}</h3>
       <div className="space-y-4">
         {atividades.length === 0 ? (
-          <p className="text-slate-400 text-xs">Sem atividade recente.</p>
+          <p className="text-slate-400 text-xs">{t("dashboard.atividadeRecente.semAtividade")}</p>
         ) : (
           atividades.map((item) => (
             <div key={item.id} className="flex items-start gap-3 text-xs">
@@ -27,7 +31,7 @@ export default function AtividadeRecente({ atividades }: AtividadeRecenteProps) 
                   {item.alvo && <span className="italic text-slate-500">"{item.alvo}"</span>}
                 </p>
                 <span className="text-slate-400 text-[10px]">
-                  {new Date(item.criadoEm).toLocaleString("pt-PT")}
+                  {new Date(item.criadoEm).toLocaleString(i18n.language === "en" ? "en-GB" : "pt-PT")}
                 </span>
               </div>
             </div>

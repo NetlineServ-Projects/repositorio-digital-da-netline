@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Documento } from "../../hooks/useDashboardData";
 
 interface DocumentosRecentesProps {
@@ -6,12 +7,6 @@ interface DocumentosRecentesProps {
   ehAdmin: boolean;
 }
 
-const rotuloEstado: Record<string, string> = {
-  PENDENTE: "Pendente",
-  APROVADO: "Aprovado",
-  REJEITADO: "Rejeitado",
-};
-
 const corEstado: Record<string, string> = {
   PENDENTE: "bg-amber-100 text-amber-700",
   APROVADO: "bg-emerald-100 text-emerald-700",
@@ -19,12 +14,14 @@ const corEstado: Record<string, string> = {
 };
 
 export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: DocumentosRecentesProps) {
+  const { t, i18n } = useTranslation();
+
   return (
     <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-slate-800">Documentos Recentes</h3>
+        <h3 className="text-lg font-bold text-slate-800">{t("dashboard.documentosRecentes.titulo")}</h3>
         <button onClick={onVerTodos} className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">
-          Ver Todos
+          {t("dashboard.documentosRecentes.verTodos")}
         </button>
       </div>
 
@@ -32,10 +29,10 @@ export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: 
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-400 uppercase text-xs">
             <tr>
-              <th className="py-3 px-4 font-semibold">Nome</th>
-              <th className="py-3 px-4 font-semibold">Categoria</th>
-              <th className="py-3 px-4 font-semibold">Data</th>
-              {ehAdmin && <th className="py-3 px-4 font-semibold">Status</th>}
+              <th className="py-3 px-4 font-semibold">{t("dashboard.documentosRecentes.nome")}</th>
+              <th className="py-3 px-4 font-semibold">{t("dashboard.documentosRecentes.categoria")}</th>
+              <th className="py-3 px-4 font-semibold">{t("dashboard.documentosRecentes.data")}</th>
+              {ehAdmin && <th className="py-3 px-4 font-semibold">{t("dashboard.documentosRecentes.statusHeader")}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -45,16 +42,18 @@ export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: 
                 return (
                   <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="py-3 px-4 font-medium text-slate-800 truncate max-w-xs" title={doc.titulo}>
-                      {doc.titulo || doc.nomeArquivo || "Documento sem nome"}
+                      {doc.titulo || doc.nomeArquivo || t("dashboard.documentosRecentes.semNome")}
                     </td>
-                    <td className="py-3 px-4">{doc.categoria?.nome || "Geral"}</td>
+                    <td className="py-3 px-4">{doc.categoria?.nome || t("dashboard.documentosRecentes.geral")}</td>
                     <td className="py-3 px-4 text-xs">
-                      {doc.dataSubmissao ? new Date(doc.dataSubmissao).toLocaleDateString("pt-PT") : "-"}
+                      {doc.dataSubmissao
+                        ? new Date(doc.dataSubmissao).toLocaleDateString(i18n.language === "en" ? "en-GB" : "pt-PT")
+                        : "-"}
                     </td>
                     {ehAdmin && (
                       <td className="py-3 px-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${corEstado[estado]}`}>
-                          {rotuloEstado[estado]}
+                          {t(`comum.status.${estado}`)}
                         </span>
                       </td>
                     )}
@@ -64,7 +63,7 @@ export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: 
             ) : (
               <tr>
                 <td colSpan={ehAdmin ? 4 : 3} className="text-center py-6 text-slate-400 text-xs">
-                  Nenhum documento registado no repositório.
+                  {t("dashboard.documentosRecentes.nenhumDocumento")}
                 </td>
               </tr>
             )}

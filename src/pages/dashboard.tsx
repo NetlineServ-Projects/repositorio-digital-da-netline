@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Sidebar from "../components/sidebar";
 import HeaderDashboard from "../components/headerDashboard";
 import { useDashboardData } from "../hooks/useDashboardData";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 import ModalConfirmacao from "../components/modalConfirmacaoprops";
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [sidebarFechada, setSidebarFechada] = useState(false);
   const [modalApagarContaAberto, setModalApagarContaAberto] = useState(false);
 
@@ -33,14 +35,14 @@ export default function Dashboard() {
       sessionStorage.clear();
       window.location.href = "/";
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao excluir a conta.");
+      toast.error(err instanceof Error ? err.message : t("layout.erroApagarConta"));
     }
   };
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <p className="text-slate-600 font-medium animate-pulse">Carregando painel...</p>
+        <p className="text-slate-600 font-medium animate-pulse">{t("layout.carregandoPainel")}</p>
       </div>
     );
   }
@@ -48,9 +50,9 @@ export default function Dashboard() {
   if (erro) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 gap-4">
-        <p className="text-red-600 font-medium">Ocorreu um erro: {erro}</p>
+        <p className="text-red-600 font-medium">{t("layout.erroOcorreu", { erro })}</p>
         <button onClick={recarregar} className="px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors cursor-pointer">
-          Tentar Novamente
+          {t("comum.tentarNovamente")}
         </button>
       </div>
     );
@@ -63,16 +65,16 @@ export default function Dashboard() {
         <HeaderDashboard sidebarFechada={sidebarFechada} setSidebarFechada={setSidebarFechada} usuario={usuario} onDeletarConta={()=> setModalApagarContaAberto(true)} />
         <main className="p-8 flex-1">
           <Outlet
-            context={{ usuario,totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes, atividades }}
+            context={{ usuario,totalCategorias, totalSistemas, totalDocumentos, pendentesAprovacao, totalAprovados, documentosRecentes, atividades,recarregarDashboard: recarregar, }}
           />
         </main>
       </div>
 
       <ModalConfirmacao
         aberto={modalApagarContaAberto}
-        titulo="Apagar Conta"
-        mensagem="Atenção: tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta? Esta ação não pode ser desfeita."
-        textoConfirmar="Apagar conta"
+        titulo={t("layout.modalApagarConta.titulo")}
+        mensagem={t("layout.modalApagarConta.mensagem")}
+        textoConfirmar={t("layout.modalApagarConta.confirmar")}
         perigoso
         onConfirmar={confirmarDeletarConta}
         onCancelar={() => setModalApagarContaAberto(false)}

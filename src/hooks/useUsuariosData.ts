@@ -9,6 +9,7 @@ export interface Usuario {
   numero: string;
   cargo: string;
   perfil: "ADMIN" | "FUNCIONARIO";
+  fotografia?: string | null;
   dataCriacao?: string;
 }
 

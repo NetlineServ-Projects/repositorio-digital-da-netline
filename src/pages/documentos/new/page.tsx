@@ -1,12 +1,20 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useDocumentosData } from "../../../hooks/useDocumentosData";
 import { toast } from "sonner";
 import { IconUpload } from "../../../components/icons";
 
+interface DashboardContext {
+  usuario: { nome: string; perfil?: string } | null;
+}
+
 export default function NovoDocumentoPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { categorias, criarDocumento } = useDocumentosData();
+  const { usuario } = useOutletContext<DashboardContext>();
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -18,12 +26,12 @@ export default function NovoDocumentoPage() {
     e.preventDefault();
 
     if (!titulo.trim()) {
-      toast.error("Por favor, insira o título do documento.");
+      toast.error(t("documentos.form.tituloObrigatorio"));
       return;
     }
 
     if (!ficheiro) {
-      toast.error("Por favor, selecione um ficheiro para carregar.");
+      toast.error(t("documentos.form.ficheiroObrigatorio"));
       return;
     }
 
@@ -37,10 +45,14 @@ export default function NovoDocumentoPage() {
       formData.append("ficheiro", ficheiro);
 
       await criarDocumento(formData);
-      toast.success("Documento criado com sucesso.");
+      toast.success(
+        ehAdmin
+          ? t("documentos.publicadoComSucesso")
+          : t("documentos.submetidoParaAprovacao")
+      );
       navigate("/dashboard/documentos");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao criar documento.");
+      toast.error(err instanceof Error ? err.message : t("documentos.form.erroCriar"));
     } finally {
       setSalvando(false);
     }
@@ -52,16 +64,16 @@ export default function NovoDocumentoPage() {
         to="/dashboard/documentos"
         className="inline-flex items-center text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors"
       >
-        ← Voltar aos Documentos
+        ← {t("documentos.form.voltar")}
       </Link>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
-        <h1 className="font-bold text-slate-800 text-lg">Novo Documento</h1>
+        <h1 className="font-bold text-slate-800 text-lg">{t("documentos.novoDocumento")}</h1>
 
         {/* Título */}
         <div className="space-y-1.5">
           <label htmlFor="titulo" className="text-xs font-semibold text-slate-500 uppercase">
-            Título <span className="text-red-500">*</span>
+            {t("documentos.form.tituloLabel")} <span className="text-red-500">*</span>
           </label>
           <input
             id="titulo"
@@ -69,7 +81,7 @@ export default function NovoDocumentoPage() {
             required
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            placeholder="Ex: Guia de Procedimentos Externa"
+            placeholder={t("documentos.form.tituloPlaceholder")}
             className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] transition-all"
           />
         </div>
@@ -77,14 +89,14 @@ export default function NovoDocumentoPage() {
         {/* Descrição */}
         <div className="space-y-1.5">
           <label htmlFor="descricao" className="text-xs font-semibold text-slate-500 uppercase">
-            Descrição
+            {t("documentos.form.descricaoLabel")}
           </label>
           <textarea
             id="descricao"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
             rows={3}
-            placeholder="Breve resumo sobre o conteúdo do documento..."
+            placeholder={t("documentos.form.descricaoPlaceholder")}
             className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] transition-all resize-none"
           />
         </div>
@@ -92,7 +104,7 @@ export default function NovoDocumentoPage() {
         {/* Categoria */}
         <div className="space-y-1.5">
           <label htmlFor="categoria" className="text-xs font-semibold text-slate-500 uppercase">
-            Categoria
+            {t("documentos.form.categoriaLabel")}
           </label>
           <select
             id="categoria"
@@ -100,7 +112,7 @@ export default function NovoDocumentoPage() {
             onChange={(e) => setCategoriaId(e.target.value)}
             className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] transition-all"
           >
-            <option value="">Sem Categoria</option>
+            <option value="">{t("documentos.form.semCategoria")}</option>
             {categorias.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.nome}</option>
             ))}
@@ -110,7 +122,7 @@ export default function NovoDocumentoPage() {
         {/* Área de Seleção de Ficheiro */}
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-slate-500 uppercase">
-            Ficheiro <span className="text-red-500">*</span>
+            {t("documentos.form.ficheiroLabel")} <span className="text-red-500">*</span>
           </label>
           <div className="relative border-2 border-dashed border-slate-200 hover:border-[#18357a]/50 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors text-center cursor-pointer">
             <input
@@ -125,15 +137,22 @@ export default function NovoDocumentoPage() {
                 {ficheiro ? (
                   <span className="text-[#18357a] font-semibold">{ficheiro.name}</span>
                 ) : (
-                  "Clique aqui para escolher ou arraste o ficheiro"
+                  t("documentos.form.clicarOuArrastar")
                 )}
               </span>
               <span className="text-[11px] text-slate-400">
-                {ficheiro ? `${(ficheiro.size / (1024 * 1024)).toFixed(2)} MB` : "PDF, PNG, JPG, DOCX até 10MB"}
+                {ficheiro ? `${(ficheiro.size / (1024 * 1024)).toFixed(2)} MB` : t("documentos.form.formatosAceites")}
               </span>
             </div>
           </div>
         </div>
+
+        {/* Aviso para funcionario sobre fluxo de aprovação */}
+        {!ehAdmin && (
+          <p className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+            {t("documentos.avisoAprovacao")}
+          </p>
+        )}
 
         {/* Ações */}
         <div className="flex gap-3 pt-3">
@@ -141,14 +160,16 @@ export default function NovoDocumentoPage() {
             to="/dashboard/documentos"
             className="flex-1 text-center py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold rounded-lg transition-colors"
           >
-            Cancelar
+            {t("documentos.form.cancelar")}
           </Link>
           <button
             type="submit"
             disabled={salvando || !titulo || !ficheiro}
             className="flex-1 py-2.5 bg-[#18357a] hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {salvando ? "A guardar..." : "Guardar"}
+            {salvando
+              ? ehAdmin ? t("documentos.aGuardar") : t("documentos.aSubmeter")
+              : ehAdmin ? t("documentos.guardar") : t("documentos.submeter")}
           </button>
         </div>
       </form>

@@ -5,6 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/public/netline.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>netline-repositorio</title>
+    <script>
+      // corre antes do React montar, evita o flash de tema errado no reload
+      const temaGuardado = localStorage.getItem("temaEscuro");
+      if (temaGuardado === "true") {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useLixeiraData } from "../../../hooks/useLixeiraData";
 
 export default function LixeiraPage() {
@@ -11,10 +12,7 @@ export default function LixeiraPage() {
     esvaziar,
   } = useLixeiraData();
 
-  const [mensagem, setMensagem] = useState<{
-    tipo: "sucesso" | "info";
-    texto: string;
-  } | null>(null);
+  const [termoPesquisa, setTermoPesquisa] = useState("");
 
   // =========================================================
   // FORMATAR TAMANHO
@@ -86,24 +84,6 @@ export default function LixeiraPage() {
   };
 
   // =========================================================
-  // MENSAGEM
-  // =========================================================
-
-  const exibirMensagem = (
-    tipo: "sucesso" | "info",
-    texto: string,
-  ) => {
-    setMensagem({
-      tipo,
-      texto,
-    });
-
-    setTimeout(() => {
-      setMensagem(null);
-    }, 3500);
-  };
-
-  // =========================================================
   // RESTAURAR DOCUMENTO
   // =========================================================
 
@@ -113,14 +93,9 @@ export default function LixeiraPage() {
   ) => {
     try {
       await restaurar(id);
-
-      exibirMensagem(
-        "sucesso",
-        `O documento "${titulo}" foi restaurado com sucesso.`,
-      );
+      toast.success(`O documento "${titulo}" foi restaurado com sucesso.`);
     } catch (error) {
-      exibirMensagem(
-        "info",
+      toast.error(
         error instanceof Error
           ? error.message
           : "Erro ao restaurar o documento.",
@@ -129,67 +104,99 @@ export default function LixeiraPage() {
   };
 
   // =========================================================
-  // ELIMINAR DEFINITIVAMENTE
+  // ELIMINAR DEFINITIVAMENTE (CONFIRMAÇÃO COM SONNER)
   // =========================================================
 
-  const handleExcluirDefinitivo = async (
+  const handleExcluirDefinitivo = (
     id: number,
     titulo: string,
   ) => {
-    const confirmar = window.confirm(
-      `Tem certeza que deseja apagar "${titulo}" definitivamente? Esta ação não pode ser desfeita.`,
-    );
-
-    if (!confirmar) {
-      return;
-    }
-
-    try {
-      await excluirDefinitivo(id);
-
-      exibirMensagem(
-        "info",
-        `O documento "${titulo}" foi eliminado definitivamente.`,
-      );
-    } catch (error) {
-      exibirMensagem(
-        "info",
-        error instanceof Error
-          ? error.message
-          : "Erro ao eliminar o documento.",
-      );
-    }
+    toast.custom((t) => (
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg max-w-sm w-full space-y-3">
+        <p className="text-sm font-medium text-slate-800">
+          Deseja apagar <span className="font-bold">"{titulo}"</span> definitivamente?
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => toast.dismiss(t)}
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t);
+              try {
+                await excluirDefinitivo(id);
+                toast.success(`O documento "${titulo}" foi eliminado.`);
+              } catch (error) {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "Erro ao eliminar o documento.",
+                );
+              }
+            }}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Apagar
+          </button>
+        </div>
+      </div>
+    ));
   };
 
   // =========================================================
-  // ESVAZIAR LIXEIRA
+  // ESVAZIAR LIXEIRA (CONFIRMAÇÃO COM SONNER)
   // =========================================================
 
-  const handleEsvaziar = async () => {
-    const confirmar = window.confirm(
-      "Tem certeza que deseja apagar todos os itens da lixeira definitivamente? Esta ação não pode ser desfeita.",
-    );
-
-    if (!confirmar) {
-      return;
-    }
-
-    try {
-      await esvaziar();
-
-      exibirMensagem(
-        "info",
-        "A lixeira foi esvaziada completamente.",
-      );
-    } catch (error) {
-      exibirMensagem(
-        "info",
-        error instanceof Error
-          ? error.message
-          : "Erro ao esvaziar a lixeira.",
-      );
-    }
+  const handleEsvaziar = () => {
+    toast.custom((t) => (
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg max-w-sm w-full space-y-3">
+        <p className="text-sm font-medium text-slate-800">
+          Tem certeza que deseja apagar <span className="font-bold">todos os itens</span> da lixeira definitivamente?
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => toast.dismiss(t)}
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t);
+              try {
+                await esvaziar();
+                toast.success("A lixeira foi esvaziada completamente.");
+              } catch (error) {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "Erro ao esvaziar a lixeira.",
+                );
+              }
+            }}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Esvaziar Tudo
+          </button>
+        </div>
+      </div>
+    ));
   };
+
+  // =========================================================
+  // FILTRAR DOCUMENTOS
+  // =========================================================
+
+  const documentosFiltrados = documentos.filter((doc) => {
+    const termo = termoPesquisa.toLowerCase();
+    const titulo = (doc.titulo || "").toLowerCase();
+    const autor = (doc.usuario?.nome || "").toLowerCase();
+
+    return titulo.includes(termo) || autor.includes(termo);
+  });
 
   // =========================================================
   // LOADING
@@ -211,7 +218,7 @@ export default function LixeiraPage() {
 
   if (erro) {
     return (
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl border border-red-100 shadow-sm p-8">
+      <div className="w-full bg-white rounded-2xl border border-red-100 shadow-sm p-8">
         <div className="text-center py-12">
           <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
             !
@@ -234,21 +241,17 @@ export default function LixeiraPage() {
   // =========================================================
 
   return (
-    <div className="max-w-5xl mx-auto bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+    <div className="w-full space-y-6">
 
-      {/* =====================================================
-          CABEÇALHO
-      ===================================================== */}
-
-      <div className="border-b border-slate-100 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* BANNER SUPERIOR */}
+      <div className="bg-[#18357a] text-white p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">
-            Lixeira do Repositório
-          </h2>
-
-          <p className="text-slate-500 font-medium text-sm mt-1">
-            Os itens descartados são mantidos por até 30 dias
-            antes de serem apagados definitivamente.
+          <span className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
+            REPOSITÓRIO
+          </span>
+          <h1 className="text-3xl font-bold mt-1">Lixeira do Repositório</h1>
+          <p className="text-sm text-blue-100/90 mt-1">
+            Os itens descartados são mantidos por até 30 dias antes de serem apagados definitivamente.
           </p>
         </div>
 
@@ -256,205 +259,156 @@ export default function LixeiraPage() {
           <button
             type="button"
             onClick={handleEsvaziar}
-            className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg text-sm transition-colors border border-red-200 self-start sm:self-auto cursor-pointer"
+            className="px-4 py-2.5 bg-red-50/10 hover:bg-red-500/20 text-red-200 font-medium rounded-xl text-sm transition-colors border border-red-400/30 self-start sm:self-auto cursor-pointer whitespace-nowrap backdrop-blur-sm"
           >
             Esvaziar Lixeira
           </button>
         )}
       </div>
 
-      {/* =====================================================
-          MENSAGEM
-      ===================================================== */}
-
-      {mensagem && (
-        <div
-          className={`mb-6 p-3 rounded-lg text-xs font-semibold ${
-            mensagem.tipo === "sucesso"
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-              : "bg-slate-100 text-slate-700 border border-slate-200"
-          }`}
-        >
-          {mensagem.texto}
+      {/* BARRA DE PESQUISA */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+        <div className="relative max-w-md">
+          <input
+            type="text"
+            value={termoPesquisa}
+            onChange={(e) => setTermoPesquisa(e.target.value)}
+            placeholder="Pesquisar por documento ou autor..."
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1b365d]/20 focus:border-[#1b365d] transition-all"
+          />
+          <svg
+            className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
         </div>
-      )}
+      </div>
 
-      {/* =====================================================
-          LISTA DE DOCUMENTOS
-      ===================================================== */}
+      {/* CONTAINER DA TABELA */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+        {documentosFiltrados.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 text-slate-400 text-xs uppercase font-semibold">
+                  <th className="py-3 px-4">Documento</th>
+                  <th className="py-3 px-4">Categoria</th>
+                  <th className="py-3 px-4">Tamanho</th>
+                  <th className="py-3 px-4">Exclusão definitiva em</th>
+                  <th className="py-3 px-4 text-right">Ações</th>
+                </tr>
+              </thead>
 
-      {documentos.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+              <tbody className="divide-y divide-slate-100 text-sm">
+                {documentosFiltrados.map((documento) => {
+                  const titulo =
+                    documento.titulo || "Documento sem título";
 
-            {/* Cabeçalho da tabela */}
+                  const categoria =
+                    documento.categoria?.nome || "Geral";
 
-            <thead>
-              <tr className="border-b border-slate-100 text-slate-400 text-xs uppercase font-semibold">
+                  const autor =
+                    documento.usuario?.nome || "Sistema";
 
-                <th className="py-3 px-4">
-                  Documento
-                </th>
+                  const diasRestantes =
+                    calcularDiasRestantes(documento.apagadoEm);
 
-                <th className="py-3 px-4">
-                  Categoria
-                </th>
+                  return (
+                    <tr
+                      key={documento.id}
+                      className="hover:bg-slate-50/80 transition-colors"
+                    >
+                      <td className="py-4 px-4">
+                        <div
+                          className="truncate max-w-xs font-medium text-slate-800"
+                          title={titulo}
+                        >
+                          {titulo}
+                        </div>
+                        <span className="text-xs text-slate-400">
+                          Por: {autor}
+                        </span>
+                      </td>
 
-                <th className="py-3 px-4">
-                  Tamanho
-                </th>
+                      <td className="py-4 px-4">
+                        <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs text-slate-600 font-medium">
+                          {categoria}
+                        </span>
+                      </td>
 
-                <th className="py-3 px-4">
-                  Exclusão definitiva em
-                </th>
+                      <td className="py-4 px-4 text-slate-500 text-xs">
+                        {formatarTamanho(documento.tamanho)}
+                      </td>
 
-                <th className="py-3 px-4 text-right">
-                  Ações
-                </th>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            diasRestantes <= 5
+                              ? "bg-red-50 text-red-600 border border-red-200"
+                              : "bg-amber-50 text-amber-700 border border-amber-200"
+                          }`}
+                        >
+                          {diasRestantes === 0
+                            ? "Expira hoje"
+                            : `${diasRestantes} ${
+                                diasRestantes === 1 ? "dia" : "dias"
+                              }`}
+                        </span>
+                      </td>
 
-              </tr>
-            </thead>
+                      <td className="py-4 px-4 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleRestaurar(documento.id, titulo)
+                          }
+                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer mr-2"
+                        >
+                          Restaurar
+                        </button>
 
-            {/* Corpo da tabela */}
-
-            <tbody className="divide-y divide-slate-100 text-sm">
-
-              {documentos.map((documento) => {
-                const titulo =
-                  documento.titulo ||
-                  "Documento sem título";
-
-                const categoria =
-                  documento.categoria?.nome ||
-                  "Geral";
-
-                const autor =
-                  documento.usuario?.nome ||
-                  "Sistema";
-
-                const diasRestantes =
-                  calcularDiasRestantes(
-                    documento.apagadoEm,
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleExcluirDefinitivo(documento.id, titulo)
+                          }
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200 cursor-pointer"
+                        >
+                          Apagar
+                        </button>
+                      </td>
+                    </tr>
                   );
-
-                return (
-                  <tr
-                    key={documento.id}
-                    className="hover:bg-slate-50/80 transition-colors"
-                  >
-
-                    {/* Documento */}
-
-                    <td className="py-4 px-4">
-                      <div
-                        className="truncate max-w-xs font-medium text-slate-800"
-                        title={titulo}
-                      >
-                        {titulo}
-                      </div>
-
-                      <span className="text-xs text-slate-400">
-                        Por: {autor}
-                      </span>
-                    </td>
-
-                    {/* Categoria */}
-
-                    <td className="py-4 px-4">
-                      <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs text-slate-600 font-medium">
-                        {categoria}
-                      </span>
-                    </td>
-
-                    {/* Tamanho */}
-
-                    <td className="py-4 px-4 text-slate-500 text-xs">
-                      {formatarTamanho(
-                        documento.tamanho,
-                      )}
-                    </td>
-
-                    {/* Prazo */}
-
-                    <td className="py-4 px-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          diasRestantes <= 5
-                            ? "bg-red-50 text-red-600 border border-red-200"
-                            : "bg-amber-50 text-amber-700 border border-amber-200"
-                        }`}
-                      >
-                        {diasRestantes === 0
-                          ? "Expira hoje"
-                          : `${diasRestantes} ${
-                              diasRestantes === 1
-                                ? "dia"
-                                : "dias"
-                            }`}
-                      </span>
-                    </td>
-
-                    {/* Ações */}
-
-                    <td className="py-4 px-4 text-right whitespace-nowrap">
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleRestaurar(
-                            documento.id,
-                            titulo,
-                          )
-                        }
-                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer mr-2"
-                      >
-                        Restaurar
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleExcluirDefinitivo(
-                            documento.id,
-                            titulo,
-                          )
-                        }
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200 cursor-pointer"
-                      >
-                        Apagar
-                      </button>
-
-                    </td>
-                  </tr>
-                );
-              })}
-
-            </tbody>
-          </table>
-        </div>
-      ) : (
-
-        /* ===================================================
-           ESTADO VAZIO
-        =================================================== */
-
-        <div className="py-16 text-center">
-
-          <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-            ✓
+                })}
+              </tbody>
+            </table>
           </div>
-
-          <h3 className="text-base font-bold text-slate-700">
-            A lixeira está vazia
-          </h3>
-
-          <p className="text-xs text-slate-400 mt-1">
-            Nenhum documento descartado recentemente no
-            repositório.
-          </p>
-
-        </div>
-      )}
+        ) : (
+          <div className="py-16 text-center">
+            <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+              {termoPesquisa ? "🔍" : "✓"}
+            </div>
+            <h3 className="text-base font-bold text-slate-700">
+              {termoPesquisa
+                ? "Nenhum resultado encontrado"
+                : "A lixeira está vazia"}
+            </h3>
+            <p className="text-xs text-slate-400 mt-1">
+              {termoPesquisa
+                ? `Não foram encontrados documentos correspondentes a "${termoPesquisa}".`
+                : "Nenhum documento descartado recentemente no repositório."}
+            </p>
+          </div>
+        )}
+      </div>
 
     </div>
   );

@@ -1,12 +1,20 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faPen, faTrash, faUserShield, faUser } from "@fortawesome/free-solid-svg-icons";
 import type { Usuario } from "../../hooks/useUsuariosData";
+import { API_URL } from "../../utils/api";
 
 interface UsuariosTabelaProps {
   usuarios: Usuario[];
   carregando: boolean;
   onEditar: (u: Usuario) => void;
   onEliminar: (id: number, nome: string) => void;
+}
+
+function iniciais(nome: string) {
+  const partes = nome.trim().split(/\s+/);
+  const primeira = partes[0]?.[0] ?? "";
+  const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
+  return (primeira + ultima).toUpperCase();
 }
 
 export default function UsuariosTabela({ usuarios, carregando, onEditar, onEliminar }: UsuariosTabelaProps) {
@@ -35,8 +43,23 @@ export default function UsuariosTabela({ usuarios, carregando, onEditar, onElimi
               {usuarios.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-4 px-6">
-                    <div className="font-semibold text-slate-800 text-sm">{u.nome}</div>
-                    <div className="text-xs text-slate-400 font-normal mt-0.5">{u.email}</div>
+                    <div className="flex items-center gap-3">
+                      {u.fotografia ? (
+                        <img
+                          src={`${API_URL}${u.fotografia}`}
+                          alt={u.nome}
+                          className="w-9 h-9 rounded-full object-cover border border-slate-200 flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-[#1b365d]/10 text-[#1b365d] flex items-center justify-center text-xs font-semibold flex-shrink-0">
+                          {iniciais(u.nome)}
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-semibold text-slate-800 text-sm">{u.nome}</div>
+                        <div className="text-xs text-slate-400 font-normal mt-0.5">{u.email}</div>
+                      </div>
+                    </div>
                   </td>
                   <td className="py-4 px-6 text-slate-600 text-sm">{u.cargo || "-"}</td>
                   <td className="py-4 px-6 text-slate-600 text-sm">{u.numero || "-"}</td>

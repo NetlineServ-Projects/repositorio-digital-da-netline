@@ -37,7 +37,7 @@ export default function SistemaDetalheHeader({
           </button>
 
           <span className="text-[11px] font-bold tracking-wider text-blue-200/70 uppercase">
-            Sistemas da Netline
+            Sistema da Netline
           </span>
         </div>
 

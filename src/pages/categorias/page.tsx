@@ -1,108 +1,138 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import { useDocumentosData } from "../../hooks/useDocumentosData";
 import SearchInput from "../../components/searchInput";
 import ViewToggle from "../../components/viewToggle";
 import DocumentoRow from "../../components/documentoRow";
 import DocumentoCard from "../../components/documentoCard";
-import DocumentoModal from "../../components/documentoModal";
+import ModalConfirmacao from "../../components/modalConfirmacaoprops";
+import FilterSelect from "../../components/filterSelect";
 import { IconVer, IconPasta, IconSetaDireita } from "../../components/icons";
-import { obterUrlFicheiro } from "../../utils/documentos";
-import { API_URL } from "../../utils/api";
-import type { Documento, Categoria } from "../../types/documento";
+import { classificarTipo, OPCOES_TIPO } from "../../utils/tipoDocumento";
+import type { Categoria } from "../../types/documento";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+
+interface DashboardContext {
+  usuario: { nome: string; perfil?: string } | null;
+}
 
 export default function CategoriasPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const {
-    documentos,
-    categorias,
-    loading,
-    erro,
-    recarregar,
-    criarDocumento,
-    editarDocumento,
-    apagarDocumento,
-  } = useDocumentosData();
+  const { documentos, categorias, loading, erro, recarregar, apagarDocumento } = useDocumentosData();
+  const { usuario } = useOutletContext<DashboardContext>();
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
+  const MESES = useMemo(
+    () => Array.from({ length: 12 }, (_, i) => ({ valor: String(i), label: t(`comum.meses.${i}`) })),
+    [t]
+  );
+
+  // Estados Locais
   const [categoriaAtiva, setCategoriaAtiva] = useState<Categoria | null>(null);
   const [buscaCategoria, setBuscaCategoria] = useState("");
   const [buscaDoc, setBuscaDoc] = useState("");
-  const [modoExibicao, setModoExibicao] = useState<"tabela" | "cards">(
-    "tabela",
-  );
-  const [modalAberto, setModalAberto] = useState(false);
-  const [documentoEmEdicao, setDocumentoEmEdicao] = useState<Documento | null>(
-    null,
-  );
+  const [modoExibicao, setModoExibicao] = useState<"tabela" | "cards">("tabela");
+  const [documentoParaApagar, setDocumentoParaApagar] = useState<number | null>(null);
+
+  // Estados dos Filtros da Categoria Ativa
+  const [autorFiltro, setAutorFiltro] = useState<string[]>([]);
+  const [tipoFiltro, setTipoFiltro] = useState<string[]>([]);
+  const [mesFiltro, setMesFiltro] = useState<string[]>([]);
+  const [anoFiltro, setAnoFiltro] = useState<string[]>([]);
+
+  // Listas Dinâmicas para os Selects
+  const autoresUnicos = useMemo(() => {
+    if (!categoriaAtiva) return [];
+    const docsDaCat = documentos.filter((d) => d.categoria?.id === categoriaAtiva.id);
+    const nomes = docsDaCat.map((d) => d.usuario?.nome).filter((n): n is string => !!n);
+    return Array.from(new Set(nomes)).sort();
+  }, [documentos, categoriaAtiva]);
+
+  const anosUnicos = useMemo(() => {
+    if (!categoriaAtiva) return [];
+    const docsDaCat = documentos.filter((d) => d.categoria?.id === categoriaAtiva.id);
+    const anos = docsDaCat.map((d) => d.dataSubmissao?.slice(0, 4)).filter((a): a is string => !!a);
+    return Array.from(new Set(anos)).sort((a, b) => b.localeCompare(a));
+  }, [documentos, categoriaAtiva]);
+
   const abrirCriar = () => {
     navigate(`/dashboard/documentos/new?categoria=${categoriaAtiva?.id}`);
   };
 
-  const abrirEditar = (doc: Documento) => {
-    setDocumentoEmEdicao(doc);
-    setModalAberto(true);
-  };
-
-  const handleSalvar = async (dados: {
-    titulo: string;
-    descricao: string;
-    categoriaId: string;
-    ficheiro?: File;
-  }) => {
-    if (documentoEmEdicao) {
-      await editarDocumento(documentoEmEdicao.id, {
-        titulo: dados.titulo,
-        descricao: dados.descricao,
-        categoriaId: dados.categoriaId,
-      });
-    } else {
-      const formData = new FormData();
-      formData.append("titulo", dados.titulo);
-      formData.append("descricao", dados.descricao);
-      formData.append("categoriaId", dados.categoriaId);
-      if (dados.ficheiro) formData.append("ficheiro", dados.ficheiro);
-      await criarDocumento(formData);
-    }
-  };
-
-  const handleApagar = async (id: number) => {
-    if (!window.confirm("Tem a certeza que deseja apagar este documento?"))
-      return;
+  const confirmarApagar = async () => {
+    if (documentoParaApagar === null) return;
+    const id = documentoParaApagar;
+    setDocumentoParaApagar(null);
     try {
       await apagarDocumento(id);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Erro ao apagar documento.",
-      );
+      toast.error(err instanceof Error ? err.message : t("comum.erroApagarDocumento"));
     }
   };
 
+  const limparFiltrosDoc = () => {
+    setBuscaDoc("");
+    setAutorFiltro([]);
+    setTipoFiltro([]);
+    setMesFiltro([]);
+    setAnoFiltro([]);
+  };
+
   const categoriasFiltradas = categorias.filter((cat) =>
-    cat.nome.toLowerCase().includes(buscaCategoria.toLowerCase()),
+    cat.nome.toLowerCase().includes(buscaCategoria.toLowerCase())
   );
+
   const contarDocumentos = (categoriaId: number) =>
     documentos.filter((d) => d.categoria?.id === categoriaId).length;
 
-  const documentosDaCategoria = categoriaAtiva
-    ? documentos
-        .filter((doc) => doc.categoria?.id === categoriaAtiva.id)
-        .filter((doc) => {
-          const nomeDoc = doc.titulo || doc.nomeArquivo || "";
-          const autorDoc = doc.usuario?.nome || "";
-          return (
-            nomeDoc.toLowerCase().includes(buscaDoc.toLowerCase()) ||
-            autorDoc.toLowerCase().includes(buscaDoc.toLowerCase())
-          );
-        })
-    : [];
+  // Filtragem avançada dos documentos dentro da categoria selecionada
+  const documentosDaCategoria = useMemo(() => {
+    if (!categoriaAtiva) return [];
+
+    return documentos
+      .filter((doc) => doc.categoria?.id === categoriaAtiva.id)
+      .filter((doc) => {
+        const nomeDoc = doc.titulo || doc.nomeArquivo || "";
+        const autorDoc = doc.usuario?.nome || "";
+        const tipoDoc = classificarTipo(doc.tipoArquivo);
+
+        const atendeBusca =
+          nomeDoc.toLowerCase().includes(buscaDoc.toLowerCase()) ||
+          autorDoc.toLowerCase().includes(buscaDoc.toLowerCase());
+
+        const atendeAutor = autorFiltro.length === 0 || autorFiltro.includes(autorDoc);
+        const atendeTipo = tipoFiltro.length === 0 || tipoFiltro.includes(tipoDoc);
+
+        let atendeData = true;
+        if (doc.dataSubmissao) {
+          const dataDoc = new Date(doc.dataSubmissao);
+          if (mesFiltro.length > 0 && !mesFiltro.includes(String(dataDoc.getMonth()))) {
+            atendeData = false;
+          }
+          if (anoFiltro.length > 0 && !anoFiltro.includes(String(dataDoc.getFullYear()))) {
+            atendeData = false;
+          }
+        } else if (mesFiltro.length > 0 || anoFiltro.length > 0) {
+          atendeData = false;
+        }
+
+        return atendeBusca && atendeAutor && atendeTipo && atendeData;
+      });
+  }, [documentos, categoriaAtiva, buscaDoc, autorFiltro, tipoFiltro, mesFiltro, anoFiltro]);
+
+  const filtrosAtivos =
+    buscaDoc !== "" ||
+    autorFiltro.length > 0 ||
+    tipoFiltro.length > 0 ||
+    mesFiltro.length > 0 ||
+    anoFiltro.length > 0;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">
-          A carregar categorias...
-        </p>
+        <p className="text-slate-500 font-medium animate-pulse text-sm">{t("categorias.carregando")}</p>
       </div>
     );
   }
@@ -115,33 +145,26 @@ export default function CategoriasPage() {
           onClick={recarregar}
           className="px-4 py-2 bg-[#18357a] text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors"
         >
-          Tentar Novamente
+          {t("comum.tentarNovamente")}
         </button>
       </div>
     );
   }
 
+  // --- VISÃO 1: LISTA GERAL DE CATEGORIAS ---
   if (!categoriaAtiva) {
     return (
       <div className="space-y-6">
         <div className="bg-[#18357a] text-white p-6 md:p-8 rounded-2xl shadow-sm">
-          <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">
-            Repositório
-          </p>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-            Categorias
-          </h1>
+          <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">{t("categorias.repositorio")}</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">{t("categorias.titulo")}</h1>
           <p className="text-sm text-blue-100/80 mt-1">
-            {categorias.length} categorias disponíveis
+            {t("categorias.contagemDisponivel", { count: categorias.length })}
           </p>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
-          <SearchInput
-            value={buscaCategoria}
-            onChange={setBuscaCategoria}
-            placeholder="Pesquisar categoria..."
-          />
+          <SearchInput value={buscaCategoria} onChange={setBuscaCategoria} placeholder={t("categorias.pesquisarCategoria")} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -154,7 +177,7 @@ export default function CategoriasPage() {
                 key={cat.id}
                 onClick={() => {
                   setCategoriaAtiva(cat);
-                  setBuscaDoc("");
+                  limparFiltrosDoc();
                 }}
                 className="group flex flex-col justify-between text-left bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-200"
               >
@@ -171,7 +194,7 @@ export default function CategoriasPage() {
                           : "bg-slate-100 text-slate-400 border border-slate-200/60"
                       }`}
                     >
-                      {totalDocs} {totalDocs === 1 ? "documento" : "documentos"}
+                      {t("categorias.contagemDocumentos", { count: totalDocs })}
                     </span>
                   </div>
 
@@ -180,15 +203,12 @@ export default function CategoriasPage() {
                   </h3>
 
                   {cat.descricao && (
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                      {cat.descricao}
-                    </p>
+                    <p className="text-xs text-slate-400 mt-1 line-clamp-2">{cat.descricao}</p>
                   )}
                 </div>
 
-                {/* Rodapé com indicador de navegação */}
                 <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-400 group-hover:text-blue-600 transition-colors">
-                  <span>Aceder categoria</span>
+                  <span>{t("categorias.acederCategoria")}</span>
                   <IconSetaDireita />
                 </div>
               </button>
@@ -199,56 +219,107 @@ export default function CategoriasPage() {
     );
   }
 
+  // --- VISÃO 2: DOCUMENTOS DA CATEGORIA SELECIONADA ---
   return (
     <div className="space-y-6">
+      {/* Header Banner */}
       <div className="bg-[#18357a] text-white p-6 md:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <button
-            onClick={() => setCategoriaAtiva(null)}
-            className="text-xs text-blue-200 hover:text-white font-medium mb-2"
+            onClick={() => {
+              setCategoriaAtiva(null);
+              limparFiltrosDoc();
+            }}
+            className="text-xs text-blue-200 hover:text-white font-medium mb-2 flex items-center gap-1 transition-colors"
           >
-            ← Voltar às Categorias
+            ← {t("categorias.voltar")}
           </button>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
-            {categoriaAtiva.nome}
-          </h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">{categoriaAtiva.nome}</h1>
           <p className="text-sm text-blue-100/80 mt-1">
-            {documentosDaCategoria.length} documento(s) nesta categoria
+            {t("categorias.contagemNestaCategoria", { count: documentosDaCategoria.length })}
           </p>
         </div>
-        <button
-          onClick={abrirCriar}
-          className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto"
-        >
-          + Novo Documento
-        </button>
+        {ehAdmin && (
+          <button
+            onClick={abrirCriar}
+            className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto"
+          >
+            {t("categorias.novoDocumento")}
+          </button>
+        )}
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="w-full md:w-80 relative">
-          <SearchInput
-            value={buscaDoc}
-            onChange={setBuscaDoc}
-            placeholder="Pesquisar documento nesta categoria..."
+      {/* Painel de Filtros Customizados */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="w-full md:w-80 relative">
+            <SearchInput
+              value={buscaDoc}
+              onChange={setBuscaDoc}
+              placeholder={t("categorias.pesquisarDocumento")}
+            />
+          </div>
+          <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+        </div>
+
+        {/* Custom Selects de Filtro */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end pt-2">
+          <FilterSelect
+            label={t("comum.autor")}
+            placeholder={t("comum.todosAutores")}
+            opcoes={autoresUnicos.map((a) => ({ valor: a, label: a }))}
+            selecionados={autorFiltro}
+            onChange={setAutorFiltro}
+          />
+
+          <FilterSelect
+            label={t("comum.tipoFicheiro")}
+            placeholder={t("comum.todosTipos")}
+            opcoes={OPCOES_TIPO.filter((tipo) => tipo.valor !== "TODOS").map((tipo) => ({ valor: tipo.valor, label: tipo.label }))}
+            selecionados={tipoFiltro}
+            onChange={setTipoFiltro}
+          />
+
+          <FilterSelect
+            label={t("comum.mes")}
+            placeholder={t("comum.todosMeses")}
+            opcoes={MESES}
+            selecionados={mesFiltro}
+            onChange={setMesFiltro}
+          />
+
+          <FilterSelect
+            label={t("comum.ano")}
+            placeholder={t("comum.todosAnos")}
+            opcoes={anosUnicos.map((ano) => ({ valor: ano, label: ano }))}
+            selecionados={anoFiltro}
+            onChange={setAnoFiltro}
           />
         </div>
-        <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+
+        {filtrosAtivos && (
+          <div className="flex justify-end pt-1">
+            <button
+              onClick={limparFiltrosDoc}
+              className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition-colors border border-rose-100"
+            >
+              ✕ {t("comum.limparFiltros")}
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* Lista de Documentos (Tabela ou Cards) */}
       {modoExibicao === "tabela" ? (
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-400 uppercase text-xs border-b border-slate-100">
                 <tr>
-                  <th className="py-3.5 px-4 font-semibold">Documento</th>
-                  <th className="py-3.5 px-4 font-semibold">Categoria</th>
-                  <th className="py-3.5 px-4 font-semibold">Submetido Por</th>
-                  <th className="py-3.5 px-4 font-semibold">Data</th>
-                  <th className="py-3.5 px-4 font-semibold">Status</th>
-                  <th className="py-3.5 px-4 font-semibold text-right">
-                    Ações
-                  </th>
+                  <th className="py-3.5 px-4 font-semibold">{t("categorias.tabela.documento")}</th>
+                  <th className="py-3.5 px-4 font-semibold">{t("categorias.tabela.submetidoPor")}</th>
+                  <th className="py-3.5 px-4 font-semibold">{t("categorias.tabela.data")}</th>
+                  <th className="py-3.5 px-4 font-semibold text-right">{t("comum.acoes")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -257,37 +328,40 @@ export default function CategoriasPage() {
                     <DocumentoRow
                       key={doc.id}
                       doc={doc}
+                      mostrarCategoria={false}
                       acoes={
                         <>
-                          <a
-                            href={obterUrlFicheiro(doc.caminho, API_URL)}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <Link
+                            to={`/dashboard/documentos/${doc.id}`}
                             className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                            title="Ver documento"
+                            title={t("comum.verDocumento")}
                           >
                             <IconVer />
-                          </a>
-                          <button
-                            onClick={() => abrirEditar(doc)}
-                            className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100"
-                          >
-                            Editar
-                          </button>
-                          <button
-                            onClick={() => handleApagar(doc.id)}
-                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
-                          >
-                            Apagar
-                          </button>
+                          </Link>
+                          {ehAdmin && (
+                            <>
+                              <Link
+                                to={`/dashboard/documentos/${doc.id}/editar`}
+                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100"
+                              >
+                                {t("comum.editar")}
+                              </Link>
+                              <button
+                                onClick={() => setDocumentoParaApagar(doc.id)}
+                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
+                              >
+                                {t("comum.apagar")}
+                              </button>
+                            </>
+                          )}
                         </>
                       }
                     />
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-slate-400">
-                      Nenhum documento nesta categoria.
+                    <td colSpan={5} className="text-center py-8 text-slate-400">
+                      {t("categorias.nenhumDocumento")}
                     </td>
                   </tr>
                 )}
@@ -304,46 +378,50 @@ export default function CategoriasPage() {
                 doc={doc}
                 acoes={
                   <>
-                    <a
-                      href={obterUrlFicheiro(doc.caminho, API_URL)}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to={`/dashboard/documentos/${doc.id}`}
                       className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                      title="Ver"
+                      title={t("comum.ver")}
                     >
                       <IconVer />
-                    </a>
-                    <button
-                      onClick={() => abrirEditar(doc)}
-                      className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleApagar(doc.id)}
-                      className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60"
-                    >
-                      Apagar
-                    </button>
+                    </Link>
+                    {ehAdmin && (
+                      <>
+                        <Link
+                          to={`/dashboard/documentos/${doc.id}/editar`}
+                          className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                        >
+                          {t("comum.editar")}
+                        </Link>
+                        <button
+                          onClick={() => setDocumentoParaApagar(doc.id)}
+                          className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60"
+                        >
+                          {t("comum.apagar")}
+                        </button>
+                      </>
+                    )}
                   </>
                 }
               />
             ))
           ) : (
             <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-              Nenhum documento nesta categoria.
+              {t("categorias.nenhumDocumento")}
             </div>
           )}
         </div>
       )}
 
-      <DocumentoModal
-        aberto={modalAberto}
-        documento={documentoEmEdicao}
-        categorias={categorias}
-        categoriaIdPredefinida={categoriaAtiva.id}
-        onSalvar={handleSalvar}
-        onFechar={() => setModalAberto(false)}
+      {/* Modal de Confirmação para Remoção */}
+      <ModalConfirmacao
+        aberto={documentoParaApagar !== null}
+        titulo={t("comum.modalApagarDocumento.titulo")}
+        mensagem={t("comum.modalApagarDocumento.mensagem")}
+        textoConfirmar={t("comum.modalApagarDocumento.confirmar")}
+        perigoso
+        onConfirmar={confirmarApagar}
+        onCancelar={() => setDocumentoParaApagar(null)}
       />
     </div>
   );

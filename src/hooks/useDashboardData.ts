@@ -2,9 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
 
 export interface UsuarioData {
+  id?: number;
   nome: string;
   email?: string;
   perfil?: string;
+  cargo?: string;
+  departamento?: string;
+  numero?: string;
+  fotografia?: string | null;
 }
 
 export interface Documento {

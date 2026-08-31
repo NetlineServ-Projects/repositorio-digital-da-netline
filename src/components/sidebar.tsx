@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useUsuario } from "./usuarioContext";
 import logoNetline from "../assets/netline.jpg";
 import {
@@ -23,29 +24,30 @@ interface SeccaoMenu {
 }
 
 export default function Sidebar({ fechada = false }: SidebarProps) {
+  const { t } = useTranslation();
   const { usuarioLogado } = useUsuario();
   const ehAdmin = usuarioLogado?.perfil === "ADMIN";
 
   const seccoesMenu: SeccaoMenu[] = [
     {
-      titulo: "PRINCIPAL",
+      titulo: t("sidebar.seccoes.principal"),
       itens: [
-        { path: "/dashboard", label: "Dashboard", icon: <IconHome /> },
-        { path: "/dashboard/documentos", label: "Documentos", icon: <IconDocumento /> },
-        { path: "/dashboard/categorias", label: "Categorias", icon: <IconPasta /> },
-        ...(ehAdmin ? [{ path: "/dashboard/aprovacoes", label: "Aprovações", icon: <IconBarras /> }] : []),
-        ...(ehAdmin ? [{ path: "/dashboard/lixeira", label: "Lixeira", icon: <IconLixeira /> }] : []),
+        { path: "/dashboard", label: t("sidebar.itens.dashboard"), icon: <IconHome /> },
+        { path: "/dashboard/documentos", label: t("sidebar.itens.documentos"), icon: <IconDocumento /> },
+        { path: "/dashboard/categorias", label: t("sidebar.itens.categorias"), icon: <IconPasta /> },
+        ...(ehAdmin ? [{ path: "/dashboard/aprovacoes", label: t("sidebar.itens.aprovacoes"), icon: <IconBarras /> }] : []),
+        ...(ehAdmin ? [{ path: "/dashboard/lixeira", label: t("sidebar.itens.lixeira"), icon: <IconLixeira /> }] : []),
       ],
     },
     {
-      titulo: "SISTEMAS DA NETLINE",
-      itens: [{ path: "/dashboard/sistemas", label: "Sistemas Desenvolvidos", icon: <IconSistemas /> }],
+      titulo: t("sidebar.seccoes.sistemasNetline"),
+      itens: [{ path: "/dashboard/sistemas", label: t("sidebar.itens.sistemasDesenvolvidos"), icon: <IconSistemas /> }],
     },
     {
-      titulo: "CONFIGURAÇÕES",
+      titulo: t("sidebar.seccoes.configuracoes"),
       itens: [
-        ...(ehAdmin ? [{ path: "/dashboard/usuarios", label: "Usuários", icon: <IconUsuarios /> }] : []),
-        { path: "/dashboard/configuracoes", label: "Configurações", icon: <IconConfig /> },
+        ...(ehAdmin ? [{ path: "/dashboard/usuarios", label: t("sidebar.itens.usuarios"), icon: <IconUsuarios /> }] : []),
+        { path: "/dashboard/configuracoes", label: t("sidebar.itens.configuracoes"), icon: <IconConfig /> },
       ],
     },
   ];
@@ -58,7 +60,7 @@ export default function Sidebar({ fechada = false }: SidebarProps) {
     >
       <div className={`flex items-center gap-3 font-bold text-xl tracking-wide border-b border-blue-900/60 pb-4 mb-6 ${fechada ? "justify-center" : ""}`}>
         <img src={logoNetline} alt="Logo Netline" className="w-8 h-8 rounded object-cover shadow-sm shrink-0" />
-        {!fechada && <span className="text-white truncate">Netline Serv</span>}
+        {!fechada && <span className="text-white truncate">{t("sidebar.marca")}</span>}
       </div>
 
       <nav className="space-y-6">

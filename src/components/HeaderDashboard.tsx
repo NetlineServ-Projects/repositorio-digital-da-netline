@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IconUsuario, IconLogout} from "./icons";
+import { IconUsuario, IconLogout } from "./icons";
+import AvatarUsuario from "./avatarUsuario";
 
 interface HeaderDashboardProps {
   sidebarFechada: boolean;
   setSidebarFechada: (fechada: boolean) => void;
-  usuario?: { nome: string; email?: string; perfil?: string } | null;
+  usuario?: { nome: string; email?: string; perfil?: string; fotografia?: string | null } | null;
   onDeletarConta?: () => void;
 }
 
@@ -14,17 +15,11 @@ export default function HeaderDashboard({
   setSidebarFechada,
   usuario,
 }: HeaderDashboardProps) {
-  const navigate = useNavigate();
+  const navigate = useNavigate();     
   const [menuAberto, setMenuAberto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const nomeUsuario = usuario?.nome || "Usuário";
-  const iniciais = nomeUsuario
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
   useEffect(() => {
     function aoClicarFora(e: MouseEvent) {
@@ -44,22 +39,13 @@ export default function HeaderDashboard({
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
-      {/* Canto Esquerdo: Botão Toggle + Campo do Repositório */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => setSidebarFechada(!sidebarFechada)}
           className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
           title={sidebarFechada ? "Expandir Menu" : "Recolher Menu"}
         >
-          <svg
-            className="w-5 h-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="4" />
             <line x1="9" y1="3" x2="9" y2="21" />
           </svg>
@@ -71,16 +57,13 @@ export default function HeaderDashboard({
         </div>
       </div>
 
-      {/* Canto Direito: Avatar + Dropdown do Usuário */}
       <div className="flex items-center gap-4">
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAberto((v) => !v)}
             className="flex items-center gap-3 border-l border-slate-200 pl-4 cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-full bg-blue-900 text-white font-semibold flex items-center justify-center text-xs shadow-xs">
-              {iniciais}
-            </div>
+            <AvatarUsuario nome={nomeUsuario} fotografia={usuario?.fotografia} tamanho="sm" />
             <span className="text-sm font-medium text-slate-700 hidden sm:inline">
               {nomeUsuario}
             </span>
@@ -89,9 +72,7 @@ export default function HeaderDashboard({
           {menuAberto && (
             <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-2 z-20">
               <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-100">
-                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-900 font-semibold flex items-center justify-center text-sm shrink-0">
-                  {iniciais}
-                </div>
+                <AvatarUsuario nome={nomeUsuario} fotografia={usuario?.fotografia} tamanho="md" />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-slate-800 truncate">{nomeUsuario}</p>
                   {usuario?.email && (
@@ -118,8 +99,6 @@ export default function HeaderDashboard({
                 <IconLogout className="w-4 h-4" />
                 Sair da Conta
               </button>
-
-              
             </div>
           )}
         </div>

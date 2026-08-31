@@ -21,6 +21,13 @@ Axios.interceptors.request.use(
         Authorization: `Bearer ${token}`,
       };
     }
+
+    //@ts-ignore
+    config.headers = {
+      ...config.headers,
+      "Accept-Language": localStorage.getItem("idioma") || "pt",
+    };
+
     return config;
   },
   (error) => {
