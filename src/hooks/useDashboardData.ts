@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
+import { API_ENDPOINTS } from "../data/client/endpoint";
 
 export interface UsuarioData {
   id?: number;
@@ -24,9 +25,9 @@ export interface Documento {
 
 export interface Atividade {
   id: string;
-  usuario: string;
+  usuario: { id: number; nome: string };
   acao: string;
-  alvo: string | null;
+  documento?: { id: string | number; titulo: string } | null;
   criadoEm: string;
 }
 
@@ -45,11 +46,11 @@ export function useDashboardData() {
 
     try {
       const [auth, docs, cats, sist, ativ] = await Promise.all([
-        fetchComToken("/auth/me"),
-        fetchComToken("/documentos"),
-        fetchComToken("/categorias"),
-        fetchComToken("/sistemas"),
-        fetchComToken("/dashboard/atividades"),
+        fetchComToken(API_ENDPOINTS.PERFIL),
+        fetchComToken(API_ENDPOINTS.DOCUMENTOS),
+        fetchComToken(API_ENDPOINTS.CATEGORIAS),
+        fetchComToken(API_ENDPOINTS.SISTEMAS),
+        fetchComToken(API_ENDPOINTS.ATIVIDADES_RECENTES),
       ]);
 
       setUsuario(auth);
@@ -68,7 +69,6 @@ export function useDashboardData() {
     buscarDados();
   }, [buscarDados]);
 
-  // Cálculos derivados
   const ehAdmin = usuario?.perfil === "ADMIN";
   const documentosVisiveis = ehAdmin ? documentos : documentos.filter((d) => d.estado === "APROVADO");
 
@@ -87,6 +87,7 @@ export function useDashboardData() {
     totalAprovados,
     documentosRecentes,
     atividades,
+    ehAdmin,
     loading,
     erro,
     recarregar: buscarDados,

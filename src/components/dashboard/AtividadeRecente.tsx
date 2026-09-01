@@ -2,9 +2,9 @@ import { useTranslation } from "react-i18next";
 
 export interface Atividade {
   id: string;
-  usuario: string;
+  usuario: { id: number; nome: string };
   acao: string;
-  alvo: string | null;
+  documento?: { id: string | number; titulo: string } | null;
   criadoEm: string;
 }
 
@@ -27,8 +27,10 @@ export default function AtividadeRecente({ atividades }: AtividadeRecenteProps) 
               <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
               <div className="flex-1">
                 <p className="text-slate-700">
-                  <strong className="text-slate-900">{item.usuario}</strong> {item.acao}{" "}
-                  {item.alvo && <span className="italic text-slate-500">"{item.alvo}"</span>}
+                  <strong className="text-slate-900">{item.usuario.nome}</strong> {item.acao}{" "}
+                  {item.documento?.titulo && (
+                    <span className="italic text-slate-500">"{item.documento.titulo}"</span>
+                  )}
                 </p>
                 <span className="text-slate-400 text-[10px]">
                   {new Date(item.criadoEm).toLocaleString(i18n.language === "en" ? "en-GB" : "pt-PT")}

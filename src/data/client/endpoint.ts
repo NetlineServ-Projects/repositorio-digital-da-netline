@@ -15,4 +15,6 @@ export const API_ENDPOINTS = {
 
   SISTEMAS: "/sistemas",
   SISTEMA_BY_ID: (id: number | string) => `/sistemas/${id}`,
+
+  ATIVIDADES_RECENTES: "/atividades/recentes",
 };

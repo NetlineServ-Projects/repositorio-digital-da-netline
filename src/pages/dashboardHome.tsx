@@ -7,7 +7,7 @@ import AtividadeRecente from "../components/dashboard/atividadeRecente";
 import type { Atividade } from "../components/dashboard/atividadeRecente";
 
 interface DashboardContext {
-  usuario: { nome: string; perfil?: string } | null;
+  usuario: { nome: string; perfil?: string; id?: number } | null;
   ehAdmin: boolean;
   totalCategorias: number;
   totalSistemas: number;
@@ -26,6 +26,10 @@ export default function DashboardHome() {
   } = useOutletContext<DashboardContext>();
   const navigate = useNavigate();
 
+  const atividadesVisiveis = ehAdmin
+    ? atividades
+    : atividades.filter((a) => a.usuario.id === usuario?.id);
+
   return (
     <div className="space-y-6">
       <HeroBanner totalDocumentos={totalDocumentos} totalSistemas={totalSistemas} onVerDocumentos={() => navigate("/dashboard/documentos")} />
@@ -40,7 +44,7 @@ export default function DashboardHome() {
       <AcoesRapidas ehAdmin={ehAdmin} onNavegar={(aba: string) => navigate(`/dashboard/${aba}`)} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DocumentosRecentes documentos={documentosRecentes} onVerTodos={() => navigate("/dashboard/documentos")} ehAdmin={ehAdmin} />
-        <AtividadeRecente atividades={ehAdmin ? atividades : atividades.filter((a) => a.usuario === usuario?.nome)} />
+        <AtividadeRecente atividades={atividadesVisiveis} />
       </div>
     </div>
   );

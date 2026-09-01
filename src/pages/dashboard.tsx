@@ -22,6 +22,7 @@ export default function Dashboard() {
     totalAprovados,
     documentosRecentes,
     atividades,
+    ehAdmin,
     loading,
     erro,
     recarregar,
