@@ -83,7 +83,9 @@ function App() {
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="lixeira" element={<Lixeira />} />
             <Route path="perfil" element={<Perfil />} />
-           <Route path="sistemas/:id/editar" element={<EditarSistemaPage />} />
+            <Route path="sistemas" element={<SistemasPage />} />
+            <Route path="sistemas/:id" element={<SistemasPage />} />
+            <Route path="sistemas/:id/editar" element={<EditarSistemaPage />} />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>
         </Routes>

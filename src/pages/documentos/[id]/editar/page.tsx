@@ -17,6 +17,12 @@ export default function EditarDocumentoPage() {
   const [categoriaId, setCategoriaId] = useState("");
   const [salvando, setSalvando] = useState(false);
 
+  // Se o documento pertence a um sistema, "voltar" deve regressar ao sistema
+  // em vez da listagem geral de Documentos
+  const voltar = documento?.sistemaId
+    ? `/dashboard/sistemas/${documento.sistemaId}`
+    : "/dashboard/documentos";
+
   useEffect(() => {
     if (documento) {
       setTitulo(documento.titulo || "");
@@ -31,7 +37,7 @@ export default function EditarDocumentoPage() {
     try {
       await editarDocumento(documento.id, { titulo, descricao, categoriaId });
       toast.success(t("documentos.editar.atualizadoComSucesso"));
-      navigate("/dashboard/documentos");
+      navigate(voltar);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("documentos.editar.erroAtualizar"));
     } finally {
@@ -60,7 +66,7 @@ export default function EditarDocumentoPage() {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <Link to="/dashboard/documentos" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors">
+      <Link to={voltar} className="inline-flex items-center text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors">
         ← {t("documentos.detalhes.voltar")}
       </Link>
 
@@ -100,7 +106,7 @@ export default function EditarDocumentoPage() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Link to="/dashboard/documentos" className="flex-1 text-center py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold rounded-lg transition-colors">
+          <Link to={voltar} className="flex-1 text-center py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold rounded-lg transition-colors">
             {t("documentos.form.cancelar")}
           </Link>
           <button

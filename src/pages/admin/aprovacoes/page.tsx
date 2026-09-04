@@ -151,7 +151,6 @@ export default function AprovacoesPage() {
                   <th className="py-3.5 px-4 font-semibold">Categoria</th>
                   <th className="py-3.5 px-4 font-semibold">Submetido Por</th>
                   <th className="py-3.5 px-4 font-semibold">Data</th>
-                  <th className="py-3.5 px-4 font-semibold">Status</th>
                   <th className="py-3.5 px-4 font-semibold text-right">
                     Ações do Gestor
                   </th>
@@ -198,7 +197,7 @@ export default function AprovacoesPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-slate-400">
+                    <td colSpan={5} className="text-center py-8 text-slate-400">
                       Nenhuma solicitação encontrada para o filtro selecionado.
                     </td>
                   </tr>

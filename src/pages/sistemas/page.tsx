@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useSistemasData, type Sistema } from "../../hooks/useSistemasData";
@@ -12,11 +12,12 @@ import SistemaDetalheHeader from "../../components/sistemas/sistemaDetalheHeader
 import SistemaFichaTecnica from "../../components/sistemas/sistemaFichaTecnica";
 import AnexarDocumentoForm from "../../components/sistemas/anexarDocumentoForm";
 import DocumentosDoSistemaTabela from "../../components/sistemas/documentosDoSistemaTabela";
-import DocumentoModal from "../../components/documentoModal";
 import FilterSelect from "../../components/filterSelect";
 
 export default function SistemasPage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id?: string }>();
+
   const {
     sistemas,
     documentos,
@@ -25,7 +26,6 @@ export default function SistemasPage() {
     criarSistema,
     editarSistema,
     anexarDocumento,
-    editarDocumento,
     apagarDocumento,
   } = useSistemasData();
 
@@ -35,16 +35,24 @@ export default function SistemasPage() {
   const [salvando, setSalvando] = useState(false);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
 
-  // Estados de busca e modais de documento
+  // Estados de busca
   const [busca, setBusca] = useState("");
   const [buscaDoc, setBuscaDoc] = useState("");
-  const [modalEditarAberto, setModalEditarAberto] = useState(false);
-  const [documentoEmEdicao, setDocumentoEmEdicao] = useState<Documento | null>(null);
 
   // Estados dos filtros avançados
   const [statusFiltro, setStatusFiltro] = useState<string[]>([]);
   const [clienteFiltro, setClienteFiltro] = useState<string[]>([]);
   const [tecnologiaFiltro, setTecnologiaFiltro] = useState<string[]>([]);
+
+  // Sincroniza sistemaAtivo com o :id da URL assim que a lista de sistemas carrega
+  useEffect(() => {
+    if (!id) {
+      setSistemaAtivo(null);
+      return;
+    }
+    const encontrado = sistemas.find((s) => String(s.id) === id);
+    if (encontrado) setSistemaAtivo(encontrado);
+  }, [id, sistemas]);
 
   // Categorias não sensíveis reutilizadas nos formulários de documentos
   const categoriasPublicas = useMemo(
@@ -137,34 +145,33 @@ export default function SistemasPage() {
     }
   };
 
+  // Edição de documento agora navega para a página partilhada de edição
   const abrirEditarDocumento = (doc: Documento) => {
-    setDocumentoEmEdicao(doc);
-    setModalEditarAberto(true);
+    navigate(`/dashboard/documentos/${doc.id}/editar`);
   };
 
-  const handleSalvarEdicaoDocumento = async (dados: {
-    titulo: string;
-    descricao: string;
-    categoriaId: string;
-  }) => {
-    if (!documentoEmEdicao) return;
-    try {
-      await editarDocumento(documentoEmEdicao.id, dados);
-      toast.success("Documento atualizado!");
-      setModalEditarAberto(false);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao atualizar documento.");
-    }
-  };
-
-  const handleApagarDoc = async (id: number) => {
-    if (!window.confirm("Tem a certeza que deseja apagar este documento?")) return;
-    try {
-      await apagarDocumento(id);
-      toast.success("Documento removido.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao apagar documento.");
-    }
+  // Confirmação interativa direta via Sonner Toast
+  const handleApagarDoc = (docId: number) => {
+    toast("Tem a certeza que deseja apagar este documento?", {
+      description: "Esta ação não pode ser desfeita.",
+      action: {
+        label: "Apagar",
+        onClick: async () => {
+          try {
+            await apagarDocumento(docId);
+            toast.success("Documento removido.");
+          } catch (err) {
+            toast.error(
+              err instanceof Error ? err.message : "Erro ao apagar documento."
+            );
+          }
+        },
+      },
+      cancel: {
+        label: "Cancelar",
+        onClick: () => {},
+      },
+    });
   };
 
   // Lógica de filtragem dos Sistemas
@@ -296,8 +303,8 @@ export default function SistemasPage() {
           sistemas={sistemasFiltrados}
           documentos={documentos}
           onSelecionar={(sis) => {
-            setSistemaAtivo(sis);
             setBuscaDoc("");
+            navigate(`/dashboard/sistemas/${sis.id}`);
           }}
         />
       </div>
@@ -309,7 +316,7 @@ export default function SistemasPage() {
     <div className="space-y-6">
       <SistemaDetalheHeader
         sistema={sistemaAtivo}
-        onVoltar={() => setSistemaAtivo(null)}
+        onVoltar={() => navigate("/dashboard/sistemas")}
         onEditar={() => navigate(`/dashboard/sistemas/${sistemaAtivo.id}/editar`)}
       />
 
@@ -328,14 +335,6 @@ export default function SistemasPage() {
         onBuscaChange={setBuscaDoc}
         onEditar={abrirEditarDocumento}
         onApagar={handleApagarDoc}
-      />
-
-      <DocumentoModal
-        aberto={modalEditarAberto}
-        documento={documentoEmEdicao}
-        categorias={categoriasPublicas}
-        onSalvar={handleSalvarEdicaoDocumento}
-        onFechar={() => setModalEditarAberto(false)}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
-import { IconPasta, IconDownload } from "../icons";
+import { Link } from "react-router-dom";
+import { IconPasta, IconDownload, IconVer } from "../icons";
 import FilterSelect from "../../components/filterSelect";
 import type { Documento } from "../../hooks/useSistemasData";
 import type { Categoria } from "../../types/documento";
@@ -31,19 +32,25 @@ export default function DocumentosDoSistemaTabela({
   // Opções formatadas para o FilterSelect ({ valor, label })
   const opcoesCategorias = useMemo(
     () => categorias.map((c) => ({ valor: c.nome, label: c.nome })),
-    [categorias]
+    [categorias],
   );
 
   const opcoesAutores = useMemo(() => {
     const nomes = documentos
       .map((d) => d.usuario?.nome)
       .filter((n): n is string => Boolean(n));
-    return Array.from(new Set(nomes)).sort().map((nome) => ({ valor: nome, label: nome }));
+    return Array.from(new Set(nomes))
+      .sort()
+      .map((nome) => ({ valor: nome, label: nome }));
   }, [documentos]);
 
   const opcoesTipos = useMemo(
-    () => OPCOES_TIPO.filter((t) => t.valor !== "TODOS").map((t) => ({ valor: t.valor, label: t.label })),
-    []
+    () =>
+      OPCOES_TIPO.filter((t) => t.valor !== "TODOS").map((t) => ({
+        valor: t.valor,
+        label: t.label,
+      })),
+    [],
   );
 
   const documentosFiltrados = useMemo(() => {
@@ -51,16 +58,22 @@ export default function DocumentosDoSistemaTabela({
       const catDoc = doc.categoria?.nome || "";
       const autorDoc = doc.usuario?.nome || "";
 
-      const atendeCategoria = categoriaFiltro.length === 0 || categoriaFiltro.includes(catDoc);
-      const atendeAutor = autorFiltro.length === 0 || autorFiltro.includes(autorDoc);
-      const atendeTipo = tipoFiltro.length === 0 || tipoFiltro.includes(classificarTipo(doc.tipoArquivo));
+      const atendeCategoria =
+        categoriaFiltro.length === 0 || categoriaFiltro.includes(catDoc);
+      const atendeAutor =
+        autorFiltro.length === 0 || autorFiltro.includes(autorDoc);
+      const atendeTipo =
+        tipoFiltro.length === 0 ||
+        tipoFiltro.includes(classificarTipo(doc.tipoArquivo));
 
       return atendeCategoria && atendeAutor && atendeTipo;
     });
   }, [documentos, categoriaFiltro, autorFiltro, tipoFiltro]);
 
   const possuiFiltrosAtivos =
-    categoriaFiltro.length > 0 || autorFiltro.length > 0 || tipoFiltro.length > 0;
+    categoriaFiltro.length > 0 ||
+    autorFiltro.length > 0 ||
+    tipoFiltro.length > 0;
 
   const limparFiltros = useCallback(() => {
     setCategoriaFiltro([]);
@@ -168,6 +181,14 @@ export default function DocumentosDoSistemaTabela({
                   </td>
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
+                      <Link
+                        to={`/dashboard/documentos/${doc.id}`}
+                        className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+                        title="Ver documento"
+                        aria-label="Ver documento"
+                      >
+                        <IconVer />
+                      </Link>
                       <a
                         href={obterUrlFicheiro(doc.caminho, API_URL)}
                         download={doc.nomeArquivo}
@@ -199,7 +220,8 @@ export default function DocumentosDoSistemaTabela({
                   colSpan={5}
                   className="text-center py-10 text-slate-400 text-xs"
                 >
-                  Nenhum documento encontrado para este sistema com os critérios selecionados.
+                  Nenhum documento encontrado para este sistema com os critérios
+                  selecionados.
                 </td>
               </tr>
             )}

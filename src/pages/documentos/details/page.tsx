@@ -18,6 +18,12 @@ export default function DocumentoDetalhesPage() {
   const { id } = useParams<{ id: string }>();
   const { documento, loading, erro } = useDocumentoDetalhe(id ?? "");
 
+  // Se o documento pertence a um sistema, "voltar" deve regressar ao sistema
+  // em vez da listagem geral de Documentos
+  const voltar = documento?.sistemaId
+    ? `/dashboard/sistemas/${documento.sistemaId}`
+    : "/dashboard/documentos";
+
   const dados = useMemo(() => {
     if (!documento) return null;
 
@@ -56,7 +62,7 @@ export default function DocumentoDetalhesPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <Link to="/dashboard/documentos" className="inline-flex items-center text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors">
+      <Link to={voltar} className="inline-flex items-center text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors">
         ← {t("documentos.detalhes.voltar")}
       </Link>
 
