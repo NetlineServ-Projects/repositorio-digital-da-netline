@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { IconPasta, IconDownload, IconVer } from "../icons";
-import FilterSelect from "../../components/filterSelect";
+import FilterSelect from "../filterSelect";
 import type { Documento } from "../../hooks/useSistemasData";
 import type { Categoria } from "../../types/documento";
 import { formatarTamanho, obterUrlFicheiro } from "../../utils/documentos";

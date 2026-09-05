@@ -8,6 +8,7 @@ export interface Usuario {
   email: string;
   numero: string;
   cargo: string;
+  departamento: string; // NOVO
   perfil: "ADMIN" | "FUNCIONARIO";
   fotografia?: string | null;
   dataCriacao?: string;
@@ -19,6 +20,7 @@ export interface UsuarioFormData {
   senha: string;
   numero: string;
   cargo: string;
+  departamento: string; // NOVO
   perfil: "ADMIN" | "FUNCIONARIO";
 }
 
@@ -71,7 +73,8 @@ export function useUsuariosData() {
       ? API_ENDPOINTS.USUARIO_BY_ID(editandoId)
       : API_ENDPOINTS.USUARIOS;
 
-    const method = isEdit ? "PUT" : "POST";
+    // Antes: "PUT" — a rota do backend é PATCH /usuarios/:id (atualização parcial), não PUT.
+    const method = isEdit ? "PATCH" : "POST";
 
     const payload = { ...dados };
 

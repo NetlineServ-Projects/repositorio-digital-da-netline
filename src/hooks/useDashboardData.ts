@@ -29,6 +29,7 @@ export interface Atividade {
   acao: string;
   documento?: { id: string | number; titulo: string } | null;
   criadoEm: string;
+  sistema: { id: number; nome: string } | null; 
 }
 
 export function useDashboardData() {

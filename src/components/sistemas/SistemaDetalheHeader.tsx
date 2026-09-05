@@ -1,4 +1,4 @@
-import { IconVoltar, IconCaneta } from "../icons";
+import { IconVoltar, IconCaneta, IconLixeira } from "../icons";
 import type { Sistema } from "../../hooks/useSistemasData";
 
 function renderBadgeStatus(status: string) {
@@ -16,16 +16,18 @@ interface SistemaDetalheHeaderProps {
   sistema: Sistema;
   onVoltar: () => void;
   onEditar: () => void;
+  onApagar: () => void;
 }
 
 export default function SistemaDetalheHeader({
   sistema,
   onVoltar,
   onEditar,
+  onApagar,
 }: SistemaDetalheHeaderProps) {
   return (
     <div className="bg-[#18357a] text-white p-8 rounded-2xl shadow-md flex flex-col gap-3">
-      {/* Botão Voltar + Categoria + Editar no Topo */}
+      {/* Botão Voltar + Categoria + Editar/Apagar no Topo */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
@@ -41,13 +43,23 @@ export default function SistemaDetalheHeader({
           </span>
         </div>
 
-        <button
-          onClick={onEditar}
-          className="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-semibold text-white transition-colors flex items-center gap-1.5 backdrop-blur-xs cursor-pointer"
-        >
-          <IconCaneta className="w-3.5 h-3.5" />
-          <span>Editar Sistema</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onEditar}
+            className="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-semibold text-white transition-colors flex items-center gap-1.5 backdrop-blur-xs cursor-pointer"
+          >
+            <IconCaneta className="w-3.5 h-3.5" />
+            <span>Editar Sistema</span>
+          </button>
+
+          <button
+            onClick={onApagar}
+            className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 rounded-lg text-xs font-semibold text-red-200 transition-colors flex items-center gap-1.5 backdrop-blur-xs cursor-pointer"
+          >
+            <IconLixeira className="w-3.5 h-3.5" />
+            <span>Apagar</span>
+          </button>
+        </div>
       </div>
 
       {/* Nome do Sistema e Badge de Status Acolhado Abaixo */}

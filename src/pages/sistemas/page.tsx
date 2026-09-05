@@ -108,12 +108,11 @@ export default function SistemasPage() {
         toast.success("Sistema registado com sucesso!");
       }
       setFormularioAberto(null);
-    } catch {
-      toast.error(
-        formularioAberto !== "novo"
-          ? "Erro ao guardar as alterações do sistema."
-          : "Erro ao registar o sistema."
-      );
+    } catch (err) {
+      // Antes: mensagem fixa ("Erro ao registar/guardar o sistema."), escondia qual campo falhou.
+      // Agora: err.message já vem construído em utils/api.ts com o detalhe do backend
+      // (ex: "descricaoCurta: Too big: expected string to have <=255 characters").
+      toast.error(err instanceof Error ? err.message : "Erro ao guardar o sistema.");
     } finally {
       setSalvando(false);
     }
