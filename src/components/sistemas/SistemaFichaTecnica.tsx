@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { Sistema } from "../../hooks/useSistemasData";
+import BotaoLerTexto from "../botaoLerTexto";
 
 interface SistemaFichaTecnicaProps {
   sistema: Sistema;
@@ -9,6 +10,17 @@ function formatarData(dataStr?: string): string {
   if (!dataStr) return "-";
   const data = new Date(dataStr);
   return isNaN(data.getTime()) ? dataStr : data.toLocaleDateString("pt-PT");
+}
+
+function renderBadgeStatus(status: string) {
+  switch (status) {
+    case "Em Produção":
+      return "bg-emerald-50 text-emerald-700 ";
+    case "Manutenção":
+      return "bg-amber-50 text-amber-700 ";
+    default:
+      return "bg-sky-20 text-sky-700 ";
+  }
 }
 
 function TechGroup({ title, items, colorClasses }: { title: string; items?: string[]; colorClasses: string }) {
@@ -56,9 +68,12 @@ export default function SistemaFichaTecnica({ sistema }: SistemaFichaTecnicaProp
           
           {sistema.descricaoLonga && (
             <div className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
-                Sobre o Sistema / Objetivo
-              </span>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Sobre o Sistema / Objetivo
+                </span>
+                <BotaoLerTexto texto={sistema.descricaoLonga} />
+              </div>
               <p className="text-sm text-slate-700 leading-relaxed font-normal">
                 {sistema.descricaoLonga}
               </p>
@@ -69,7 +84,21 @@ export default function SistemaFichaTecnica({ sistema }: SistemaFichaTecnicaProp
 
       {/* 2. GRELHA DE METADADOS */}
       <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        
+
+        {/* Status */}
+        <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col justify-between">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+            Status
+          </span>
+          <div>
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-md text-xs font-bold border ${renderBadgeStatus(sistema.status)}`}
+            >
+              {sistema.status}
+            </span>
+          </div>
+        </div>
+
         {/* Desenvolvedores */}
         <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-100 flex flex-col justify-between">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">

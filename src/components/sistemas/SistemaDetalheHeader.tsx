@@ -1,17 +1,6 @@
 import { IconVoltar, IconCaneta, IconLixeira } from "../icons";
 import type { Sistema } from "../../hooks/useSistemasData";
 
-function renderBadgeStatus(status: string) {
-  switch (status) {
-    case "Em Produção":
-      return "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
-    case "Manutenção":
-      return "bg-amber-500/20 text-amber-300 border-amber-500/30";
-    default:
-      return "bg-sky-500/20 text-sky-300 border-sky-500/30";
-  }
-}
-
 interface SistemaDetalheHeaderProps {
   sistema: Sistema;
   onVoltar: () => void;
@@ -62,18 +51,10 @@ export default function SistemaDetalheHeader({
         </div>
       </div>
 
-      {/* Nome do Sistema e Badge de Status Acolhado Abaixo */}
-      <div className="flex flex-col items-start gap-2 mt-1">
-        <h2 className="text-3xl font-bold text-white tracking-tight">
-          {sistema.nome}
-        </h2>
-
-        <span
-          className={`text-xs font-semibold px-3 py-0.5 rounded-full border ${renderBadgeStatus(sistema.status)}`}
-        >
-          {sistema.status}
-        </span>
-      </div>
+      {/* Nome do Sistema */}
+      <h2 className="text-3xl font-bold text-white tracking-tight mt-1">
+        {sistema.nome}
+      </h2>
     </div>
   );
 }

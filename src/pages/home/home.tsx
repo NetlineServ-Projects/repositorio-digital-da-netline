@@ -7,82 +7,127 @@ import Suporte from "../../components/suporte";
 import Footer from "../../components/footer";
 import { toast } from "sonner";
 
-const Home = () => {
+export default function Home() {
   const lidarComAdesao = () => {
-    toast.error("Redirecionando para o formulário de adesão!");
+    toast.info("Redirecionando para o formulário de adesão...");
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="min-h-screen bg-slate-50 text-slate-800 antialiased">
       <Header onPlanosClick={lidarComAdesao} />
 
-      {/* ================= HERO SECTION ================= */}
+      {/* ================= HERO SECTION OTIMIZADO ================= */}
       <section
         id="inicio"
-        className="relative bg-cover bg-center min-h-screen w-full flex items-center justify-center p-6 md:p-12"
+        className="relative w-full flex items-center justify-center bg-cover bg-center px-6 py-16 md:py-24 pt-28 md:pt-36"
         style={{ backgroundImage: `url(${Fundo1})` }}
       >
-        {/* Camada para escurecer o fundo e realçar o texto */}
-        <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]"></div>
+        {/* Overlay com gradiente suave */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/70 to-slate-950/85 backdrop-blur-[2px]" />
 
-        <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-20">
-          <div className="space-y-6 text-center lg:text-left">
-            <h2 className="text-amber-100 font-extrabold text-4xl sm:text-5xl lg:text-6xl leading-tight">
+        <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          
+          {/* Lado Esquerdo - Conteúdo Principal */}
+          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-300 text-xs font-semibold tracking-wider uppercase border border-amber-400/20">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+              Repositório Interno
+            </span>
+
+            <h1 className="text-amber-50 font-extrabold text-3xl sm:text-4xl lg:text-5xl leading-tight tracking-tight">
               Repositório Digital da <span className="text-amber-400">Netline</span>
-            </h2>
-            <p className="text-white font-bold text-2xl sm:text-3xl leading-snug">
+            </h1>
+
+            <p className="text-white font-medium text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Conectando ideias, estruturando o futuro.
             </p>
-            <p className="text-lg sm:text-xl text-amber-200/90 font-medium pt-2">
-              Bem-vindo ao repositório interno da Netline.
+
+            <p className="text-sm sm:text-base text-slate-300 font-normal max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              Plataforma centralizada para consulta, preservação e gestão do conhecimento institucional, documentações e aplicações corporativas.
             </p>
+
+            {/* Ações / Botões */}
+            <div className="pt-2 flex flex-wrap gap-4 justify-center lg:justify-start">
+              <a
+                href="#sobrenos"
+                className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-sm font-bold shadow-lg shadow-amber-400/20 transition-all hover:scale-[1.02] cursor-pointer"
+              >
+                Explorar Plataforma
+              </a>
+              <a
+                href="#suporte"
+                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition-all cursor-pointer backdrop-blur-xs"
+              >
+                Suporte Técnico
+              </a>
+            </div>
+
+            {/* Métrica / Atalho rápido */}
+            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-white/10 max-w-lg mx-auto lg:mx-0">
+              <div>
+                <span className="block text-xl font-bold text-amber-400">100%</span>
+                <span className="text-xs text-slate-400">Centralizado</span>
+              </div>
+              <div>
+                <span className="block text-xl font-bold text-amber-400">Seguro</span>
+                <span className="text-xs text-slate-400">Acesso Interno</span>
+              </div>
+              <div>
+                <span className="block text-xl font-bold text-amber-400">Online</span>
+                <span className="text-xs text-slate-400">Disponibilidade</span>
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-center items-center">
-            <img
-              src={Principal}
-              className="w-full max-w-lg h-auto object-cover rounded-2xl shadow-2xl border border-white/10 hover:scale-105 transition-transform duration-300"
-              alt="Plataforma Netline"
-            />
+          {/* Lado Direito - Imagem Ilustrativa */}
+          <div className="lg:col-span-5 flex justify-center items-center">
+            <div className="relative group w-full max-w-md lg:max-w-none">
+              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 to-blue-600/30 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition duration-300" />
+              <img
+                src={Principal}
+                className="relative w-full h-auto object-cover rounded-2xl shadow-2xl border border-white/15 transition-transform duration-300 group-hover:scale-[1.01]"
+                alt="Plataforma Netline"
+              />
+            </div>
           </div>
+
         </div>
       </section>
 
       {/* ================= SOBRE NÓS ================= */}
-      <section id="sobrenós" className="bg-gray-100 py-20 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
-            Sobre a Plataforma
-          </h1>
-          <p className="text-gray-600 text-base md:text-lg leading-relaxed max-w-3xl mx-auto mb-16">
-            O Repositório Digital da Netline é um espaço centralizado para
-            consulta e preservação do conhecimento institucional.
-            A plataforma reúne aplicações desenvolvidas pela empresa,
-            documentação técnica e funcional, manuais de utilização,
-            marcos históricos e registos de eventos, garantindo que a
-            informação permaneça acessível, organizada e disponível para toda
-            a equipa.
-          </p>
+      <section id="sobrenos" className="py-20 px-6 bg-slate-100/60">
+        <div className="max-w-6xl mx-auto text-center space-y-14">
+          <div className="max-w-3xl mx-auto space-y-3">
+            <span className="text-blue-700 font-semibold text-xs uppercase tracking-widest block">
+              Plataforma Institucional
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+              Sobre o Repositório
+            </h2>
+            <p className="text-slate-600 text-base md:text-lg leading-relaxed">
+              O Repositório Digital da Netline é o espaço central para consulta e preservação da informação corporativa. Reúne aplicações desenvolvidas, documentações técnicas, manuais de utilização e registos de eventos, garantindo acessibilidade e organização contínua.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
             <Card
               title="Aplicações e Documentação"
-              description="Consulte o catálogo de soluções desenvolvidas pela Netline, bem como os respetivos manuais e informações técnicas."
-              className="text-center bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-shadow"
+              description="Consulte o catálogo de soluções desenvolvidas pela Netline, bem como manuais e especificações técnicas."
+              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow space-y-3"
               icon={<FileIcon />}
             />
 
             <Card
               title="Conhecimento Centralizado"
-              description="Reúna num único local aplicações, manuais, procedimentos e documentos essenciais para o funcionamento da organização."
-              className="text-center bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-shadow"
+              description="Reúna num único local aplicações, procedimentos operacionais e documentos essenciais para a organização."
+              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow space-y-3"
               icon={<CabinetDocsIcon />}
             />
 
             <Card
               title="Memória Institucional"
-              description="Preserve a história da empresa através de marcos importantes, eventos corporativos e conquistas alcançadas ao longo dos anos."
-              className="text-center bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-shadow"
+              description="Preserve o histórico da empresa através de marcos importantes, conquistas e eventos corporativos."
+              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow space-y-3"
               icon={<CameraIcon />}
             />
           </div>
@@ -90,20 +135,20 @@ const Home = () => {
       </section>
 
       {/* ================= SUPORTE ================= */}
-      <section id="suporte" className="bg-gray-200 py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <p className="text-blue-700 font-semibold text-sm uppercase tracking-wider mb-2">
-            Contactos
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Suporte Técnico
-          </h2>
-          <p className="text-gray-700 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            Problemas ao submeter manuais ou dúvidas? Entre em contacto com o nosso suporte técnico. Estamos disponíveis para garantir que a tua experiência seja simples e rápida.
-          </p>
-        </div>
+      <section id="suporte" className="py-20 px-6 bg-slate-200/50">
+        <div className="max-w-5xl mx-auto space-y-10">
+          <div className="max-w-2xl mx-auto text-center space-y-3">
+            <span className="text-blue-700 font-semibold text-xs uppercase tracking-widest block">
+              Canais de Ajuda
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+              Suporte Técnico
+            </h2>
+            <p className="text-slate-600 text-base md:text-lg leading-relaxed">
+              Dúvidas sobre o envio de manuais ou utilização do sistema? Entre em contacto com a equipa de suporte para assistência direta.
+            </p>
+          </div>
 
-        <div className="max-w-5xl mx-auto">
           <Suporte />
         </div>
       </section>
@@ -112,6 +157,4 @@ const Home = () => {
       <Footer />
     </div>
   );
-};
-
-export default Home;
+}

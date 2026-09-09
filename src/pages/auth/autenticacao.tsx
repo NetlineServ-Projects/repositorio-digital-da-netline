@@ -21,7 +21,7 @@ export default function Autenticacao() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const trocarIdioma = (novoIdioma: string) => {
-    i18n.changeLanguage(novoIdioma); // já persiste em localStorage["idioma"]
+    i18n.changeLanguage(novoIdioma);
   };
 
   const entrar = async (e: React.FormEvent) => {
@@ -54,92 +54,102 @@ export default function Autenticacao() {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col md:flex-row">
+    <div className="w-full min-h-dvh flex flex-col lg:flex-row bg-gray-50 antialiased overflow-x-hidden">
+      {/* Seção Hero / Imagem de Fundo */}
       <div
-        className="w-full md:w-1/2 flex flex-col items-center justify-center p-8 md:p-16 text-white bg-cover bg-center relative"
+        className="w-full lg:w-1/2 min-h-80 lg:min-h-dvh flex flex-col items-center justify-center p-6 sm:p-12 lg:p-16 text-white bg-cover bg-center relative"
         style={{ backgroundImage: `url(${Fundo1})` }}
       >
-        <div className="absolute inset-0 bg-blue-950/85 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 bg-linear-to-br from-blue-950/90 via-blue-900/85 to-slate-950/90 backdrop-blur-[2px]" />
 
-        <div className="relative z-10 text-center max-w-xl">
-          <h2 className="text-sm font-semibold uppercase tracking-wider opacity-80 mb-2">
+        <div className="relative z-10 text-center max-w-lg my-auto">
+          <span className="inline-block px-3.5 py-1 mb-4 text-xs font-semibold uppercase tracking-widest bg-white/10 rounded-full border border-white/20 backdrop-blur-md">
             {t("auth.marca")}
-          </h2>
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
+          </span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight mb-4 sm:mb-6 text-white drop-shadow-sm">
             {t("auth.heroTitulo")}
           </h1>
-          <p className="text-lg opacity-90 leading-relaxed">
+          <p className="text-sm sm:text-base lg:text-lg text-blue-100/90 leading-relaxed max-w-md mx-auto">
             {t("auth.heroTexto")}
           </p>
         </div>
       </div>
 
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-white p-8 md:p-12 relative">
+      {/* Seção Formuário */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-between p-6 sm:p-10 lg:p-16 relative bg-white min-h-[calc(100dvh-320px)] lg:min-h-dvh overflow-y-auto">
         {/* Seletor de idioma */}
-        <div className="absolute top-6 right-6 flex items-center gap-1 text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => trocarIdioma("pt")}
-            className={`px-2 py-1 rounded-md transition-colors ${
-              i18n.language === "pt" ? "bg-blue-50 text-blue-700" : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            PT
-          </button>
-          <span className="text-gray-300">|</span>
-          <button
-            type="button"
-            onClick={() => trocarIdioma("en")}
-            className={`px-2 py-1 rounded-md transition-colors ${
-              i18n.language === "en" ? "bg-blue-50 text-blue-700" : "text-gray-400 hover:text-gray-600"
-            }`}
-          >
-            EN
-          </button>
+        <div className="w-full flex justify-end mb-6 lg:absolute lg:top-8 lg:right-8 lg:mb-0">
+          <div className="inline-flex items-center gap-1 bg-gray-100/80 p-1 rounded-lg border border-gray-200/60 text-xs font-medium">
+            <button
+              type="button"
+              onClick={() => trocarIdioma("pt")}
+              className={`px-3 py-1 rounded-md transition-all ${
+                i18n.language === "pt"
+                  ? "bg-white text-blue-700 shadow-sm font-semibold"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              PT
+            </button>
+            <button
+              type="button"
+              onClick={() => trocarIdioma("en")}
+              className={`px-3 py-1 rounded-md transition-all ${
+                i18n.language === "en"
+                  ? "bg-white text-blue-700 shadow-sm font-semibold"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              EN
+            </button>
+          </div>
         </div>
 
-        <div className="w-full max-w-md p-10 bg-white border border-gray-100 rounded-2xl shadow-lg transition-all">
-          <div className="flex flex-col items-center mb-8">
-            <img
-              src={logoNetline}
-              alt="Logotipo Netline"
-              className="h-16 w-auto object-contain mb-5 rounded-lg"
-            />
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-700 mb-1">
+        {/* Card do Formulário */}
+        <div className="w-full max-w-md my-auto px-4 py-2 sm:px-8">
+          <div className="flex flex-col items-center mb-8 text-center">
+            <div className="p-3 bg-blue-50/50 rounded-2xl mb-4 border border-blue-100/50">
+              <img
+                src={logoNetline}
+                alt="Logotipo Netline"
+                className="h-12 sm:h-14 w-auto object-contain"
+              />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-1">
               {t("auth.painelAcesso")}
-            </h2>
-            <h1 className="text-2xl font-bold text-gray-800">
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
               {t("auth.acederConta")}
-            </h1>
+            </h2>
           </div>
 
-          <form onSubmit={entrar} className="space-y-6">
+          <form onSubmit={entrar} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
                 {t("auth.emailLabel")}
               </label>
               <div className="relative flex items-center">
                 <input
                   type="email"
                   placeholder={t("auth.emailPlaceholder")}
-                  className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
+                  className="w-full pl-4 pr-11 py-3.5 bg-gray-50/80 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent focus:bg-white focus:outline-none transition-all placeholder:text-gray-400"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <IconEmail className="absolute right-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                <IconEmail className="absolute right-4 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2">
                 {t("auth.senhaLabel")}
               </label>
               <div className="relative flex items-center">
                 <input
                   type={mostrarSenha ? "text" : "password"}
                   placeholder="••••••••"
-                  className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white focus:outline-none transition-all"
+                  className="w-full pl-4 pr-11 py-3.5 bg-gray-50/80 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600 focus:border-transparent focus:bg-white focus:outline-none transition-all placeholder:text-gray-400"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   required
@@ -147,7 +157,7 @@ export default function Autenticacao() {
                 <button
                   type="button"
                   onClick={() => setMostrarSenha(!mostrarSenha)}
-                  className="absolute right-3.5 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  className="absolute right-4 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none p-1"
                 >
                   {mostrarSenha ? (
                     <IconOlhoAberto className="w-5 h-5" />
@@ -159,21 +169,25 @@ export default function Autenticacao() {
             </div>
 
             {erro && (
-              <div className="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg text-center font-medium animate-fade-in">
+              <div className="p-3.5 text-xs sm:text-sm text-red-600 bg-red-50/80 border border-red-200/60 rounded-xl text-center font-medium animate-shake">
                 {erro}
               </div>
             )}
 
-            <div className="pt-3">
+            <div className="pt-2">
               <Button
                 title={carregando ? t("auth.processando") : t("auth.entrar")}
                 type="submit"
                 disabled={carregando}
+                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 transition-all active:scale-[0.99] disabled:opacity-70"
               />
             </div>
           </form>
+        </div>
 
-          <p className="text-xs text-center text-gray-400 mt-10">
+        {/* Rodapé */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-400 font-medium">
             {t("auth.direitosReservados", { ano: new Date().getFullYear() })}
           </p>
         </div>

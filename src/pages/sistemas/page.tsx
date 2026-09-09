@@ -31,9 +31,14 @@ export default function SistemasPage() {
 
   // Estados de controlo da página e modais
   const [sistemaAtivo, setSistemaAtivo] = useState<Sistema | null>(null);
-  const [formularioAberto, setFormularioAberto] = useState<"novo" | Sistema | null>(null);
+  const [formularioAberto, setFormularioAberto] = useState<
+    "novo" | Sistema | null
+  >(null);
   const [salvando, setSalvando] = useState(false);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
+
+  // Estado para controlar a navegação por separadores na vista detalhada
+  const [abaAtiva, setAbaAtiva] = useState<"geral" | "documentos">("geral");
 
   // Estados de busca
   const [busca, setBusca] = useState("");
@@ -44,7 +49,7 @@ export default function SistemasPage() {
   const [clienteFiltro, setClienteFiltro] = useState<string[]>([]);
   const [tecnologiaFiltro, setTecnologiaFiltro] = useState<string[]>([]);
 
-  // Sincroniza sistemaAtivo com o :id da URL assim que a lista de sistemas carrega
+  // Sincroniza sistemaAtivo com o :id da URL
   useEffect(() => {
     if (!id) {
       setSistemaAtivo(null);
@@ -54,10 +59,10 @@ export default function SistemasPage() {
     if (encontrado) setSistemaAtivo(encontrado);
   }, [id, sistemas]);
 
-  // Categorias não sensíveis reutilizadas nos formulários de documentos
+  // Categorias não sensíveis reutilizadas
   const categoriasPublicas = useMemo(
     () => categorias.filter((c) => !c.sensivel),
-    [categorias]
+    [categorias],
   );
 
   // Opções dinâmicas derivadas dos dados de sistemas
@@ -87,7 +92,6 @@ export default function SistemasPage() {
       .map((t) => ({ valor: t, label: t }));
   }, [sistemas]);
 
-  // Ações de reset de filtros
   const limparFiltrosSistemas = useCallback(() => {
     setBusca("");
     setStatusFiltro([]);
@@ -95,13 +99,14 @@ export default function SistemasPage() {
     setTecnologiaFiltro([]);
   }, []);
 
-  // Handlers para o ciclo de vida do Sistema
   const handleSalvarSistema = async (dados: Record<string, unknown>) => {
     setSalvando(true);
     try {
       if (formularioAberto && formularioAberto !== "novo") {
         await editarSistema(formularioAberto.id, dados);
-        setSistemaAtivo((prev) => (prev ? ({ ...prev, ...dados } as Sistema) : null));
+        setSistemaAtivo((prev) =>
+          prev ? ({ ...prev, ...dados } as Sistema) : null,
+        );
         toast.success("Sistema atualizado com sucesso!");
       } else {
         await criarSistema(dados);
@@ -109,16 +114,14 @@ export default function SistemasPage() {
       }
       setFormularioAberto(null);
     } catch (err) {
-      // Antes: mensagem fixa ("Erro ao registar/guardar o sistema."), escondia qual campo falhou.
-      // Agora: err.message já vem construído em utils/api.ts com o detalhe do backend
-      // (ex: "descricaoCurta: Too big: expected string to have <=255 characters").
-      toast.error(err instanceof Error ? err.message : "Erro ao guardar o sistema.");
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao guardar o sistema.",
+      );
     } finally {
       setSalvando(false);
     }
   };
 
-  // Handlers para os documentos
   const handleAnexar = async (dados: {
     ficheiro: File;
     categoriaId: string;
@@ -138,18 +141,18 @@ export default function SistemasPage() {
       await anexarDocumento(formData);
       toast.success("Documento anexado com sucesso!");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao anexar o documento.");
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao anexar o documento.",
+      );
     } finally {
       setEnviandoDoc(false);
     }
   };
 
-  // Edição de documento agora navega para a página partilhada de edição
   const abrirEditarDocumento = (doc: Documento) => {
     navigate(`/dashboard/documentos/${doc.id}/editar`);
   };
 
-  // Confirmação interativa direta via Sonner Toast
   const handleApagarDoc = (docId: number) => {
     toast("Tem a certeza que deseja apagar este documento?", {
       description: "Esta ação não pode ser desfeita.",
@@ -161,7 +164,7 @@ export default function SistemasPage() {
             toast.success("Documento removido.");
           } catch (err) {
             toast.error(
-              err instanceof Error ? err.message : "Erro ao apagar documento."
+              err instanceof Error ? err.message : "Erro ao apagar documento.",
             );
           }
         },
@@ -173,7 +176,6 @@ export default function SistemasPage() {
     });
   };
 
-  // Lógica de filtragem dos Sistemas
   const sistemasFiltrados = useMemo(() => {
     const termoBusca = busca.trim().toLowerCase();
 
@@ -181,9 +183,14 @@ export default function SistemasPage() {
       const atendeBusca =
         !termoBusca ||
         sis.nome.toLowerCase().includes(termoBusca) ||
-        (sis.descricaoCurta && sis.descricaoCurta.toLowerCase().includes(termoBusca)) ||
-        (sis.desenvolvedores || []).some((d) => d.toLowerCase().includes(termoBusca)) ||
-        (sis.empresasClientes || []).some((c) => c.toLowerCase().includes(termoBusca));
+        (sis.descricaoCurta &&
+          sis.descricaoCurta.toLowerCase().includes(termoBusca)) ||
+        (sis.desenvolvedores || []).some((d) =>
+          d.toLowerCase().includes(termoBusca),
+        ) ||
+        (sis.empresasClientes || []).some((c) =>
+          c.toLowerCase().includes(termoBusca),
+        );
 
       const atendeStatus =
         statusFiltro.length === 0 || statusFiltro.includes(sis.status);
@@ -200,16 +207,18 @@ export default function SistemasPage() {
     });
   }, [sistemas, busca, statusFiltro, clienteFiltro, tecnologiaFiltro]);
 
-  // Documentos associados ao sistema ativo
   const documentosDoSistema = useMemo(() => {
     if (!sistemaAtivo) return [];
     const termoBuscaDoc = buscaDoc.trim().toLowerCase();
 
     return documentos
       .filter((doc) => Number(doc.sistemaId) === Number(sistemaAtivo.id))
-      .filter((doc) =>
-        !termoBuscaDoc ||
-        (doc.titulo || doc.nomeArquivo || "").toLowerCase().includes(termoBuscaDoc)
+      .filter(
+        (doc) =>
+          !termoBuscaDoc ||
+          (doc.titulo || doc.nomeArquivo || "")
+            .toLowerCase()
+            .includes(termoBuscaDoc),
       );
   }, [documentos, sistemaAtivo, buscaDoc]);
 
@@ -222,7 +231,9 @@ export default function SistemasPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center p-12">
-        <p className="text-slate-500 text-sm animate-pulse">A carregar sistemas...</p>
+        <p className="text-slate-500 text-sm animate-pulse">
+          A carregar sistemas...
+        </p>
       </div>
     );
   }
@@ -248,7 +259,6 @@ export default function SistemasPage() {
           onNovoSistema={() => setFormularioAberto("novo")}
         />
 
-        {/* Caixas de Pesquisa e Filtros Customizados */}
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
           <div className="w-full md:w-80 relative">
             <input
@@ -290,7 +300,7 @@ export default function SistemasPage() {
             <div className="flex justify-end pt-1">
               <button
                 onClick={limparFiltrosSistemas}
-                className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition-colors border border-rose-100"
+                className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition-colors border border-rose-100 cursor-pointer"
               >
                 ✕ Limpar filtros
               </button>
@@ -310,31 +320,72 @@ export default function SistemasPage() {
     );
   }
 
-  // Vista 3: Detalhes do Sistema Selecionado
+  // Vista 3: Detalhes do Sistema Selecionado (Com Tabs para Organização)
   return (
     <div className="space-y-6">
       <SistemaDetalheHeader
         sistema={sistemaAtivo}
         onVoltar={() => navigate("/dashboard/sistemas")}
-        onEditar={() => navigate(`/dashboard/sistemas/${sistemaAtivo.id}/editar`)}
+        onEditar={() => setFormularioAberto(sistemaAtivo)}
+        onApagar={() => {
+          // lógica de exclusão, ex:
+          if (
+            confirm(`Tem certeza que deseja apagar "${sistemaAtivo.nome}"?`)
+          ) {
+            // chamar sua função/hook de exclusão aqui, ex: excluirSistema(sistemaAtivo.id)
+            navigate("/dashboard/sistemas");
+          }
+        }}
       />
 
-      <SistemaFichaTecnica sistema={sistemaAtivo} />
+      {/* Navegação por Separadores (Tabs) */}
+      <div className="border-b border-slate-200 flex gap-6 text-sm font-medium">
+        <button
+          onClick={() => setAbaAtiva("geral")}
+          className={`pb-3 transition-colors relative cursor-pointer ${
+            abaAtiva === "geral"
+              ? "text-blue-900 font-semibold border-b-2 border-blue-900"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          Visão Geral & Ficha Técnica
+        </button>
+        <button
+          onClick={() => setAbaAtiva("documentos")}
+          className={`pb-3 transition-colors relative flex items-center gap-2 cursor-pointer ${
+            abaAtiva === "documentos"
+              ? "text-blue-900 font-semibold border-b-2 border-blue-900"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          Documentos do Sistema
+          <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-normal">
+            {documentosDoSistema.length}
+          </span>
+        </button>
+      </div>
 
-      <AnexarDocumentoForm
-        categorias={categoriasPublicas}
-        enviando={enviandoDoc}
-        onSubmit={handleAnexar}
-      />
+      {/* Conteúdo Alternável pelas Tabs */}
+      {abaAtiva === "geral" ? (
+        <SistemaFichaTecnica sistema={sistemaAtivo} />
+      ) : (
+        <div className="space-y-6">
+          <AnexarDocumentoForm
+            categorias={categoriasPublicas}
+            enviando={enviandoDoc}
+            onSubmit={handleAnexar}
+          />
 
-      <DocumentosDoSistemaTabela
-        documentos={documentosDoSistema}
-        categorias={categorias.filter((c) => !c.sensivel)}
-        busca={buscaDoc}
-        onBuscaChange={setBuscaDoc}
-        onEditar={abrirEditarDocumento}
-        onApagar={handleApagarDoc}
-      />
+          <DocumentosDoSistemaTabela
+            documentos={documentosDoSistema}
+            categorias={categoriasPublicas}
+            busca={buscaDoc}
+            onBuscaChange={setBuscaDoc}
+            onEditar={abrirEditarDocumento}
+            onApagar={handleApagarDoc}
+          />
+        </div>
+      )}
     </div>
   );
 }
