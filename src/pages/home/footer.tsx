@@ -1,4 +1,4 @@
-import logoNetline from "../assets/netline.jpg";
+import logoNetline from "../../assets/netline.jpg";
 
 const Footer = () => {
   return (

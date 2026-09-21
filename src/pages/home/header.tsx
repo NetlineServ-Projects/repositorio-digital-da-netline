@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logoNetline from "../assets/netline.jpg";
+import logoNetline from "../../assets/netline.jpg";
 import { Link } from "react-router-dom";
 
 interface HeaderProps {
