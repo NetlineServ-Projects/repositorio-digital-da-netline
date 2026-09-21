@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 
-import { useSistemasData, type Sistema } from "../../hooks/useSistemasData";
+import { useSistemasData, TOKEN_ELEVADO_DURACAO_MS, type Sistema } from "../../hooks/useSistemasData";
 import type { Documento } from "../../types/documento";
 
 import SistemasHeader from "../../components/sistemas/sistemasHeader";
@@ -13,10 +13,20 @@ import SistemaFichaTecnica from "../../components/sistemas/sistemaFichaTecnica";
 import AnexarDocumentoForm from "../../components/sistemas/anexarDocumentoForm";
 import DocumentosDoSistemaTabela from "../../components/sistemas/documentosDoSistemaTabela";
 import FilterSelect from "../../components/filterSelect";
+import ReautenticacaoModal from "./infraestrutura/reautenticacaoModal";
+import InfraestruturaTab from "./infraestrutura/infraestruraTab";
+
+
+
+interface DashboardContext {
+  usuario: { nome: string; perfil?: string } | null;
+}
 
 export default function SistemasPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
+    const { usuario } = useOutletContext<DashboardContext>();
+    const ehAdmin = usuario?.perfil === "ADMIN";
 
   const {
     sistemas,
@@ -27,18 +37,33 @@ export default function SistemasPage() {
     editarSistema,
     anexarDocumento,
     apagarDocumento,
+    reautenticar,
+    buscarInfraestrutura,
+    salvarInfraestrutura,
+    adicionarCredencial,
+    atualizarCredencial,
+    apagarCredencial,
   } = useSistemasData();
 
   // Estados de controlo da página e modais
   const [sistemaAtivo, setSistemaAtivo] = useState<Sistema | null>(null);
-  const [formularioAberto, setFormularioAberto] = useState<
-    "novo" | Sistema | null
-  >(null);
+  const [formularioAberto, setFormularioAberto] = useState < "novo" | Sistema | null >(null);
   const [salvando, setSalvando] = useState(false);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
 
   // Estado para controlar a navegação por separadores na vista detalhada
-  const [abaAtiva, setAbaAtiva] = useState<"geral" | "documentos">("geral");
+  const [abaAtiva, setAbaAtiva] = useState<"geral" | "documentos" | "credenciais">(
+    "geral",
+  );
+
+  // Reautenticação / acesso à infraestrutura (dados sensíveis, protegidos)
+  const [tokenElevado, setTokenElevado] = useState<string | null>(null);
+  const [tokenExpiraEm, setTokenExpiraEm] = useState<number | null>(null);
+  const [reautenticacaoAberta, setReautenticacaoAberta] = useState(false);
+  const [reautenticando, setReautenticando] = useState(false);
+  const [erroReautenticacao, setErroReautenticacao] = useState<string | null>(
+    null,
+  );
 
   // Estados de busca
   const [busca, setBusca] = useState("");
@@ -174,6 +199,47 @@ export default function SistemasPage() {
         onClick: () => {},
       },
     });
+  };
+
+  // =======================================
+  // Reautenticação / acesso à aba de Credenciais
+  // =======================================
+
+  const tokenElevadoValido = () =>
+    tokenElevado !== null && tokenExpiraEm !== null && Date.now() < tokenExpiraEm;
+
+  const handleClickAbaCredenciais = () => {
+    if (tokenElevadoValido()) {
+      setAbaAtiva("credenciais");
+    } else {
+      setErroReautenticacao(null);
+      setReautenticacaoAberta(true);
+    }
+  };
+
+  const handleConfirmarReautenticacao = async (senha: string) => {
+    setReautenticando(true);
+    setErroReautenticacao(null);
+    try {
+      const resultado = await reautenticar(senha);
+      setTokenElevado(resultado.tokenElevado);
+      setTokenExpiraEm(Date.now() + TOKEN_ELEVADO_DURACAO_MS);
+      setReautenticacaoAberta(false);
+      setAbaAtiva("credenciais");
+    } catch (err) {
+      setErroReautenticacao(
+        err instanceof Error ? err.message : "Erro ao reautenticar.",
+      );
+    } finally {
+      setReautenticando(false);
+    }
+  };
+
+  const handleSessaoExpirada = () => {
+    setTokenElevado(null);
+    setTokenExpiraEm(null);
+    setAbaAtiva("geral");
+    setReautenticacaoAberta(true);
   };
 
   const sistemasFiltrados = useMemo(() => {
@@ -363,12 +429,22 @@ export default function SistemasPage() {
             {documentosDoSistema.length}
           </span>
         </button>
+        <button
+          onClick={handleClickAbaCredenciais}
+          className={`pb-3 transition-colors relative cursor-pointer ${
+            abaAtiva === "credenciais"
+              ? "text-blue-900 font-semibold border-b-2 border-blue-900"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          Credenciais
+        </button>
       </div>
 
       {/* Conteúdo Alternável pelas Tabs */}
       {abaAtiva === "geral" ? (
         <SistemaFichaTecnica sistema={sistemaAtivo} />
-      ) : (
+      ) : abaAtiva === "documentos" ? (
         <div className="space-y-6">
           <AnexarDocumentoForm
             categorias={categoriasPublicas}
@@ -385,7 +461,29 @@ export default function SistemasPage() {
             onApagar={handleApagarDoc}
           />
         </div>
+      ) : (
+        tokenElevado && (
+          <InfraestruturaTab
+            sistemaId={sistemaAtivo.id}
+            tokenElevado={tokenElevado}
+            ehAdmin={ehAdmin}
+            onSessaoExpirada={handleSessaoExpirada}
+            buscarInfraestrutura={buscarInfraestrutura}
+            salvarInfraestrutura={salvarInfraestrutura}
+            adicionarCredencial={adicionarCredencial}
+            atualizarCredencial={atualizarCredencial}
+            apagarCredencial={apagarCredencial}
+          />
+        )
       )}
+
+      <ReautenticacaoModal
+        aberto={reautenticacaoAberta}
+        enviando={reautenticando}
+        erro={erroReautenticacao}
+        onConfirmar={handleConfirmarReautenticacao}
+        onCancelar={() => setReautenticacaoAberta(false)}
+      />
     </div>
   );
 }

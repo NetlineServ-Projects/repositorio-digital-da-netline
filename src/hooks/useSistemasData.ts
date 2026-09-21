@@ -4,6 +4,8 @@ import type { Documento, Categoria } from "../types/documento";
 
 export type { Documento, Categoria };
 
+export const TOKEN_ELEVADO_DURACAO_MS = 3 * 60 * 1000; // 3 minutos, sincronizado com o backend (authService)
+
 export interface Sistema {
   id: string | number;
   nome: string;
@@ -23,6 +25,34 @@ export interface Sistema {
   responsavelTecnico?: string;
   versaoAtual?: string;
   totalDocumentos?: number;
+}
+
+export type TipoCredencial =
+  | "ENV_VARIAVEIS"
+  | "CREDENCIAIS_BD"
+  | "CHAVE_TOKEN_API"
+  | "CHAVE_SSH"
+  | "CERTIFICADO_SSL"
+  | "CREDENCIAIS_DNS"
+  | "ACESSO_CONSOLA_CLOUD"
+  | "CREDENCIAIS_CICD"
+  | "CONFIGURACAO_VPN_FIREWALL"
+  | "CREDENCIAIS_SMTP"
+  | "BACKUP_ACESSO"
+  | "OUTRO";
+
+export interface Credencial {
+  id: number;
+  tipo: TipoCredencial;
+  label: string;
+  valor?: string; // só vem preenchido no GET; nunca em respostas de criação/edição
+}
+
+export interface SistemaInfraestrutura {
+  id: number;
+  ipServidor: string | null;
+  cloudProvedor: string | null;
+  credenciais: Credencial[];
 }
 
 function comTecnologiasCombinadas(sis: Sistema): Sistema {
@@ -89,5 +119,88 @@ export function useSistemasData() {
     await fetchDados();
   };
 
-  return { sistemas, documentos, categorias, loading, criarSistema, editarSistema, anexarDocumento, editarDocumento, apagarDocumento, recarregar: fetchDados };
+  // =======================================
+  // Infraestrutura encriptada (reautenticação necessária)
+  // =======================================
+
+  // Confirma a password e devolve o token elevado (válido 15 min).
+  // Não recarrega `sistemas` — não altera a listagem geral.
+  const reautenticar = async (senha: string): Promise<{ tokenElevado: string; expiraEm: string }> => {
+    return fetchComToken("/auth/reautenticar", {
+      method: "POST",
+      body: JSON.stringify({ senha }),
+    });
+  };
+
+  const buscarInfraestrutura = async (
+    sistemaId: string | number,
+    tokenElevado: string
+  ): Promise<SistemaInfraestrutura | null> => {
+    return fetchComToken(`/sistemas/${sistemaId}/infraestrutura`, {
+      headers: { "x-token-elevado": tokenElevado },
+    });
+  };
+
+  const salvarInfraestrutura = async (
+    sistemaId: string | number,
+    dados: { ipServidor?: string; cloudProvedor?: string },
+    tokenElevado: string
+  ) => {
+    return fetchComToken(`/sistemas/${sistemaId}/infraestrutura`, {
+      method: "PUT",
+      body: JSON.stringify(dados),
+      headers: { "x-token-elevado": tokenElevado },
+    });
+  };
+
+  const adicionarCredencial = async (
+    sistemaId: string | number,
+    dados: { tipo: TipoCredencial; label: string; valor: string },
+    tokenElevado: string
+  ) => {
+    return fetchComToken(`/sistemas/${sistemaId}/infraestrutura/credenciais`, {
+      method: "POST",
+      body: JSON.stringify(dados),
+      headers: { "x-token-elevado": tokenElevado },
+    });
+  };
+
+  const atualizarCredencial = async (
+    credencialId: number,
+    dados: Partial<{ tipo: TipoCredencial; label: string; valor: string }>,
+    tokenElevado: string
+  ) => {
+    return fetchComToken(`/sistemas/infraestrutura/credenciais/${credencialId}`, {
+      method: "PATCH",
+      body: JSON.stringify(dados),
+      headers: { "x-token-elevado": tokenElevado },
+    });
+  };
+
+  const apagarCredencial = async (credencialId: number, tokenElevado: string) => {
+    return fetchComToken(`/sistemas/infraestrutura/credenciais/${credencialId}`, {
+      method: "DELETE",
+      headers: { "x-token-elevado": tokenElevado },
+    });
+  };
+
+  return {
+    sistemas,
+    documentos,
+    categorias,
+    loading,
+    criarSistema,
+    editarSistema,
+    anexarDocumento,
+    editarDocumento,
+    apagarDocumento,
+    recarregar: fetchDados,
+    // infraestrutura
+    reautenticar,
+    buscarInfraestrutura,
+    salvarInfraestrutura,
+    adicionarCredencial,
+    atualizarCredencial,
+    apagarCredencial,
+  };
 }
