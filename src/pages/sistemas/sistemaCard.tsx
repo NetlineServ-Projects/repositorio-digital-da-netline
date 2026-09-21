@@ -1,4 +1,4 @@
-import { IconSistema, IconVer } from "../icons";
+import { IconSistema, IconVer } from "../../components/icons";
 import type { Sistema, Documento } from "../../hooks/useSistemasData";
 
 function renderBadgeStatus(status: string) {

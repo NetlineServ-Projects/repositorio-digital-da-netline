@@ -1,4 +1,4 @@
-import { IconVoltar, IconCaneta, IconLixeira } from "../icons";
+import { IconVoltar, IconCaneta, IconLixeira } from "../../components/icons";
 import type { Sistema } from "../../hooks/useSistemasData";
 
 interface SistemaDetalheHeaderProps {
