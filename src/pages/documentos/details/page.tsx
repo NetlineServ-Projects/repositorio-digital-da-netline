@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDocumentoDetalhe } from "../../../hooks/useDocumentoDetalhe";
 import StatusBadge from "../../../components/statusBadge";
-import DocumentoViewerFactory from "../../../components/documentoViewer/documentoViewerFactory";
+import DocumentoViewerFactory from "./documentoViewer/documentoViewerFactory";
 import {
   obterUrlFicheiro,
   formatarExtensao,
