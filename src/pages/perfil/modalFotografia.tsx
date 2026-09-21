@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchComToken } from "../utils/api";
-import { API_ENDPOINTS } from "../data/client/endpoint";
+import { fetchComToken } from "../../utils/api";
+import { API_ENDPOINTS } from "../../data/client/endpoint";
 
 interface ModalFotografiaProps {
   aberto: boolean;
