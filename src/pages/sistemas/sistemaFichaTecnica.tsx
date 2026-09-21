@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Sistema } from "../../hooks/useSistemasData";
-import BotaoLerTexto from "../botaoLerTexto";
+import BotaoLerTexto from "./botaoLerTexto";
 
 interface SistemaFichaTecnicaProps {
   sistema: Sistema;

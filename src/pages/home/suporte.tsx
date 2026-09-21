@@ -1,4 +1,4 @@
-import SuporteTecnico from "../assets/suporte tecnio2.jpg";
+import SuporteTecnico from "../../assets/suporte tecnio2.jpg";
 
 export default function Suporte() {
   return (

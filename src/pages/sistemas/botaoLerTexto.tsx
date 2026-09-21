@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { IconVolume, IconVolumeOff } from "../components/icons"; // ou use qualquer ícone que já tenhas
+import { IconVolume, IconVolumeOff } from "../../components/icons";
 
 interface BotaoLerTextoProps {
   texto: string;

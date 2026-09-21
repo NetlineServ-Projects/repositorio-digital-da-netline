@@ -3,10 +3,10 @@ import {
   IconOlhoAberto,
   IconOlhoFechado,
   IconVoltar,
-} from "../../components/icons"; // Ajuste o caminho do arquivo de ícones se necessário
+} from "../../../components/icons"; // Ajuste o caminho do arquivo de ícones se necessário
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faSave } from "@fortawesome/free-solid-svg-icons";
-import type { UsuarioFormData } from "../../hooks/useUsuariosData";
+import type { UsuarioFormData } from "../../../hooks/useUsuariosData";
 
 interface UsuarioFormularioProps {
   editandoId: number | null;

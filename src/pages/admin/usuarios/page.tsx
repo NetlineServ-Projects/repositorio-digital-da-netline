@@ -5,10 +5,10 @@ import {
   type UsuarioFormData,
 } from "../../../hooks/useUsuariosData";
 
-import UsuariosHeader from "../../../components/usuarios/usuariosHeader";
-import UsuariosBusca from "../../../components/usuarios/usuariosBusca";
-import UsuariosTabela from "../../../components/usuarios/usuariosTabela";
-import UsuarioFormulario from "../../../components/usuarios/usuarioFormulario";
+import UsuariosHeader from "./usuariosHeader";
+import UsuariosBusca from "./usuariosBusca";
+import UsuariosTabela from "./usuariosTabela";
+import UsuarioFormulario from "./usuarioFormulario";
 
 const FORM_VAZIO: UsuarioFormData = {
   nome: "",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUsuario } from "../../components/usuarioContext";
-import Button from "../../components/button";
+import Button from "./button";
 import Fundo1 from "../../assets/fundo.jpg";
 import logoNetline from "../../assets/netline.jpg";
 import {

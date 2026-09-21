@@ -1,10 +1,10 @@
-import Header from "../../components/header";
-import Card from "../../components/card";
+import Header from "./header";
+import Card from "./card";
 import { CabinetDocsIcon, CameraIcon, FileIcon } from "../../components/icons";
 import Principal from "../../assets/principal.png";
 import Fundo1 from "../../assets/fundo.jpg";
-import Suporte from "../../components/suporte";
-import Footer from "../../components/footer";
+import Suporte from "./suporte";
+import Footer from "./footer";
 import { toast } from "sonner";
 
 export default function Home() {

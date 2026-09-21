@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { API_URL, fetchComToken } from "../../utils/api";
 import { API_ENDPOINTS } from "../../data/client/endpoint";
 import { IconUsuario } from "../../components/icons";
-import ModalFotografia from "../../components/modalFotografia";
+import ModalFotografia from "./modalFotografia";
 import type { UsuarioData } from "../../hooks/useDashboardData";
 
 interface DashboardContext {

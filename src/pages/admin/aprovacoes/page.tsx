@@ -6,7 +6,7 @@ import SearchInput from "../../../components/searchInput";
 import ViewToggle from "../../../components/viewToggle";
 import DocumentoRow from "../../../components/documentoRow";
 import DocumentoCard from "../../../components/documentoCard";
-import ModalMotivoRejeicao from "../../../components/modalMotivoRejeicao"
+import ModalMotivoRejeicao from "./modalMotivoRejeicao";
 import { toast } from "sonner";
 
 export default function AprovacoesPage() {
