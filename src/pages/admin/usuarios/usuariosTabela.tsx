@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faPen, faTrash, faUserShield, faUser } from "@fortawesome/free-solid-svg-icons";
-import type { Usuario } from "../../hooks/useUsuariosData";
-import { API_URL } from "../../utils/api";
+import type { Usuario } from "../../../hooks/useUsuariosData";
+import { API_URL } from "../../../utils/api";
 
 interface UsuariosTabelaProps {
   usuarios: Usuario[];
