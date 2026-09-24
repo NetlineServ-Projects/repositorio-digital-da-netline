@@ -90,7 +90,6 @@ export default function InfraestruturaTab({
   const [revelados, setRevelados] = useState<Set<number>>(new Set());
   const [copiadoId, setCopiadoId] = useState<number | null>(null);
 
-  // Tratamento centralizado e robusto de erros de API
   const tratarErro = useCallback(
     (error: unknown, mensagemGenerica: string) => {
       const isErroApi = error instanceof ErroApi;
@@ -131,17 +130,6 @@ export default function InfraestruturaTab({
   useEffect(() => {
     carregar();
   }, [carregar]);
-
-  // Fechar modal ao pressionar ESC
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && formularioAberto) {
-        setFormularioAberto(null);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [formularioAberto]);
 
   const handleSalvarInfra = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,8 +235,8 @@ export default function InfraestruturaTab({
 
   if (carregando) {
     return (
-      <div className="flex justify-center items-center p-12">
-        <p className="text-slate-500 text-sm animate-pulse">
+      <div className="flex justify-center items-center p-8 sm:p-12">
+        <p className="text-slate-500 text-xs sm:text-sm animate-pulse">
           A carregar dados de infraestrutura...
         </p>
       </div>
@@ -259,11 +247,11 @@ export default function InfraestruturaTab({
     !campoCredencial.label.trim() || !campoCredencial.valor.trim();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
       {/* Dados rápidos de servidor */}
       <form
         onSubmit={handleSalvarInfra}
-        className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4"
+        className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4"
       >
         <h3 className="text-sm font-semibold text-slate-800">
           Dados do Servidor
@@ -301,7 +289,7 @@ export default function InfraestruturaTab({
             <button
               type="submit"
               disabled={salvandoInfra}
-              className="px-4 py-2 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {salvandoInfra ? "A guardar..." : "Guardar"}
             </button>
@@ -310,25 +298,28 @@ export default function InfraestruturaTab({
       </form>
 
       {/* Lista de Credenciais */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-slate-800">Credenciais</h3>
-          <button
-            type="button"
-            onClick={abrirNovaCredencial}
-            className="text-xs font-semibold text-blue-900 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-          >
-            + Adicionar Credencial
-          </button>
+          {!formularioAberto && (
+            <button
+              type="button"
+              onClick={abrirNovaCredencial}
+              className="text-xs font-semibold text-blue-900 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-left sm:text-right"
+            >
+              + Adicionar Credencial
+            </button>
+          )}
         </div>
 
-        {(!infraestrutura || infraestrutura.credenciais.length === 0) && (
-          <p className="text-xs text-slate-400 italic">
-            Nenhuma credencial registada ainda.
-          </p>
-        )}
+        {(!infraestrutura || infraestrutura.credenciais.length === 0) &&
+          !formularioAberto && (
+            <p className="text-xs text-slate-400 italic">
+              Nenhuma credencial registada ainda.
+            </p>
+          )}
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {infraestrutura?.credenciais.map((credencial) => {
             const isRevelado = revelados.has(credencial.id);
             const isCopiado = copiadoId === credencial.id;
@@ -338,12 +329,12 @@ export default function InfraestruturaTab({
                 key={credencial.id}
                 className="border border-slate-100 rounded-lg p-3 space-y-2 hover:border-slate-200 transition-all"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-800">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-slate-800 truncate">
                       {credencial.label}
                     </p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 truncate">
                       {labelTipo(credencial.tipo)}
                     </p>
                   </div>
@@ -365,15 +356,15 @@ export default function InfraestruturaTab({
                   </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-md p-2 flex items-start justify-between gap-2">
-                  <pre className="text-[11px] text-slate-700 whitespace-pre-wrap break-all font-mono">
+                <div className="bg-slate-50 rounded-md p-2 flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 overflow-hidden">
+                  <pre className="text-[11px] text-slate-700 whitespace-pre-wrap break-all font-mono max-w-full overflow-x-auto">
                     {isRevelado
                       ? credencial.valor
                       : "•".repeat(
-                          Math.min(credencial.valor?.length || 24, 40),
+                          Math.min(credencial.valor?.length || 24, 30),
                         )}
                   </pre>
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex justify-end gap-1 shrink-0 pt-1 sm:pt-0 border-t sm:border-0 border-slate-200/60">
                     <button
                       type="button"
                       onClick={() => alternarRevelado(credencial.id)}
@@ -399,28 +390,22 @@ export default function InfraestruturaTab({
         </div>
       </div>
 
-      {/* Formulário Modal de adicionar/editar credencial */}
+      {/* Formulário Integrado na Página */}
       {formularioAberto && (
-        <div
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
-          onClick={() => setFormularioAberto(null)}
-          role="dialog"
-          aria-modal="true"
+        <form
+          onSubmit={handleSalvarCredencial}
+          className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-xs space-y-4"
         >
-          <form
-            onSubmit={handleSalvarCredencial}
-            onClick={(e) => e.stopPropagation()} // Impede fechar ao clicar no corpo do form
-            className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150"
-          >
-            <h3 className="text-sm font-semibold text-slate-800">
-              {formularioAberto === "novo"
-                ? "Nova Credencial"
-                : "Editar Credencial"}
-            </h3>
+          <h3 className="text-sm sm:text-base font-bold text-slate-800">
+            {formularioAberto === "novo"
+              ? "Nova Credencial"
+              : "Editar Credencial"}
+          </h3>
 
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="text-xs font-medium text-slate-500 block mb-1">
-                Tipo
+              <label className="text-xs font-semibold text-slate-600 block mb-1">
+                TIPO
               </label>
               <select
                 value={campoCredencial.tipo}
@@ -430,7 +415,7 @@ export default function InfraestruturaTab({
                     tipo: e.target.value as TipoCredencial,
                   }))
                 }
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
+                className="w-full px-3 py-2 text-xs bg-slate-50/70 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 transition-all"
               >
                 {TIPOS_CREDENCIAL.map((t) => (
                   <option key={t.valor} value={t.valor}>
@@ -441,8 +426,8 @@ export default function InfraestruturaTab({
             </div>
 
             <div>
-              <label className="text-xs font-medium text-slate-500 block mb-1">
-                Rótulo
+              <label className="text-xs font-semibold text-slate-600 block mb-1">
+                RÓTULO <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
@@ -453,14 +438,14 @@ export default function InfraestruturaTab({
                     label: e.target.value,
                   }))
                 }
-                placeholder='ex: "Chave SSH — servidor principal"'
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
+                placeholder="Ex: Chave SSH — servidor principal"
+                className="w-full px-3 py-2 text-xs bg-slate-50/70 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 transition-all"
               />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-slate-500 block mb-1">
-                Valor
+              <label className="text-xs font-semibold text-slate-600 block mb-1">
+                VALOR <span className="text-rose-500">*</span>
               </label>
               <textarea
                 value={campoCredencial.valor}
@@ -470,31 +455,31 @@ export default function InfraestruturaTab({
                     valor: e.target.value,
                   }))
                 }
-                rows={6}
+                rows={4}
                 placeholder="Cole aqui o conteúdo (ex: variáveis de ambiente, chave, token...)"
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 font-mono"
+                className="w-full px-3 py-2 text-xs bg-slate-50/70 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 font-mono transition-all"
               />
             </div>
+          </div>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setFormularioAberto(null)}
-                disabled={salvandoCredencial}
-                className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={salvandoCredencial || formInvalido}
-                className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {salvandoCredencial ? "A guardar..." : "Guardar"}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setFormularioAberto(null)}
+              disabled={salvandoCredencial}
+              className="w-full py-2.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer text-center"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={salvandoCredencial || formInvalido}
+              className="w-full py-2.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-center"
+            >
+              {salvandoCredencial ? "A guardar..." : "Guardar"}
+            </button>
+          </div>
+        </form>
       )}
     </div>
   );

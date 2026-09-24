@@ -54,7 +54,7 @@ export default function Sidebar({ fechada = false }: SidebarProps) {
 
   return (
     <aside
-      className={`bg-[#092565] text-white flex flex-col p-4 min-h-screen select-none shadow-lg transition-all duration-300 ${
+      className={`bg-[#092565] text-white flex flex-col p-4  select-none shadow-lg transition-all duration-300 ${
         fechada ? "w-20" : "w-64"
       }`}
     >

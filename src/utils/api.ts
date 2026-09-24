@@ -7,11 +7,19 @@ const CHAVE_IDIOMA_CACHE = "idioma_preferido";
 // (quando o backend devolve { sucesso: false, mensagem, data: [{ campo, mensagem }] })
 export class ErroApi extends Error {
   detalhes?: { campo: string; mensagem: string }[];
+  status:number;
 
-  constructor(mensagem: string, detalhes?: { campo: string; mensagem: string }[]) {
+
+
+  constructor(
+    mensagem: string,
+    detalhes?: { campo: string; mensagem: string }[],
+    status: number = 0,
+  ) {
     super(mensagem);
     this.name = "ErroApi";
     this.detalhes = detalhes;
+    this.status = status;
   }
 }
 
@@ -62,7 +70,7 @@ export async function fetchComToken(endpoint: string, options: RequestInit = {})
     // O backend devolve os erros de validação Zod em `data`, um por campo
     const detalhes = Array.isArray(corpo?.data) ? corpo.data : undefined;
     const mensagemBase = corpo?.mensagem || "Erro ao comunicar com o servidor.";
-    throw new ErroApi(construirMensagemDetalhada(mensagemBase, detalhes), detalhes);
+    throw new ErroApi(construirMensagemDetalhada(mensagemBase, detalhes), detalhes,resposta.status,);
   }
 
   cachearIdiomaSeExistir(corpo.data);

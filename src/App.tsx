@@ -23,6 +23,7 @@ import { UsuarioProvider, useUsuario } from "./components/usuarioContext";
 import SistemasPage from "./pages/sistemas/page";
 import { Toaster } from "sonner";
 import NovoDocumentoPage from "./pages/documentos/new/page";
+import NovaCredencialPage from "./pages/sistemas/infraestrutura/new/novaCredencialPage";
 import EditarDocumentoPage from "./pages/documentos/[id]/editar/page";
 import EditarSistemaPage from "./pages/sistemas/editar/page";
 
@@ -86,6 +87,10 @@ function App() {
             <Route path="sistemas" element={<SistemasPage />} />
             <Route path="sistemas/:id" element={<SistemasPage />} />
             <Route path="sistemas/:id/editar" element={<EditarSistemaPage />} />
+            <Route
+              path="sistemas/:sistemaId/credenciais/nova"
+              element={<NovaCredencialPage />}
+            />
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>
         </Routes>

@@ -20,8 +20,14 @@ interface DashboardContext {
 
 export default function DashboardHome() {
   const {
-    usuario, ehAdmin, totalCategorias, totalSistemas, totalDocumentos,
-    pendentesAprovacao, totalAprovados, documentosRecentes,
+    usuario,
+    ehAdmin,
+    totalCategorias,
+    totalSistemas,
+    totalDocumentos,
+    pendentesAprovacao,
+    totalAprovados,
+    documentosRecentes,
     atividades,
   } = useOutletContext<DashboardContext>();
   const navigate = useNavigate();
@@ -31,8 +37,15 @@ export default function DashboardHome() {
     : atividades.filter((a) => a.usuario.id === usuario?.id);
 
   return (
-    <div className="space-y-6">
-      <HeroBanner totalDocumentos={totalDocumentos} totalSistemas={totalSistemas} onVerDocumentos={() => navigate("/dashboard/documentos")} />
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
+      {/* Banner Principal */}
+      <HeroBanner
+        totalDocumentos={totalDocumentos}
+        totalSistemas={totalSistemas}
+        onVerDocumentos={() => navigate("/dashboard/documentos")}
+      />
+
+      {/* Métricas e Estatísticas */}
       <MetricsGrid
         totalDocumentos={totalDocumentos}
         pendentesAprovacao={pendentesAprovacao}
@@ -41,9 +54,20 @@ export default function DashboardHome() {
         totalCategorias={totalCategorias}
         ehAdmin={ehAdmin}
       />
-      <AcoesRapidas ehAdmin={ehAdmin} onNavegar={(aba: string) => navigate(`/dashboard/${aba}`)} />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DocumentosRecentes documentos={documentosRecentes} onVerTodos={() => navigate("/dashboard/documentos")} ehAdmin={ehAdmin} />
+
+      {/* Ações Rápidas */}
+      <AcoesRapidas
+        ehAdmin={ehAdmin}
+        onNavegar={(aba: string) => navigate(`/dashboard/${aba}`)}
+      />
+
+      {/* Secção de Documentos e Atividades em Lista Vertical no Mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <DocumentosRecentes
+          documentos={documentosRecentes}
+          onVerTodos={() => navigate("/dashboard/documentos")}
+          ehAdmin={ehAdmin}
+        />
         <AtividadeRecente atividades={atividadesVisiveis} />
       </div>
     </div>

@@ -1,7 +1,7 @@
 import MetricCard from "./metricCard";
 import { IconDocumento, IconRelogio, IconAprovado, IconSistemas, IconPasta } from "../icons";
 
-interface MetricsGridProps {
+interface metricsGridProps {
   totalDocumentos: number;
   pendentesAprovacao?: number;
   totalAprovados: number;
@@ -10,14 +10,14 @@ interface MetricsGridProps {
   ehAdmin?: boolean;
 }
 
-export default function MetricsGrid({
+export default function metricsGrid({
   totalDocumentos,
   pendentesAprovacao,
   totalAprovados,
   totalSistemas,
   totalCategorias,
   ehAdmin = false,
-}: MetricsGridProps) {
+}: metricsGridProps) {
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 ${ehAdmin ? "lg:grid-cols-5" : "lg:grid-cols-4"} gap-6`}>
       <MetricCard titulo="Total de Documentos" valor={totalDocumentos} icone={<IconDocumento className="w-6 h-6" />} corBorda="border-t-blue-500" corIcone="text-blue-600" />
