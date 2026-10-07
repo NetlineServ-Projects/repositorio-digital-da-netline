@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 import { API_URL, fetchComToken } from "../../utils/api";
 import { API_ENDPOINTS } from "../../data/client/endpoint";
-import { IconUsuario } from "../../components/icons";
+import { IconOlhoAberto, IconOlhoFechado, IconUsuario } from "../../components/icons";
 import ModalFotografia from "./modalFotografia";
 import type { UsuarioData } from "../../hooks/useDashboardData";
 
@@ -37,6 +37,11 @@ export default function PerfilPage() {
     novaSenha: "",
     confirmarSenha: "",
   });
+
+  // Estados de visibilidade para cada input de senha
+  const [mostrarSenhaAtual, setMostrarSenhaAtual] = useState(false);
+  const [mostrarNovaSenha, setMostrarNovaSenha] = useState(false);
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
 
   const [salvando, setSalvando] = useState(false);
 
@@ -73,6 +78,9 @@ export default function PerfilPage() {
     setEditando(false);
     setAlterarSenha(false);
     setSenhaForm({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
+    setMostrarSenhaAtual(false);
+    setMostrarNovaSenha(false);
+    setMostrarConfirmarSenha(false);
     if (usuario) {
       setFormDados({
         nome: usuario.nome || "",
@@ -122,6 +130,9 @@ export default function PerfilPage() {
       setEditando(false);
       setAlterarSenha(false);
       setSenhaForm({ senhaAtual: "", novaSenha: "", confirmarSenha: "" });
+      setMostrarSenhaAtual(false);
+      setMostrarNovaSenha(false);
+      setMostrarConfirmarSenha(false);
       toast.success("Perfil atualizado com sucesso!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao salvar as alterações.");
@@ -149,7 +160,7 @@ export default function PerfilPage() {
             title="Alterar fotografia"
           >
             {usuario.fotografia ? (
-              <img src={ `${API_URL}${usuario.fotografia}`} alt={usuario.nome} className="w-full h-full object-cover" />
+              <img src={`${API_URL}${usuario.fotografia}`} alt={usuario.nome} className="w-full h-full object-cover" />
             ) : (
               <IconUsuario className="w-12 h-12" />
             )}
@@ -248,35 +259,82 @@ export default function PerfilPage() {
 
               {alterarSenha && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  {/* Senha Atual */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Senha Atual</label>
-                    <input
-                      type="password"
-                      value={senhaForm.senhaAtual}
-                      onChange={(e) => setSenhaForm({ ...senhaForm, senhaAtual: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#1b365d]"
-                      placeholder="••••••••"
-                    />
+                    <div className="relative">
+                      <input
+                        type={mostrarSenhaAtual ? "text" : "password"}
+                        value={senhaForm.senhaAtual}
+                        onChange={(e) => setSenhaForm({ ...senhaForm, senhaAtual: e.target.value })}
+                        className="w-full pl-3 pr-9 py-2 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#1b365d]"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarSenhaAtual(!mostrarSenhaAtual)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        title={mostrarSenhaAtual ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {mostrarSenhaAtual ? (
+                          <IconOlhoFechado className="w-3.5 h-3.5" />
+                        ) : (
+                          <IconOlhoAberto className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Nova Senha */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Nova Senha</label>
-                    <input
-                      type="password"
-                      value={senhaForm.novaSenha}
-                      onChange={(e) => setSenhaForm({ ...senhaForm, novaSenha: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#1b365d]"
-                      placeholder="Nova senha"
-                    />
+                    <div className="relative">
+                      <input
+                        type={mostrarNovaSenha ? "text" : "password"}
+                        value={senhaForm.novaSenha}
+                        onChange={(e) => setSenhaForm({ ...senhaForm, novaSenha: e.target.value })}
+                        className="w-full pl-3 pr-9 py-2 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#1b365d]"
+                        placeholder="Nova senha"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarNovaSenha(!mostrarNovaSenha)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        title={mostrarNovaSenha ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {mostrarNovaSenha ? (
+                          <IconOlhoFechado className="w-3.5 h-3.5" />
+                        ) : (
+                          <IconOlhoAberto className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Confirmar Senha */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-500 mb-1">Confirmar Senha</label>
-                    <input
-                      type="password"
-                      value={senhaForm.confirmarSenha}
-                      onChange={(e) => setSenhaForm({ ...senhaForm, confirmarSenha: e.target.value })}
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#1b365d]"
-                      placeholder="Confirmar nova senha"
-                    />
+                    <div className="relative">
+                      <input
+                        type={mostrarConfirmarSenha ? "text" : "password"}
+                        value={senhaForm.confirmarSenha}
+                        onChange={(e) => setSenhaForm({ ...senhaForm, confirmarSenha: e.target.value })}
+                        className="w-full pl-3 pr-9 py-2 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#1b365d]"
+                        placeholder="Confirmar nova senha"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setMostrarConfirmarSenha(!mostrarConfirmarSenha)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                        title={mostrarConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
+                      >
+                        {mostrarConfirmarSenha ? (
+                          <IconOlhoFechado className="w-3.5 h-3.5" />
+                        ) : (
+                          <IconOlhoAberto className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}

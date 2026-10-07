@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchComToken } from "../utils/api";
+import { API_ENDPOINTS } from "../data/client/endpoint";
 import type { Documento, Categoria } from "../types/documento";
 
 export type { Documento, Categoria };
@@ -41,6 +42,9 @@ export type TipoCredencial =
   | "BACKUP_ACESSO"
   | "OUTRO";
 
+// Tem de coincidir com o enum TipoAmbiente do schema.prisma
+export type TipoAmbiente = "PRODUCAO" | "TESTES" | "DESENVOLVIMENTO";
+
 export interface Credencial {
   id: number;
   tipo: TipoCredencial;
@@ -50,9 +54,17 @@ export interface Credencial {
 
 export interface SistemaInfraestrutura {
   id: number;
+  ambiente: TipoAmbiente;
   ipServidor: string | null;
   cloudProvedor: string | null;
   credenciais: Credencial[];
+}
+
+// Resumo de um ambiente que já tem dados — vem da listagem e nunca traz valores sensíveis
+export interface AmbienteResumo {
+  id: number;
+  ambiente: TipoAmbiente;
+  totalCredenciais: number;
 }
 
 function comTecnologiasCombinadas(sis: Sistema): Sistema {
@@ -65,6 +77,10 @@ function comTecnologiasCombinadas(sis: Sistema): Sistema {
     ],
   };
 }
+
+const cabecalhoElevado = (tokenElevado: string) => ({
+  "x-token-elevado": tokenElevado,
+});
 
 export function useSistemasData() {
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
@@ -120,10 +136,10 @@ export function useSistemasData() {
   };
 
   // =======================================
-  // Infraestrutura encriptada (reautenticação necessária)
+  // Infraestrutura encriptada, por ambiente (reautenticação necessária)
   // =======================================
 
-  // Confirma a password e devolve o token elevado (válido 15 min).
+  // Confirma a password e devolve o token elevado (válido 3 min).
   // Não recarrega `sistemas` — não altera a listagem geral.
   const reautenticar = async (senha: string): Promise<{ tokenElevado: string; expiraEm: string }> => {
     return fetchComToken("/auth/reautenticar", {
@@ -132,55 +148,78 @@ export function useSistemasData() {
     });
   };
 
-  const buscarInfraestrutura = async (
+  // Ambientes que já têm dados (sem valores sensíveis)
+  const listarInfraestruturas = async (
     sistemaId: string | number,
     tokenElevado: string
+  ): Promise<AmbienteResumo[]> => {
+    const resposta = await fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURAS(sistemaId), {
+      headers: cabecalhoElevado(tokenElevado),
+    });
+    return Array.isArray(resposta) ? resposta : [];
+  };
+
+  // Um ambiente, já desencriptado
+  const buscarInfraestrutura = async (
+    sistemaId: string | number,
+    ambiente: TipoAmbiente,
+    tokenElevado: string
   ): Promise<SistemaInfraestrutura | null> => {
-    return fetchComToken(`/sistemas/${sistemaId}/infraestrutura`, {
-      headers: { "x-token-elevado": tokenElevado },
+    return fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURA(sistemaId, ambiente), {
+      headers: cabecalhoElevado(tokenElevado),
     });
   };
 
+  // Cria ou atualiza o ambiente
   const salvarInfraestrutura = async (
     sistemaId: string | number,
+    ambiente: TipoAmbiente,
     dados: { ipServidor?: string; cloudProvedor?: string },
     tokenElevado: string
   ) => {
-    return fetchComToken(`/sistemas/${sistemaId}/infraestrutura`, {
+    return fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURA(sistemaId, ambiente), {
       method: "PUT",
       body: JSON.stringify(dados),
-      headers: { "x-token-elevado": tokenElevado },
+      headers: cabecalhoElevado(tokenElevado),
     });
   };
 
   const adicionarCredencial = async (
     sistemaId: string | number,
+    ambiente: TipoAmbiente,
     dados: { tipo: TipoCredencial; label: string; valor: string },
     tokenElevado: string
   ) => {
-    return fetchComToken(`/sistemas/${sistemaId}/infraestrutura/credenciais`, {
+    return fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAIS(sistemaId, ambiente), {
       method: "POST",
       body: JSON.stringify(dados),
-      headers: { "x-token-elevado": tokenElevado },
+      headers: cabecalhoElevado(tokenElevado),
     });
   };
 
   const atualizarCredencial = async (
+    sistemaId: string | number,
+    ambiente: TipoAmbiente,
     credencialId: number,
     dados: Partial<{ tipo: TipoCredencial; label: string; valor: string }>,
     tokenElevado: string
   ) => {
-    return fetchComToken(`/sistemas/infraestrutura/credenciais/${credencialId}`, {
+    return fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAL(sistemaId, ambiente, credencialId), {
       method: "PATCH",
       body: JSON.stringify(dados),
-      headers: { "x-token-elevado": tokenElevado },
+      headers: cabecalhoElevado(tokenElevado),
     });
   };
 
-  const apagarCredencial = async (credencialId: number, tokenElevado: string) => {
-    return fetchComToken(`/sistemas/infraestrutura/credenciais/${credencialId}`, {
+  const apagarCredencial = async (
+    sistemaId: string | number,
+    ambiente: TipoAmbiente,
+    credencialId: number,
+    tokenElevado: string
+  ) => {
+    return fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAL(sistemaId, ambiente, credencialId), {
       method: "DELETE",
-      headers: { "x-token-elevado": tokenElevado },
+      headers: cabecalhoElevado(tokenElevado),
     });
   };
 
@@ -197,6 +236,7 @@ export function useSistemasData() {
     recarregar: fetchDados,
     // infraestrutura
     reautenticar,
+    listarInfraestruturas,
     buscarInfraestrutura,
     salvarInfraestrutura,
     adicionarCredencial,

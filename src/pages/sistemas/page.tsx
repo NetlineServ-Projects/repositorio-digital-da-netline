@@ -38,6 +38,7 @@ export default function SistemasPage() {
     anexarDocumento,
     apagarDocumento,
     reautenticar,
+    listarInfraestruturas,
     buscarInfraestrutura,
     salvarInfraestrutura,
     adicionarCredencial,
@@ -64,6 +65,36 @@ export default function SistemasPage() {
   const [erroReautenticacao, setErroReautenticacao] = useState<string | null>(
     null,
   );
+
+  // Descarta o acesso elevado (o token só existe em memória, neste estado)
+  const bloquearCredenciais = useCallback(() => {
+    setTokenElevado(null);
+    setTokenExpiraEm(null);
+  }, []);
+
+  // Sair do separador Credenciais bloqueia-o; voltar exige nova reautenticação
+  const mudarAba = (aba: "geral" | "documentos") => {
+    if (abaAtiva === "credenciais") bloquearCredenciais();
+    setAbaAtiva(aba);
+  };
+
+  // Ao mudar de sistema (ou sair para a lista), o acesso elevado nunca transita
+  useEffect(() => {
+    bloquearCredenciais();
+    setAbaAtiva("geral");
+    setReautenticacaoAberta(false);
+  }, [id, bloquearCredenciais]);
+
+  // Bloqueia sozinho quando os 3 minutos terminam, mesmo sem nenhuma ação
+  useEffect(() => {
+    if (tokenExpiraEm === null) return;
+    const timer = setTimeout(() => {
+      bloquearCredenciais();
+      setAbaAtiva((atual) => (atual === "credenciais" ? "geral" : atual));
+      toast.info("O acesso às credenciais expirou. Reautentique-se para voltar a ver.");
+    }, Math.max(tokenExpiraEm - Date.now(), 0));  
+    return () => clearTimeout(timer);
+  }, [tokenExpiraEm, bloquearCredenciais]);
 
   // Estados de busca
   const [busca, setBusca] = useState("");
@@ -236,8 +267,7 @@ export default function SistemasPage() {
   };
 
   const handleSessaoExpirada = () => {
-    setTokenElevado(null);
-    setTokenExpiraEm(null);
+    bloquearCredenciais();
     setAbaAtiva("geral");
     setReautenticacaoAberta(true);
   };
@@ -407,7 +437,7 @@ export default function SistemasPage() {
       {/* Navegação por Separadores (Tabs) */}
       <div className="border-b border-slate-200 flex gap-6 text-sm font-medium">
         <button
-          onClick={() => setAbaAtiva("geral")}
+          onClick={() => mudarAba("geral")}
           className={`pb-3 transition-colors relative cursor-pointer ${
             abaAtiva === "geral"
               ? "text-blue-900 font-semibold border-b-2 border-blue-900"
@@ -417,7 +447,7 @@ export default function SistemasPage() {
           Visão Geral & Ficha Técnica
         </button>
         <button
-          onClick={() => setAbaAtiva("documentos")}
+          onClick={() => mudarAba("documentos")}
           className={`pb-3 transition-colors relative flex items-center gap-2 cursor-pointer ${
             abaAtiva === "documentos"
               ? "text-blue-900 font-semibold border-b-2 border-blue-900"
@@ -468,6 +498,7 @@ export default function SistemasPage() {
             tokenElevado={tokenElevado}
             ehAdmin={ehAdmin}
             onSessaoExpirada={handleSessaoExpirada}
+            listarInfraestruturas={listarInfraestruturas}
             buscarInfraestrutura={buscarInfraestrutura}
             salvarInfraestrutura={salvarInfraestrutura}
             adicionarCredencial={adicionarCredencial}

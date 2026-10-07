@@ -4,8 +4,14 @@ import { useTranslation } from "react-i18next";
 import { useUsuario } from "./usuarioContext";
 import logoNetline from "../assets/netline.jpg";
 import {
-  IconHome, IconDocumento, IconConfig, IconPasta,
-  IconLixeira, IconBarras, IconSistemas, IconUsuarios,
+  IconHome,
+  IconDocumento,
+  IconConfig,
+  IconPasta,
+  IconLixeira,
+  IconBarras,
+  IconSistemas,
+  IconUsuarios,
 } from "../components/icons";
 
 interface SidebarProps {
@@ -32,35 +38,89 @@ export default function Sidebar({ fechada = false }: SidebarProps) {
     {
       titulo: t("sidebar.seccoes.principal"),
       itens: [
-        { path: "/dashboard", label: t("sidebar.itens.dashboard"), icon: <IconHome /> },
-        { path: "/dashboard/documentos", label: t("sidebar.itens.documentos"), icon: <IconDocumento /> },
-        { path: "/dashboard/categorias", label: t("sidebar.itens.categorias"), icon: <IconPasta /> },
-        ...(ehAdmin ? [{ path: "/dashboard/aprovacoes", label: t("sidebar.itens.aprovacoes"), icon: <IconBarras /> }] : []),
-        ...(ehAdmin ? [{ path: "/dashboard/lixeira", label: t("sidebar.itens.lixeira"), icon: <IconLixeira /> }] : []),
+        {
+          path: "/dashboard",
+          label: t("sidebar.itens.dashboard"),
+          icon: <IconHome />,
+        },
+        {
+          path: "/dashboard/documentos",
+          label: t("sidebar.itens.documentos"),
+          icon: <IconDocumento />,
+        },
+        {
+          path: "/dashboard/categorias",
+          label: t("sidebar.itens.categorias"),
+          icon: <IconPasta />,
+        },
+        ...(ehAdmin
+          ? [
+              {
+                path: "/dashboard/aprovacoes",
+                label: t("sidebar.itens.aprovacoes"),
+                icon: <IconBarras />,
+              },
+            ]
+          : []),
+        ...(ehAdmin
+          ? [
+              {
+                path: "/dashboard/lixeira",
+                label: t("sidebar.itens.lixeira"),
+                icon: <IconLixeira />,
+              },
+            ]
+          : []),
       ],
     },
     {
       titulo: t("sidebar.seccoes.sistemasNetline"),
-      itens: [{ path: "/dashboard/sistemas", label: t("sidebar.itens.sistemasDesenvolvidos"), icon: <IconSistemas /> }],
+      itens: [
+        {
+          path: "/dashboard/sistemas",
+          label: t("sidebar.itens.sistemasDesenvolvidos"),
+          icon: <IconSistemas />,
+        },
+      ],
     },
     {
       titulo: t("sidebar.seccoes.configuracoes"),
       itens: [
-        ...(ehAdmin ? [{ path: "/dashboard/usuarios", label: t("sidebar.itens.usuarios"), icon: <IconUsuarios /> }] : []),
-        { path: "/dashboard/configuracoes", label: t("sidebar.itens.configuracoes"), icon: <IconConfig /> },
+        ...(ehAdmin
+          ? [
+              {
+                path: "/dashboard/usuarios",
+                label: t("sidebar.itens.usuarios"),
+                icon: <IconUsuarios />,
+              },
+            ]
+          : []),
+        {
+          path: "/dashboard/configuracoes",
+          label: t("sidebar.itens.configuracoes"),
+          icon: <IconConfig />,
+        },
       ],
     },
   ];
 
   return (
     <aside
-      className={`bg-[#092565] text-white flex flex-col p-4  select-none shadow-lg transition-all duration-300 ${
+      className={`bg-[#092565] text-white flex flex-col p-4 select-none shadow-lg transition-all duration-300 sticky top-0 h-full overflow-y-auto shrink-0 ${
         fechada ? "w-20" : "w-64"
       }`}
     >
-      <div className={`flex items-center gap-3 font-bold text-xl tracking-wide border-b border-blue-900/60 pb-4 mb-6 ${fechada ? "justify-center" : ""}`}>
-        <img src={logoNetline} alt="Logo Netline" className="w-8 h-8 rounded object-cover shadow-sm shrink-0" />
-        {!fechada && <span className="text-white truncate">{t("sidebar.marca")}</span>}
+      <div
+        className={`flex items-center gap-3 font-bold text-xl tracking-wide border-b border-blue-900/60 pb-4 mb-6 ${fechada ? "justify-center" : ""}`}
+      >
+        <img
+          src={logoNetline}
+          alt="Logo Netline"
+          className="w-8 h-8 rounded object-cover shadow-sm shrink-0"
+        />
+        {!fechada && (
+          <span className="text-white truncate">{t("sidebar.marca")}</span>
+        )}
       </div>
 
       <nav className="space-y-6">
@@ -94,7 +154,9 @@ export default function Sidebar({ fechada = false }: SidebarProps) {
                           <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-blue-400 rounded-r-md" />
                         )}
                         <span className="text-lg shrink-0">{item.icon}</span>
-                        {!fechada && <span className="truncate">{item.label}</span>}
+                        {!fechada && (
+                          <span className="truncate">{item.label}</span>
+                        )}
                       </>
                     )}
                   </NavLink>

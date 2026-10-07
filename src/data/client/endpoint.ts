@@ -16,5 +16,19 @@ export const API_ENDPOINTS = {
   SISTEMAS: "/sistemas",
   SISTEMA_BY_ID: (id: number | string) => `/sistemas/${id}`,
 
+  // Infraestrutura por ambiente (PRODUCAO | TESTES | DESENVOLVIMENTO)
+  SISTEMA_INFRAESTRUTURAS: (sistemaId: number | string) =>
+    `/sistemas/${sistemaId}/infraestruturas`,
+  SISTEMA_INFRAESTRUTURA: (sistemaId: number | string, ambiente: string) =>
+    `/sistemas/${sistemaId}/infraestruturas/${ambiente}`,
+  SISTEMA_CREDENCIAIS: (sistemaId: number | string, ambiente: string) =>
+    `/sistemas/${sistemaId}/infraestruturas/${ambiente}/credenciais`,
+  SISTEMA_CREDENCIAL: (
+    sistemaId: number | string,
+    ambiente: string,
+    credencialId: number | string,
+  ) =>
+    `/sistemas/${sistemaId}/infraestruturas/${ambiente}/credenciais/${credencialId}`,
+
   ATIVIDADES_RECENTES: "/atividades/recentes",
 };
