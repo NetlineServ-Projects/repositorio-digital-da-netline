@@ -158,8 +158,10 @@
       "gerirAprovacoes": "Manage Approvals",
       "verCategorias": "View Categories",
       "gerirSistemas": "Manage Systems",
+      "gerirPlataformas": "Manage Platforms",
       "verDocumentos": "View Documents",
-      "verSistemas": "View Systems"
+      "verSistemas": "View Systems",
+      "verPlataformas": "View Platforms"
     },
     "atividadeRecente": {
       "titulo": "Recent Activity",
@@ -216,6 +218,7 @@
       "aprovacoes": "Approvals",
       "lixeira": "Trash",
       "sistemasDesenvolvidos": "Developed Systems",
+      "plataformas": "Platforms",
       "usuarios": "Users",
       "configuracoes": "Settings"
      }

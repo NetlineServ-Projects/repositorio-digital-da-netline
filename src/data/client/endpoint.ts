@@ -30,5 +30,21 @@ export const API_ENDPOINTS = {
   ) =>
     `/sistemas/${sistemaId}/infraestruturas/${ambiente}/credenciais/${credencialId}`,
 
+  // Plataformas, Servidores e Domínios
+  PLATAFORMAS: "/plataformas",
+  PLATAFORMA_ARVORE: "/plataformas/arvore",
+  PLATAFORMA_BY_ID: (id: number | string) => `/plataformas/${id}`,
+  PLATAFORMA_ARVORE_BY_ID: (id: number | string) => `/plataformas/${id}/arvore`,
+
+  SERVIDORES: "/servidores",
+  SERVIDOR_BY_ID: (id: number | string) => `/servidores/${id}`,
+  SERVIDOR_PASSWORD: (id: number | string) => `/servidores/${id}/password`,
+
+  DOMINIOS: "/dominios",
+  DOMINIO_BY_ID: (id: number | string) => `/dominios/${id}`,
+
+  SUBDOMINIOS: "/subdominios",
+  SUBDOMINIO_BY_ID: (id: number | string) => `/subdominios/${id}`,
+
   ATIVIDADES_RECENTES: "/atividades/recentes",
 };

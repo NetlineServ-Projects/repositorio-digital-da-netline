@@ -11,6 +11,7 @@ import {
   IconLixeira,
   IconBarras,
   IconSistemas,
+  IconPlataforma,
   IconUsuarios,
 } from "../components/icons";
 
@@ -80,6 +81,11 @@ export default function Sidebar({ fechada = false }: SidebarProps) {
           path: "/dashboard/sistemas",
           label: t("sidebar.itens.sistemasDesenvolvidos"),
           icon: <IconSistemas />,
+        },
+        {
+          path: "/dashboard/plataformas",
+          label: t("sidebar.itens.plataformas"),
+          icon: <IconPlataforma />,
         },
       ],
     },

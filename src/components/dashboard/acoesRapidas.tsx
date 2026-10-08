@@ -23,6 +23,9 @@ export default function AcoesRapidas({ onNavegar, ehAdmin = false }: AcoesRapida
             <button onClick={() => onNavegar("sistemas")} className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
               {t("dashboard.acoesRapidas.gerirSistemas")}
             </button>
+            <button onClick={() => onNavegar("plataformas")} className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
+              {t("dashboard.acoesRapidas.gerirPlataformas")}
+            </button>
           </>
         ) : (
           <>
@@ -34,6 +37,9 @@ export default function AcoesRapidas({ onNavegar, ehAdmin = false }: AcoesRapida
             </button>
             <button onClick={() => onNavegar("sistemas")} className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
               {t("dashboard.acoesRapidas.verSistemas")}
+            </button>
+            <button onClick={() => onNavegar("plataformas")} className="px-4 py-2 bg-blue-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer">
+              {t("dashboard.acoesRapidas.verPlataformas")}
             </button>
           </>
         )}

@@ -11,6 +11,7 @@ interface DashboardContext {
   ehAdmin: boolean;
   totalCategorias: number;
   totalSistemas: number;
+  totalPlataformas?: number;
   totalDocumentos: number;
   pendentesAprovacao: number;
   totalAprovados: number;
@@ -24,6 +25,7 @@ export default function DashboardHome() {
     ehAdmin,
     totalCategorias,
     totalSistemas,
+    totalPlataformas = 0,
     totalDocumentos,
     pendentesAprovacao,
     totalAprovados,
@@ -34,7 +36,7 @@ export default function DashboardHome() {
 
   const atividadesVisiveis = ehAdmin
     ? atividades
-    : atividades.filter((a) => a.usuario.id === usuario?.id);
+    : atividades.filter((a) => !a.usuario.id || a.usuario.id === usuario?.id);
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-hidden">
@@ -51,6 +53,7 @@ export default function DashboardHome() {
         pendentesAprovacao={pendentesAprovacao}
         totalAprovados={totalAprovados}
         totalSistemas={totalSistemas}
+        totalPlataformas={totalPlataformas}
         totalCategorias={totalCategorias}
         ehAdmin={ehAdmin}
       />
@@ -68,7 +71,7 @@ export default function DashboardHome() {
           onVerTodos={() => navigate("/dashboard/documentos")}
           ehAdmin={ehAdmin}
         />
-        <AtividadeRecente atividades={atividadesVisiveis} />
+        <AtividadeRecente atividades={atividadesVisiveis} ehAdmin={ehAdmin} />
       </div>
     </div>
   );

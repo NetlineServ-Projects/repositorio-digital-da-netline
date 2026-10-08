@@ -28,6 +28,12 @@ import {
   faUpload,
   faVolumeHigh,
   faVolumeXmark,
+  faServer,
+  faGlobe,
+  faNetworkWired,
+  faCloud,
+  faLayerGroup,
+  faDatabase,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Interface unificada para aceitar qualquer evento nativo (ex: onClick, title, style, etc.)
@@ -92,6 +98,30 @@ export const IconSistemas = ({ className = "w-5 h-5" }: IconProps) => (
 
 export const IconSistema = ({ className = "w-5 h-5" }: IconProps) => (
   <FontAwesomeIcon icon={faCode} className={className} />
+);
+
+export const IconPlataforma = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faLayerGroup} className={className} />
+);
+
+export const IconServer = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faServer} className={className} />
+);
+
+export const IconDominio = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faGlobe} className={className} />
+);
+
+export const IconRede = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faNetworkWired} className={className} />
+);
+
+export const IconCloud = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faCloud} className={className} />
+);
+
+export const IconDatabase = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faDatabase} className={className} />
 );
 
 export const IconConfig = ({ className = "w-4 h-4" }: IconProps) => (

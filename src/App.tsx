@@ -21,6 +21,7 @@ import AprovacaoDetalhesPage from "./pages/admin/aprovacoes/details/page";
 import AprovacaoEditPage from "./pages/admin/aprovacoes/edit/page";
 import { UsuarioProvider, useUsuario } from "./components/usuarioContext";
 import SistemasPage from "./pages/sistemas/page";
+import PlataformasPage from "./pages/Plataformas/page";
 import { Toaster } from "sonner";
 import NovoDocumentoPage from "./pages/documentos/new/page";
 
@@ -87,6 +88,7 @@ function App() {
             <Route path="sistemas" element={<SistemasPage />} />
             <Route path="sistemas/:id" element={<SistemasPage />} />
             <Route path="sistemas/:id/editar" element={<EditarSistemaPage />} />
+            <Route path="plataformas" element={<PlataformasPage />} />
           
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>

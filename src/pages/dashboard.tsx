@@ -26,6 +26,7 @@ export default function Dashboard() {
     usuario,
     totalCategorias,
     totalSistemas,
+    totalPlataformas,
     totalDocumentos,
     pendentesAprovacao,
     totalAprovados,
@@ -131,8 +132,10 @@ export default function Dashboard() {
           <Outlet
             context={{
               usuario,
+              ehAdmin,
               totalCategorias,
               totalSistemas,
+              totalPlataformas,
               totalDocumentos,
               pendentesAprovacao,
               totalAprovados,

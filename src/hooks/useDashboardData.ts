@@ -25,7 +25,7 @@ export interface Documento {
 
 export interface Atividade {
   id: string;
-  usuario: { id: number; nome: string };
+  usuario: { id: number; nome: string; perfil?: string };
   acao: string;
   documento?: { id: string | number; titulo: string } | null;
   criadoEm: string;
@@ -37,6 +37,7 @@ export function useDashboardData() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [totalCategorias, setTotalCategorias] = useState(0);
   const [totalSistemas, setTotalSistemas] = useState(0);
+  const [totalPlataformas, setTotalPlataformas] = useState(0);
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -46,19 +47,21 @@ export function useDashboardData() {
     setErro(null);
 
     try {
-      const [auth, docs, cats, sist, ativ] = await Promise.all([
+      const [auth, docs, cats, sist, plat, ativ] = await Promise.all([
         fetchComToken(API_ENDPOINTS.PERFIL),
         fetchComToken(API_ENDPOINTS.DOCUMENTOS),
         fetchComToken(API_ENDPOINTS.CATEGORIAS),
         fetchComToken(API_ENDPOINTS.SISTEMAS),
+        fetchComToken(API_ENDPOINTS.PLATAFORMAS).catch(() => []),
         fetchComToken(API_ENDPOINTS.ATIVIDADES_RECENTES),
       ]);
 
       setUsuario(auth);
-      setDocumentos(docs);
-      setTotalCategorias(cats.length);
-      setTotalSistemas(sist.length);
-      setAtividades(ativ);
+      setDocumentos(Array.isArray(docs) ? docs : []);
+      setTotalCategorias(Array.isArray(cats) ? cats.length : 0);
+      setTotalSistemas(Array.isArray(sist) ? sist.length : 0);
+      setTotalPlataformas(Array.isArray(plat) ? plat.length : 0);
+      setAtividades(Array.isArray(ativ) ? ativ : []);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao conectar com o servidor.");
     } finally {
@@ -83,6 +86,7 @@ export function useDashboardData() {
     documentos,
     totalCategorias,
     totalSistemas,
+    totalPlataformas,
     totalDocumentos,
     pendentesAprovacao,
     totalAprovados,

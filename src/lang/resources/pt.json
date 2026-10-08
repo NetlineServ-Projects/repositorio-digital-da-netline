@@ -163,8 +163,10 @@
     "gerirAprovacoes": "Gerir Aprovações",
     "verCategorias": "Ver Categorias",
     "gerirSistemas": "Gerir Sistemas",
+    "gerirPlataformas": "Gerir Plataformas",
     "verDocumentos": "Ver Documentos",
-    "verSistemas": "Ver Sistemas"
+    "verSistemas": "Ver Sistemas",
+    "verPlataformas": "Ver Plataformas"
     },
       "atividadeRecente": {
     "titulo": "Atividade Recente",
@@ -224,6 +226,7 @@
     "aprovacoes": "Aprovações",
     "lixeira": "Lixeira",
     "sistemasDesenvolvidos": "Sistemas Desenvolvidos",
+    "plataformas": "Plataformas",
     "usuarios": "Usuários",
     "configuracoes": "Configurações"
    }
