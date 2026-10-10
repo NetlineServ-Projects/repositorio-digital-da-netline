@@ -49,8 +49,9 @@ export default function AtividadeRecente({
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-      <div>
+    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-120">
+      {/* Cabeçalho fixo no topo do card */}
+      <div className="flex-none mb-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-800">
@@ -104,57 +105,57 @@ export default function AtividadeRecente({
             </div>
           )}
         </div>
+      </div>
 
-        {/* Lista de Atividades */}
-        <div className="space-y-4">
-          {atividadesFiltradas.length === 0 ? (
-            <p className="text-slate-400 text-xs py-8 text-center italic">
-              {t("dashboard.atividadeRecente.semAtividade", "Sem atividade recente.")}
-            </p>
-          ) : (
-            atividadesFiltradas.map((item) => {
-              const alvo = item.documento?.titulo ?? item.sistema?.nome;
-              const ehItemAdmin = item.usuario.perfil === "ADMIN";
+      {/* Lista de Atividades com Scroll Interno */}
+      <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+        {atividadesFiltradas.length === 0 ? (
+          <p className="text-slate-400 text-xs py-8 text-center italic">
+            {t("dashboard.atividadeRecente.semAtividade", "Sem atividade recente.")}
+          </p>
+        ) : (
+          atividadesFiltradas.map((item) => {
+            const alvo = item.documento?.titulo ?? item.sistema?.nome;
+            const ehItemAdmin = item.usuario.perfil === "ADMIN";
 
-              return (
-                <div key={item.id} className="flex items-start gap-3 text-xs">
-                  <div
-                    className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${obterCorAcao(item.acao)}`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-slate-700 leading-snug">
-                      <strong className="text-slate-900 font-bold">
-                        {item.usuario.nome}
-                      </strong>
-                      {ehAdmin && (
-                        <span
-                          className={`ml-1.5 px-1.5 py-0.2 rounded text-[10px] font-semibold ${
-                            ehItemAdmin
-                              ? "bg-indigo-50 text-indigo-700 border border-indigo-100"
-                              : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {ehItemAdmin ? "Admin" : "Funcionário"}
-                        </span>
-                      )}{" "}
-                      <span className="text-slate-600">{item.acao}</span>{" "}
-                      {alvo && (
-                        <span className="font-semibold text-slate-800 italic">
-                          "{alvo}"
-                        </span>
-                      )}
-                    </p>
-                    <span className="text-slate-400 text-[10px] block mt-0.5">
-                      {new Date(item.criadoEm).toLocaleString(
-                        i18n.language === "en" ? "en-GB" : "pt-PT"
-                      )}
-                    </span>
-                  </div>
+            return (
+              <div key={item.id} className="flex items-start gap-3 text-xs">
+                <div
+                  className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${obterCorAcao(item.acao)}`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-700 leading-snug">
+                    <strong className="text-slate-900 font-bold">
+                      {item.usuario.nome}
+                    </strong>
+                    {ehAdmin && (
+                      <span
+                        className={`ml-1.5 px-1.5 py-0.2 rounded text-[10px] font-semibold ${
+                          ehItemAdmin
+                            ? "bg-indigo-50 text-indigo-700 border border-indigo-100"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {ehItemAdmin ? "Admin" : "Funcionário"}
+                      </span>
+                    )}{" "}
+                    <span className="text-slate-600">{item.acao}</span>{" "}
+                    {alvo && (
+                      <span className="font-semibold text-slate-800 italic">
+                        "{alvo}"
+                      </span>
+                    )}
+                  </p>
+                  <span className="text-slate-400 text-[10px] block mt-0.5">
+                    {new Date(item.criadoEm).toLocaleString(
+                      i18n.language === "en" ? "en-GB" : "pt-PT"
+                    )}
+                  </span>
                 </div>
-              );
-            })
-          )}
-        </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
