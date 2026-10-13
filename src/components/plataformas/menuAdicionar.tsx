@@ -6,6 +6,7 @@ const OPCOES_ADICIONAR: { tipo: TipoFormularioPlataforma; rotulo: string }[] = [
   { tipo: "servidor", rotulo: "Servidor" },
   { tipo: "dominio", rotulo: "Domínio" },
   { tipo: "subdominio", rotulo: "Registo DNS" },
+  { tipo: "imagem", rotulo: "Imagem de Container" }
 ];
 
 interface MenuAdicionarProps {

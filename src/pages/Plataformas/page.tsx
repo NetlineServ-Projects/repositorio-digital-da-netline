@@ -9,17 +9,21 @@ import {
   IconDominio,
   IconRede,
   IconPesquisa,
+  IconImagem,
 } from "../../components/icons";
 import PlataformaFormularioPage, {
   type TipoFormularioPlataforma,
 } from "./formulario/page";
 import DetalhesPlataforma from "./detalhes/page";
-import BotaoAba, { type ComponenteIcone } from "../../components/plataformas/botaoAba";
+import BotaoAba, {
+  type ComponenteIcone,
+} from "../../components/plataformas/botaoAba";
 import MenuAdicionar from "../../components/plataformas/menuAdicionar";
 import AbaPlataformas from "./abas/abaPlataformas";
 import AbaServidores from "./abas/abaServidores";
-import AbaDominios from "./abas/abadominios";
+import AbaDominios from "./abas/abaDominios";
 import AbaTopologia from "./abas/abaTopologia";
+import AbaImagens from "./abas/abaImagens";
 import type {
   DadosItemEdicao,
   AoEditarItem,
@@ -30,7 +34,12 @@ import type {
 /* Tipos                                                                      */
 /* ========================================================================== */
 
-type AbaPrincipal = "arvore" | "plataformas" | "servidores" | "dominios";
+type AbaPrincipal =
+  | "arvore"
+  | "plataformas"
+  | "servidores"
+  | "dominios"
+  | "imagens";
 
 interface EstadoFormulario {
   aberto: boolean;
@@ -57,6 +66,7 @@ const NOMES_RECURSO: Record<TipoFormularioPlataforma, string> = {
   servidor: "Servidor",
   dominio: "Domínio",
   subdominio: "Registo DNS",
+  imagem: "Imagem",
 };
 
 const MENSAGENS_SUCESSO_EXCLUSAO: Record<TipoFormularioPlataforma, string> = {
@@ -64,6 +74,7 @@ const MENSAGENS_SUCESSO_EXCLUSAO: Record<TipoFormularioPlataforma, string> = {
   servidor: "Servidor eliminado com sucesso.",
   dominio: "Domínio eliminado com sucesso.",
   subdominio: "Registo DNS eliminado com sucesso.",
+  imagem: "Imagem eliminada com sucesso.",
 };
 
 function textoContem(valor: string | null | undefined, termo: string): boolean {
@@ -85,11 +96,13 @@ export default function PlataformasPage() {
     dominios,
     subdominios,
     loading,
+    imagens,
     carregarTodos,
     eliminarPlataforma,
     eliminarServidor,
     eliminarDominio,
     eliminarSubdominio,
+    eliminarImagem,
   } = usePlataformasData();
 
   const [abaAtiva, setAbaAtiva] = useState<AbaPrincipal>("plataformas");
@@ -105,7 +118,7 @@ export default function PlataformasPage() {
   // Guarda-se só o id para os detalhes refletirem sempre os dados atualizados.
   const plataformaSelecionada =
     plataformaSelecionadaId !== null
-      ? plataformas.find((p) => p.id === plataformaSelecionadaId) ?? null
+      ? (plataformas.find((p) => p.id === plataformaSelecionadaId) ?? null)
       : null;
 
   /* ----------------------------- Abas ----------------------------------- */
@@ -140,6 +153,12 @@ export default function PlataformasPage() {
       Icone: IconRede,
       corIcone: "text-amber-900",
     },
+    {
+      id: "imagens",
+      rotulo: `Imagens (${imagens.length})`,
+      Icone: IconImagem,
+      corIcone: "text-violet-900",
+    },
   ];
 
   /* ---------------------------- Filtros --------------------------------- */
@@ -149,7 +168,7 @@ export default function PlataformasPage() {
   const plataformasFiltradas = useMemo(() => {
     if (!termoBusca) return plataformas;
     return plataformas.filter(
-      (p) => textoContem(p.nome, termoBusca) || textoContem(p.tipo, termoBusca)
+      (p) => textoContem(p.nome, termoBusca) || textoContem(p.tipo, termoBusca),
     );
   }, [plataformas, termoBusca]);
 
@@ -160,7 +179,7 @@ export default function PlataformasPage() {
         textoContem(s.nome, termoBusca) ||
         textoContem(s.hostname, termoBusca) ||
         textoContem(s.ip, termoBusca) ||
-        textoContem(s.sistemaOperativo, termoBusca)
+        textoContem(s.sistemaOperativo, termoBusca),
     );
   }, [servidores, termoBusca]);
 
@@ -168,6 +187,12 @@ export default function PlataformasPage() {
     if (!termoBusca) return dominios;
     return dominios.filter((d) => textoContem(d.nome, termoBusca));
   }, [dominios, termoBusca]);
+  const imagensFiltradas = useMemo(() => {
+    if (!termoBusca) return imagens;
+    return imagens.filter(
+      (i) => textoContem(i.nome, termoBusca) || textoContem(i.tag, termoBusca),
+    );
+  }, [imagens, termoBusca]);
 
   /* ---------------------------- Ações ----------------------------------- */
 
@@ -191,11 +216,20 @@ export default function PlataformasPage() {
       servidor: eliminarServidor,
       dominio: eliminarDominio,
       subdominio: eliminarSubdominio,
+      imagem: eliminarImagem,
     };
 
-    try {
+       try {
       await funcoesEliminar[modalExclusao.tipo](modalExclusao.id);
       toast.success(MENSAGENS_SUCESSO_EXCLUSAO[modalExclusao.tipo]);
+
+      // Se apagou a plataforma que estava aberta, volta à lista
+      if (
+        modalExclusao.tipo === "plataforma" &&
+        modalExclusao.id === plataformaSelecionadaId
+      ) {
+        setPlataformaSelecionadaId(null);
+      }
     } catch (erro: unknown) {
       const mensagem =
         erro instanceof Error ? erro.message : "Erro ao eliminar recurso.";
@@ -203,6 +237,7 @@ export default function PlataformasPage() {
     } finally {
       setModalExclusao(null);
     }
+  
   };
 
   /* ------------------------------ Modal --------------------------------- */
@@ -245,6 +280,7 @@ export default function PlataformasPage() {
           servidores={servidores}
           dominios={dominios}
           subdominios={subdominios}
+          imagens={imagens}
           ehAdmin={ehAdmin}
           aoVoltar={() => setPlataformaSelecionadaId(null)}
           aoEditar={abrirFormularioEdicao}
@@ -316,12 +352,12 @@ export default function PlataformasPage() {
               plataformas={plataformasFiltradas}
               servidores={servidores}
               dominios={dominios}
-              ehAdmin={ehAdmin}
+              imagens={imagens}
+              podeEditar={ehAdmin}
+              podeEliminar={ehAdmin}
               aoAbrirDetalhes={(plataforma) =>
                 setPlataformaSelecionadaId(plataforma.id)
               }
-              aoEditar={abrirFormularioEdicao}
-              aoEliminar={abrirModalExclusao}
             />
           )}
 
@@ -340,6 +376,14 @@ export default function PlataformasPage() {
               dominios={dominiosFiltrados}
               subdominios={subdominios}
               servidores={servidores}
+              ehAdmin={ehAdmin}
+              aoEditar={abrirFormularioEdicao}
+              aoEliminar={abrirModalExclusao}
+            />
+          )}
+          {abaAtiva === "imagens" && (
+            <AbaImagens
+              imagens={imagensFiltradas}
               ehAdmin={ehAdmin}
               aoEditar={abrirFormularioEdicao}
               aoEliminar={abrirModalExclusao}

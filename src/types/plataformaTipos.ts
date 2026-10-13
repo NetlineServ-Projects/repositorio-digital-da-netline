@@ -5,9 +5,10 @@ import type {
   Servidor,
   Dominio,
   Subdominio,
+  ImagemContainer
 } from "./plataforma";
  
-export type DadosItemEdicao = Plataforma | Servidor | Dominio | Subdominio;
+export type DadosItemEdicao = Plataforma | Servidor | Dominio | Subdominio | ImagemContainer;
  
 export type AoEditarItem = (
   tipo: TipoFormularioPlataforma,

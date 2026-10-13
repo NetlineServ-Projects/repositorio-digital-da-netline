@@ -40,6 +40,9 @@ export const API_ENDPOINTS = {
   SERVIDOR_BY_ID: (id: number | string) => `/servidores/${id}`,
   SERVIDOR_PASSWORD: (id: number | string) => `/servidores/${id}/password`,
 
+  IMAGENS: "/imagens",
+  IMAGEM_BY_ID: (id: number | string) => `/imagens/${id}`,
+
   DOMINIOS: "/dominios",
   DOMINIO_BY_ID: (id: number | string) => `/dominios/${id}`,
 

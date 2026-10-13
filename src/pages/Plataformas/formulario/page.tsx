@@ -6,6 +6,7 @@ import {
   IconServer,
   IconDominio,
   IconRede,
+  IconImagem,
 } from "../../../components/icons";
 import { usePlataformasData } from "../../../hooks/usePlataformasData";
 import type {
@@ -13,24 +14,27 @@ import type {
   Servidor,
   Dominio,
   Subdominio,
-  TipoPlataforma,
+  ImagemContainer,
+  DadosPlataforma,
 } from "../../../types/plataforma";
 import FormPlataforma from "./FormPlataforma";
 import FormServidor from "./FormServidor";
 import FormDominio from "./FormDominio";
 import FormSubdominio from "./FormSubdominio";
+import FormImagem from "./FormImagem";
 
 export type TipoFormularioPlataforma =
   | "plataforma"
   | "servidor"
   | "dominio"
-  | "subdominio";
+  | "subdominio"
+  | "imagem";
 
 interface PlataformaFormularioPageProps {
   tipoInicial?: TipoFormularioPlataforma;
   itemEdicao?: {
     tipo: TipoFormularioPlataforma;
-    dados: Plataforma | Servidor | Dominio | Subdominio;
+    dados: Plataforma | Servidor | Dominio | Subdominio | ImagemContainer;
   } | null;
   onVoltar: () => void;
   onSucesso?: () => void;
@@ -43,7 +47,7 @@ export default function PlataformaFormularioPage({
   onSucesso,
 }: PlataformaFormularioPageProps) {
   const [tipoAtivo, setTipoAtivo] = useState<TipoFormularioPlataforma>(
-    itemEdicao?.tipo ?? tipoInicial
+    itemEdicao?.tipo ?? tipoInicial,
   );
   const [salvando, setSalvando] = useState(false);
 
@@ -59,17 +63,14 @@ export default function PlataformaFormularioPage({
     atualizarDominio,
     criarSubdominio,
     atualizarSubdominio,
+    criarImagem,
+    atualizarImagem,
   } = usePlataformasData();
 
   const emEdicao = Boolean(itemEdicao);
 
   // Submissão: Plataforma
-  const handleSalvarPlataforma = async (dados: {
-    nome: string;
-    tipo: TipoPlataforma;
-    urlPainel?: string | null;
-    ativo?: boolean;
-  }) => {
+  const handleSalvarPlataforma = async (dados: DadosPlataforma) => {
     setSalvando(true);
     try {
       if (itemEdicao?.tipo === "plataforma") {
@@ -82,7 +83,8 @@ export default function PlataformaFormularioPage({
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar plataforma.";
+      const msg =
+        err instanceof Error ? err.message : "Erro ao salvar plataforma.";
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -103,7 +105,8 @@ export default function PlataformaFormularioPage({
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar servidor.";
+      const msg =
+        err instanceof Error ? err.message : "Erro ao salvar servidor.";
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -128,7 +131,8 @@ export default function PlataformaFormularioPage({
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar domínio.";
+      const msg =
+        err instanceof Error ? err.message : "Erro ao salvar domínio.";
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -155,7 +159,28 @@ export default function PlataformaFormularioPage({
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar registo DNS.";
+      const msg =
+        err instanceof Error ? err.message : "Erro ao salvar registo DNS.";
+      toast.error(msg);
+    } finally {
+      setSalvando(false);
+    }
+  };
+  // Submissão: Imagem
+  const handleSalvarImagem = async (dados: Record<string, unknown>) => {
+    setSalvando(true);
+    try {
+      if (itemEdicao?.tipo === "imagem") {
+        await atualizarImagem(itemEdicao.dados.id, dados);
+        toast.success("Imagem atualizada com sucesso!");
+      } else {
+        await criarImagem(dados);
+        toast.success("Imagem registada com sucesso!");
+      }
+      onSucesso?.();
+      onVoltar();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao salvar imagem.";
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -187,6 +212,12 @@ export default function PlataformaFormularioPage({
       icon: <IconRede className="w-4 h-4" />,
       sublabel: "Apontamento de Registo",
     },
+    {
+      tipo: "imagem" as const,
+      label: "Imagem",
+      icon: <IconImagem className="w-4 h-4" />,
+      sublabel: "Recursos de Imagem",
+    },
   ];
 
   return (
@@ -210,7 +241,7 @@ export default function PlataformaFormularioPage({
 
       {/* Selector de Abas do Formulário (apenas em modo de criação) */}
       {!emEdicao ? (
-        <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-xs grid grid-cols-2 md:grid-cols-4 gap-2">
+        <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-xs grid grid-cols-2 md:grid-cols-5 gap-2">
           {tabsConfig.map((tab) => {
             const ativa = tipoAtivo === tab.tipo;
             return (
@@ -226,7 +257,9 @@ export default function PlataformaFormularioPage({
               >
                 <div
                   className={`p-2 rounded-lg ${
-                    ativa ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"
+                    ativa
+                      ? "bg-white/15 text-white"
+                      : "bg-slate-100 text-slate-500"
                   }`}
                 >
                   {tab.icon}
@@ -303,7 +336,19 @@ export default function PlataformaFormularioPage({
           onSubmit={handleSalvarSubdominio}
         />
       )}
+      {tipoAtivo === "imagem" && (
+        <FormImagem
+          imagemExistente={
+            itemEdicao?.tipo === "imagem"
+              ? (itemEdicao.dados as ImagemContainer)
+              : null
+          }
+          plataformas={plataformas}
+          salvando={salvando}
+          onCancelar={onVoltar}
+          onSubmit={handleSalvarImagem}
+        />
+      )}
     </div>
   );
 }
-

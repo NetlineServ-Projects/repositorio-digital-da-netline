@@ -8,13 +8,20 @@ export interface Plataforma {
   ativo: boolean;
   criadoEm?: string;
   atualizadoEm?: string;
-  _count?: {
+  totais?: {
     dominios: number;
     servidores: number;
-    infraestruturas: number;
+    sistemas: number;
+    imagens: number;
   };
+  fornecedorContainer: FornecedorContainer | null;
+  registryUrl: string | null;
+  namespace: string | null;
+  registryUtilizador: string | null;
+  temTokenRegistry: boolean;
   dominios?: Dominio[];
   servidores?: Servidor[];
+  imagens?: ImagemContainer[];
 }
 
 export interface Servidor {
@@ -105,3 +112,44 @@ export interface Subdominio {
   dominio?: Dominio;
 }
 
+export type FornecedorContainer =
+  | "DOCKER_HUB"
+  | "GITHUB_CONTAINER_REGISTRY"
+  | "AWS_ECR"
+  | "GOOGLE_ARTIFACT_REGISTRY"
+  | "AZURE_CONTAINER_REGISTRY"
+  | "GITLAB_REGISTRY"
+  | "KUBERNETES"
+  | "DOCKER_SWARM"
+  | "PORTAINER"
+  | "OUTRO";
+
+export type VisibilidadeImagem = "PUBLICA" | "PRIVADA";
+export type OrigemImagem = "PROPRIA" | "TERCEIROS";
+
+export interface ImagemContainer {
+  id: number;
+  nome: string;
+  tag: string;
+  portaExposta: number | null;
+  digest: string | null;
+  ultimoPushEm: string | null;
+  visibilidade: VisibilidadeImagem;
+  origem: OrigemImagem;
+  ativo: boolean;
+  plataformaId: number;
+  plataforma: { id: number; nome: string; tipo: string };
+  criadoEm: string;
+  atualizadoEm: string;
+}
+export interface DadosPlataforma {
+  nome: string;
+  tipo: TipoPlataforma;
+  urlPainel?: string | null;
+  ativo?: boolean;
+  fornecedorContainer?: FornecedorContainer | null;
+  registryUrl?: string | null;
+  namespace?: string | null;
+  registryUtilizador?: string | null;
+  registryToken?: string | null;
+}

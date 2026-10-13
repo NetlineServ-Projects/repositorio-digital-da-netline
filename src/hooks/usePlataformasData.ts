@@ -1,25 +1,28 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
-import type { Plataforma, Servidor, Dominio, Subdominio } from "../types/plataforma";
+import type { Plataforma, Servidor, Dominio, Subdominio,ImagemContainer, DadosPlataforma} from "../types/plataforma";
+import type { PlataformaArvore } from "../types/plataformaArvore";
 
 export function usePlataformasData() {
   const [plataformas, setPlataformas] = useState<Plataforma[]>([]);
-  const [arvore, setArvore] = useState<Plataforma[]>([]);
+  const [arvore, setArvore] = useState<PlataformaArvore[]>([]);
   const [servidores, setServidores] = useState<Servidor[]>([]);
   const [dominios, setDominios] = useState<Dominio[]>([]);
   const [subdominios, setSubdominios] = useState<Subdominio[]>([]);
+  const [imagens, setImagens] = useState<ImagemContainer[]>([]);
   const [loading, setLoading] = useState(true);
 
   const carregarTodos = useCallback(async () => {
     setLoading(true);
     try {
-      const [platRes, arvoreRes, servRes, domRes, subRes] = await Promise.allSettled([
+      const [platRes, arvoreRes, servRes, domRes, subRes, imgRes] = await Promise.allSettled([
         fetchComToken(API_ENDPOINTS.PLATAFORMAS),
         fetchComToken(API_ENDPOINTS.PLATAFORMA_ARVORE),
         fetchComToken(API_ENDPOINTS.SERVIDORES),
         fetchComToken(API_ENDPOINTS.DOMINIOS),
         fetchComToken(API_ENDPOINTS.SUBDOMINIOS),
+        fetchComToken(API_ENDPOINTS.IMAGENS),
       ]);
 
       if (platRes.status === "fulfilled" && Array.isArray(platRes.value)) {
@@ -37,6 +40,9 @@ export function usePlataformasData() {
       if (subRes.status === "fulfilled" && Array.isArray(subRes.value)) {
         setSubdominios(subRes.value);
       }
+      if (imgRes.status === "fulfilled" && Array.isArray(imgRes.value)) {
+        setImagens(imgRes.value);
+      }
     } catch (error) {
       console.error("Erro ao carregar dados de plataformas:", error);
     } finally {
@@ -51,12 +57,7 @@ export function usePlataformasData() {
   // ==========================================
   // OPERAÇÕES: PLATAFORMA
   // ==========================================
-  const criarPlataforma = async (dados: {
-    nome: string;
-    tipo: string;
-    urlPainel?: string | null;
-    ativo?: boolean;
-  }) => {
+   const criarPlataforma = async (dados: DadosPlataforma) => {
     await fetchComToken(API_ENDPOINTS.PLATAFORMAS, {
       method: "POST",
       body: JSON.stringify(dados),
@@ -66,12 +67,7 @@ export function usePlataformasData() {
 
   const atualizarPlataforma = async (
     id: number | string,
-    dados: Partial<{
-      nome: string;
-      tipo: string;
-      urlPainel?: string | null;
-      ativo?: boolean;
-    }>
+    dados: Partial<DadosPlataforma>
   ) => {
     await fetchComToken(API_ENDPOINTS.PLATAFORMA_BY_ID(id), {
       method: "PATCH",
@@ -79,7 +75,6 @@ export function usePlataformasData() {
     });
     await carregarTodos();
   };
-
   const eliminarPlataforma = async (id: number | string) => {
     await fetchComToken(API_ENDPOINTS.PLATAFORMA_BY_ID(id), {
       method: "DELETE",
@@ -207,6 +202,34 @@ export function usePlataformasData() {
     });
     await carregarTodos();
   };
+   // ==========================================
+   // OPERAÇÕES: IMAGEM DE CONTAINER
+   // ==========================================
+  const criarImagem = async (dados: Record<string, unknown>) => {
+    await fetchComToken(API_ENDPOINTS.IMAGENS, {
+     method: "POST",
+     body: JSON.stringify(dados),
+    });
+    await carregarTodos();
+  };
+
+  const atualizarImagem = async (
+    id: number | string,
+    dados: Record<string, unknown>
+  ) => {
+    await fetchComToken(API_ENDPOINTS.IMAGEM_BY_ID(id), {
+     method: "PATCH",
+     body: JSON.stringify(dados),
+    });
+  await carregarTodos();
+  };
+
+  const eliminarImagem = async (id: number | string) => {
+    await fetchComToken(API_ENDPOINTS.IMAGEM_BY_ID(id), {
+    method: "DELETE",
+  });
+   await carregarTodos();
+ };
 
   return {
     plataformas,
@@ -214,6 +237,7 @@ export function usePlataformasData() {
     servidores,
     dominios,
     subdominios,
+    imagens,
     loading,
     carregarTodos,
     criarPlataforma,
@@ -229,6 +253,9 @@ export function usePlataformasData() {
     criarSubdominio,
     atualizarSubdominio,
     eliminarSubdominio,
+    criarImagem,
+    atualizarImagem,
+    eliminarImagem,
   };
 }
 

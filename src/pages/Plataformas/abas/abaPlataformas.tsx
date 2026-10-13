@@ -1,120 +1,206 @@
+import type { KeyboardEvent, MouseEvent } from "react";
 import AcoesItem from "../../../components/plataformas/acoesItem";
 import EstadoVazio from "../../../components/plataformas/estadoVazio";
+import type { ComponenteIcone } from "../../../components/plataformas/botaoAba";
+import {
+  IconImagem,
+  IconDatabase,
+  IconDominio,
+} from "../../../components/icons";
 import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
-import type { AoEditarItem, AoEliminarItem } from "../../../types/plataformaTipos";
 import type {
   Plataforma,
   Servidor,
   Dominio,
+  ImagemContainer,
+  TipoPlataforma,
 } from "../../../types/plataforma";
+
+
+type Metrica = "servidores" | "dominios" | "imagens";
+
+interface ConfigTipo {
+  Icone: ComponenteIcone;
+  metricas: Metrica[];
+}
+
+const CONFIG_POR_TIPO: Record<TipoPlataforma, ConfigTipo> = {
+  CONTAINERIZACAO: {
+    Icone: IconImagem,
+    metricas: ["imagens"],
+  },
+  CLOUD_BASE_DADOS: {
+    Icone: IconDatabase,
+    metricas: ["servidores"],
+  },
+  GESTAO_DOMINIO: {
+    Icone: IconDominio,
+    metricas: ["dominios"],
+  },
+};
+
+const ROTULOS_METRICA: Record<Metrica, string> = {
+  servidores: "Servidores",
+  dominios: "Domínios",
+  imagens: "Imagens",
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Subcomponentes                                                            */
+/* -------------------------------------------------------------------------- */
+
+function BlocoMetrica({ valor, rotulo }: { valor: number; rotulo: string }) {
+  return (
+    <div className="bg-slate-50/80 rounded-xl p-3 text-center flex flex-col items-center justify-center">
+      <span className="text-base font-extrabold text-slate-800">{valor}</span>
+      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+        {rotulo}
+      </span>
+    </div>
+  );
+}
+
+interface CartaoPlataformaProps {
+  plataforma: Plataforma;
+  totais: Record<Metrica, number>;
+  aoAbrirDetalhes: (plataforma: Plataforma) => void;
+}
+
+function CartaoPlataforma({
+  plataforma,
+  totais,
+  aoAbrirDetalhes,
+}: CartaoPlataformaProps) {
+  const { Icone, metricas } = CONFIG_POR_TIPO[plataforma.tipo];
+  const inativa = !plataforma.ativo;
+
+  const abrirDetalhes = () => aoAbrirDetalhes(plataforma);
+
+  const aoPressionarTecla = (e: KeyboardEvent<HTMLDivElement>) => {
+    // Ignora teclas vindas dos botões internos (editar, eliminar, link).
+    if (e.target !== e.currentTarget) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      abrirDetalhes();
+    }
+  };
+
+  const impedirPropagacao = (e: MouseEvent) => e.stopPropagation();
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={abrirDetalhes}
+      onKeyDown={aoPressionarTecla}
+      aria-label={`Ver detalhes da plataforma ${plataforma.nome}`}
+      className="bg-white rounded-2xl border border-slate-100 border-l-4 border-l-blue-900 p-5 shadow-xs hover:shadow-md transition-all flex flex-col gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40"
+    >
+      {/* Topo: cresce e empurra métricas e rodapé para o fundo,
+          assim todos os cartões ficam alinhados mesmo sem URL. */}
+      <div className={`flex-1 space-y-3 ${inativa ? "opacity-60" : ""}`}>
+        <div className="flex items-start justify-between gap-2">
+          <h3
+            className="text-sm font-bold text-slate-800 leading-snug line-clamp-2"
+            title={plataforma.nome}
+          >
+            {plataforma.nome}
+          </h3>
+          <div className="p-2 rounded-xl bg-slate-50 text-slate-400 shrink-0">
+            <Icone className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-50 text-blue-900 border border-blue-100/60">
+            {ROTULOS_TIPO_PLATAFORMA[plataforma.tipo]}
+          </span>
+          {inativa && (
+            <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+              Inativa
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Métricas: só as que fazem sentido para este tipo */}
+      {metricas.length > 0 && (
+        <div
+          className={`grid gap-2 ${
+            metricas.length === 1 ? "grid-cols-1" : "grid-cols-2"
+          }`}
+        >
+          {metricas.map((m) => (
+            <BlocoMetrica key={m} valor={totais[m]} rotulo={ROTULOS_METRICA[m]} />
+          ))}
+        </div>
+      )}
+
+      {/* Rodapé: ações. O clique aqui não abre os detalhes. */}
+      <div
+        className="flex items-center justify-end pt-2 border-t border-slate-100"
+        onClick={impedirPropagacao}
+      >
+        <AcoesItem
+          tituloVer="Ver detalhes da plataforma"
+          onVer={abrirDetalhes}
+        
+        />
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Aba                                                                       */
+/* -------------------------------------------------------------------------- */
 
 interface AbaPlataformasProps {
   plataformas: Plataforma[];
   servidores: Servidor[];
   dominios: Dominio[];
-  ehAdmin: boolean;
+  imagens: ImagemContainer[];
+  /** Hoje: ehAdmin. Depois: permissão "plataformas.editar". */
+  podeEditar: boolean;
+  /** Hoje: ehAdmin. Depois: permissão "plataformas.apagar". */
+  podeEliminar: boolean;
   aoAbrirDetalhes: (plataforma: Plataforma) => void;
-  aoEditar: AoEditarItem;
-  aoEliminar: AoEliminarItem;
+
 }
 
 export default function AbaPlataformas({
   plataformas,
   servidores,
   dominios,
-  ehAdmin,
+  imagens,
   aoAbrirDetalhes,
-  aoEditar,
-  aoEliminar,
 }: AbaPlataformasProps) {
   if (plataformas.length === 0) {
     return <EstadoVazio mensagem="Nenhuma plataforma cadastrada." />;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
       {plataformas.map((plataforma) => {
-        const totalServidores =
-          plataforma._count?.servidores ??
-          servidores.filter((s) => s.plataformaId === plataforma.id).length;
-
-        const totalDominios =
-          plataforma._count?.dominios ??
-          dominios.filter((d) => d.plataformaId === plataforma.id).length;
+        const totais: Record<Metrica, number> = {
+          servidores:
+            plataforma.totais?.servidores ??
+            servidores.filter((s) => s.plataformaId === plataforma.id).length,
+          dominios:
+            plataforma.totais?.dominios ??
+            dominios.filter((d) => d.plataformaId === plataforma.id).length,
+          imagens:
+            plataforma.totais?.imagens ??
+            imagens.filter((i) => i.plataformaId === plataforma.id).length,
+        };
 
         return (
-          <div
+          <CartaoPlataforma
             key={plataforma.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => aoAbrirDetalhes(plataforma)}
-            onKeyDown={(evento) => {
-              if (evento.key === "Enter") aoAbrirDetalhes(plataforma);
-            }}
-            className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs hover:shadow-md hover:border-slate-200 transition-all flex flex-col justify-between gap-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-900/20"
-          >
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border bg-slate-100 text-slate-700 border-slate-200">
-                    {ROTULOS_TIPO_PLATAFORMA[plataforma.tipo]}
-                  </span>
-                  <h3 className="text-base font-bold text-slate-800 mt-2">
-                    {plataforma.nome}
-                  </h3>
-                </div>
-                <span
-                  className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                    plataforma.ativo ? "bg-emerald-500" : "bg-slate-300"
-                  }`}
-                  title={plataforma.ativo ? "Ativa" : "Inativa"}
-                />
-              </div>
-
-              {plataforma.urlPainel && (
-                <a
-                  href={plataforma.urlPainel}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(evento) => evento.stopPropagation()}
-                  className="text-xs text-blue-600 hover:underline flex items-center gap-1 font-medium truncate"
-                >
-                  🔗 {plataforma.urlPainel}
-                </a>
-              )}
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
-                <div>
-                  Servidores:{" "}
-                  <span className="font-bold text-slate-800">
-                    {totalServidores}
-                  </span>
-                </div>
-                <div>
-                  Domínios:{" "}
-                  <span className="font-bold text-slate-800">
-                    {totalDominios}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {ehAdmin && (
-              <div
-                className="flex items-center justify-end pt-2 border-t border-slate-100"
-                onClick={(evento) => evento.stopPropagation()}
-              >
-                <AcoesItem
-                  tituloEditar="Editar plataforma"
-                  tituloEliminar="Eliminar plataforma"
-                  onEditar={() => aoEditar("plataforma", plataforma)}
-                  onEliminar={() =>
-                    aoEliminar("plataforma", plataforma.id, plataforma.nome)
-                  }
-                />
-              </div>
-            )}
-          </div>
+            plataforma={plataforma}
+            totais={totais}
+            aoAbrirDetalhes={aoAbrirDetalhes}
+          />
         );
       })}
     </div>

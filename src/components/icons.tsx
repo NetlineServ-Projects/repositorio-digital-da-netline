@@ -34,7 +34,9 @@ import {
   faCloud,
   faLayerGroup,
   faDatabase,
+  faArrowUpRightFromSquare,
 } from "@fortawesome/free-solid-svg-icons";
+import { faDocker } from "@fortawesome/free-brands-svg-icons";
 
 // Interface unificada para aceitar qualquer evento nativo (ex: onClick, title, style, etc.)
 export interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -128,6 +130,11 @@ export const IconConfig = ({ className = "w-4 h-4" }: IconProps) => (
   <FontAwesomeIcon icon={faGear} className={className} />
 );
 
+export const IconLinkExterno = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faArrowUpRightFromSquare} className={className} />
+);
+
+
 /* ==========================================================================
    3. DOCUMENTOS & PASTAS
    ========================================================================== */
@@ -193,6 +200,9 @@ export const IconVolume = ({ className = "w-5 h-5" }: IconProps) => (
 
 export const IconVolumeOff = ({ className = "w-5 h-5" }: IconProps) => (
   <FontAwesomeIcon icon={faVolumeXmark} className={className} />
+);
+export const IconImagem = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faDocker} className={className} />
 );
 
 /* ==========================================================================
