@@ -15,8 +15,7 @@ export const API_ENDPOINTS = {
 
   SISTEMAS: "/sistemas",
   SISTEMA_BY_ID: (id: number | string) => `/sistemas/${id}`,
-
-  // Infraestrutura por ambiente (PRODUCAO | TESTES | DESENVOLVIMENTO)
+  // Infraestrutura (só do backend), por ambiente: PRODUCAO | TESTES
   SISTEMA_INFRAESTRUTURAS: (sistemaId: number | string) =>
     `/sistemas/${sistemaId}/infraestruturas`,
   SISTEMA_INFRAESTRUTURA: (sistemaId: number | string, ambiente: string) =>
@@ -29,7 +28,6 @@ export const API_ENDPOINTS = {
     credencialId: number | string,
   ) =>
     `/sistemas/${sistemaId}/infraestruturas/${ambiente}/credenciais/${credencialId}`,
-
   // Plataformas, Servidores e Domínios
   PLATAFORMAS: "/plataformas",
   PLATAFORMA_ARVORE: "/plataformas/arvore",

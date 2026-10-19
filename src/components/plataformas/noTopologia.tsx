@@ -57,13 +57,17 @@ const ESTILOS: Record<
   },
 };
 
-export default function NoTopologia({ data }: NodeProps<NoGrafo>) {
+export default function NoTopologia({
+  data,
+  targetPosition,
+  sourcePosition,
+}: NodeProps<NoGrafo>) {
   const estilo = ESTILOS[data.tipo];
   const ehRaiz = data.tipo === "raiz";
 
   return (
     <>
-      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="target" position={targetPosition ?? Position.Top} style={{ opacity: 0 }} />
 
       <div
         style={{ width: LARGURA_NO, height: ALTURA_NO }}
@@ -102,7 +106,7 @@ export default function NoTopologia({ data }: NodeProps<NoGrafo>) {
         </div>
       </div>
 
-      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+      <Handle type="source" position={sourcePosition ?? Position.Bottom} style={{ opacity: 0 }} />
     </>
   );
 }

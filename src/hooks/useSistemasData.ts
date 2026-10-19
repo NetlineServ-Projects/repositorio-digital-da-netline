@@ -7,6 +7,41 @@ export type { Documento, Categoria };
 
 export const TOKEN_ELEVADO_DURACAO_MS = 3 * 60 * 1000; // 3 minutos, sincronizado com o backend (authService)
 
+// Opção de um dropdown (servidor, plataforma, domínio...)
+export interface OpcaoHospedagem {
+  id: number;
+  nome: string;
+  tipo?: string;
+}
+
+export const TIPOS_DNS = [
+  "A", "AAAA", "CNAME", "MX", "TXT", "NS", "SRV", "CAA",
+  "PTR", "SOA", "DS", "DNSKEY", "RRSIG", "TLSA", "SSHFP", "OUTRO",
+] as const;
+
+export type TipoDns = (typeof TIPOS_DNS)[number];
+
+export interface SubdominioInfra {
+  id: number;
+  nomeCompleto?: string;
+  dominioId?: number;
+  nome: string;
+  tipoDns: TipoDns;
+  destino: string | null;
+  dominio?: { id: number; nome: string };
+}
+
+// Tem de coincidir com o enum TipoAmbiente do schema.prisma
+export type TipoAmbiente = "PRODUCAO" | "TESTES";
+
+export interface PlataformaResumo {
+  id: number;
+  nome: string;
+  tipo?: string;
+  fornecedor?: string;
+  logotipo?: string | null;
+}
+
 export interface Sistema {
   id: string | number;
   nome: string;
@@ -23,6 +58,9 @@ export interface Sistema {
   tecnologias?: string[]; // calculado: junção de frontend + backend + infraestrutura
   repositorioUrl?: string;
   urlProducao?: string;
+  urlTestes?: string | null;
+  plataformaFrontendId?: number | null;
+  plataformaFrontend?: PlataformaResumo | null;
   responsavelTecnico?: string;
   versaoAtual?: string;
   totalDocumentos?: number;
@@ -42,9 +80,6 @@ export type TipoCredencial =
   | "BACKUP_ACESSO"
   | "OUTRO";
 
-// Tem de coincidir com o enum TipoAmbiente do schema.prisma
-export type TipoAmbiente = "PRODUCAO" | "TESTES" | "DESENVOLVIMENTO";
-
 export interface Credencial {
   id: number;
   tipo: TipoCredencial;
@@ -52,19 +87,19 @@ export interface Credencial {
   valor?: string; // só vem preenchido no GET; nunca em respostas de criação/edição
 }
 
+// Infraestrutura do backend de um sistema, num ambiente
 export interface SistemaInfraestrutura {
   id: number;
   ambiente: TipoAmbiente;
-  ipServidor: string | null;
-  cloudProvedor: string | null;
+  url?: string | null;
+  plataformaId?: number | null;
+  plataforma?: PlataformaResumo | null;
+  servidorId?: number | null;
+  servidor?: { id: number; nome: string; hostname?: string } | null;
+  imagemId?: number | null;
+  imagem?: { id: number; nome: string; tag: string } | null;
+  subdominio?: SubdominioInfra | null;
   credenciais: Credencial[];
-}
-
-// Resumo de um ambiente que já tem dados — vem da listagem e nunca traz valores sensíveis
-export interface AmbienteResumo {
-  id: number;
-  ambiente: TipoAmbiente;
-  totalCredenciais: number;
 }
 
 function comTecnologiasCombinadas(sis: Sistema): Sistema {
@@ -81,6 +116,106 @@ function comTecnologiasCombinadas(sis: Sistema): Sistema {
 const cabecalhoElevado = (tokenElevado: string) => ({
   "x-token-elevado": tokenElevado,
 });
+
+// =======================================
+// Listas para dropdowns
+// =======================================
+
+export const listarServidores = async (): Promise<OpcaoHospedagem[]> => {
+  const resposta = await fetchComToken(API_ENDPOINTS.SERVIDORES);
+  return Array.isArray(resposta) ? resposta : [];
+};
+
+export const listarPlataformas = async (): Promise<OpcaoHospedagem[]> => {
+  const resposta = await fetchComToken(API_ENDPOINTS.PLATAFORMAS);
+  return Array.isArray(resposta) ? resposta : [];
+};
+
+export const listarDominios = async (): Promise<OpcaoHospedagem[]> => {
+  const resposta = await fetchComToken(API_ENDPOINTS.DOMINIOS);
+  return Array.isArray(resposta) ? resposta : [];
+};
+
+// =======================================
+// Infraestrutura encriptada, por ambiente (reautenticação necessária).
+// São funções soltas: quem as chama obtém o token elevado com comAcesso().
+// =======================================
+
+// Confirma a password e devolve o token elevado (válido 3 min)
+export const reautenticar = (
+  senha: string,
+): Promise<{ tokenElevado: string; expiraEm: string }> =>
+  fetchComToken("/auth/reautenticar", {
+    method: "POST",
+    body: JSON.stringify({ senha }),
+  });
+
+export const buscarInfraestrutura = (
+  sistemaId: string | number,
+  ambiente: TipoAmbiente,
+  tokenElevado: string,
+): Promise<SistemaInfraestrutura | null> =>
+  fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURA(sistemaId, ambiente), {
+    headers: cabecalhoElevado(tokenElevado),
+  });
+
+export const salvarInfraestrutura = (
+  sistemaId: string | number,
+  ambiente: TipoAmbiente,
+  dados: Record<string, unknown>,
+  tokenElevado: string,
+) =>
+  fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURA(sistemaId, ambiente), {
+    method: "PUT",
+    body: JSON.stringify(dados),
+    headers: cabecalhoElevado(tokenElevado),
+  });
+
+export const adicionarCredencial = (
+  sistemaId: string | number,
+  ambiente: TipoAmbiente,
+  dados: { tipo: TipoCredencial; label: string; valor: string },
+  tokenElevado: string,
+) =>
+  fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAIS(sistemaId, ambiente), {
+    method: "POST",
+    body: JSON.stringify(dados),
+    headers: cabecalhoElevado(tokenElevado),
+  });
+
+export const atualizarCredencial = (
+  sistemaId: string | number,
+  ambiente: TipoAmbiente,
+  credencialId: number,
+  dados: Partial<{ tipo: TipoCredencial; label: string; valor: string }>,
+  tokenElevado: string,
+) =>
+  fetchComToken(
+    API_ENDPOINTS.SISTEMA_CREDENCIAL(sistemaId, ambiente, credencialId),
+    {
+      method: "PATCH",
+      body: JSON.stringify(dados),
+      headers: cabecalhoElevado(tokenElevado),
+    },
+  );
+
+export const apagarCredencial = (
+  sistemaId: string | number,
+  ambiente: TipoAmbiente,
+  credencialId: number,
+  tokenElevado: string,
+) =>
+  fetchComToken(
+    API_ENDPOINTS.SISTEMA_CREDENCIAL(sistemaId, ambiente, credencialId),
+    {
+      method: "DELETE",
+      headers: cabecalhoElevado(tokenElevado),
+    },
+  );
+
+// =======================================
+// Hook da página de sistemas
+// =======================================
 
 export function useSistemasData() {
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
@@ -120,12 +255,20 @@ export function useSistemasData() {
     await fetchDados();
   };
 
+  const apagarSistema = async (id: string | number) => {
+    await fetchComToken(`/sistemas/${id}`, { method: "DELETE" });
+    await fetchDados();
+  };
+
   const anexarDocumento = async (formData: FormData) => {
     await fetchComToken("/documentos", { method: "POST", body: formData });
     await fetchDados();
   };
 
-  const editarDocumento = async (id: number, dados: { titulo: string; descricao: string; categoriaId: string }) => {
+  const editarDocumento = async (
+    id: number,
+    dados: { titulo: string; descricao: string; categoriaId: string },
+  ) => {
     await fetchComToken(`/documentos/${id}`, { method: "PATCH", body: JSON.stringify(dados) });
     await fetchDados();
   };
@@ -135,92 +278,10 @@ export function useSistemasData() {
     await fetchDados();
   };
 
-  // =======================================
-  // Infraestrutura encriptada, por ambiente (reautenticação necessária)
-  // =======================================
-
-  // Confirma a password e devolve o token elevado (válido 3 min).
-  // Não recarrega `sistemas` — não altera a listagem geral.
-  const reautenticar = async (senha: string): Promise<{ tokenElevado: string; expiraEm: string }> => {
-    return fetchComToken("/auth/reautenticar", {
-      method: "POST",
-      body: JSON.stringify({ senha }),
-    });
-  };
-
-  // Ambientes que já têm dados (sem valores sensíveis)
-  const listarInfraestruturas = async (
-    sistemaId: string | number,
-    tokenElevado: string
-  ): Promise<AmbienteResumo[]> => {
-    const resposta = await fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURAS(sistemaId), {
-      headers: cabecalhoElevado(tokenElevado),
-    });
-    return Array.isArray(resposta) ? resposta : [];
-  };
-
-  // Um ambiente, já desencriptado
-  const buscarInfraestrutura = async (
-    sistemaId: string | number,
-    ambiente: TipoAmbiente,
-    tokenElevado: string
-  ): Promise<SistemaInfraestrutura | null> => {
-    return fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURA(sistemaId, ambiente), {
-      headers: cabecalhoElevado(tokenElevado),
-    });
-  };
-
-  // Cria ou atualiza o ambiente
-  const salvarInfraestrutura = async (
-    sistemaId: string | number,
-    ambiente: TipoAmbiente,
-    dados: { ipServidor?: string; cloudProvedor?: string },
-    tokenElevado: string
-  ) => {
-    return fetchComToken(API_ENDPOINTS.SISTEMA_INFRAESTRUTURA(sistemaId, ambiente), {
-      method: "PUT",
-      body: JSON.stringify(dados),
-      headers: cabecalhoElevado(tokenElevado),
-    });
-  };
-
-  const adicionarCredencial = async (
-    sistemaId: string | number,
-    ambiente: TipoAmbiente,
-    dados: { tipo: TipoCredencial; label: string; valor: string },
-    tokenElevado: string
-  ) => {
-    return fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAIS(sistemaId, ambiente), {
-      method: "POST",
-      body: JSON.stringify(dados),
-      headers: cabecalhoElevado(tokenElevado),
-    });
-  };
-
-  const atualizarCredencial = async (
-    sistemaId: string | number,
-    ambiente: TipoAmbiente,
-    credencialId: number,
-    dados: Partial<{ tipo: TipoCredencial; label: string; valor: string }>,
-    tokenElevado: string
-  ) => {
-    return fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAL(sistemaId, ambiente, credencialId), {
-      method: "PATCH",
-      body: JSON.stringify(dados),
-      headers: cabecalhoElevado(tokenElevado),
-    });
-  };
-
-  const apagarCredencial = async (
-    sistemaId: string | number,
-    ambiente: TipoAmbiente,
-    credencialId: number,
-    tokenElevado: string
-  ) => {
-    return fetchComToken(API_ENDPOINTS.SISTEMA_CREDENCIAL(sistemaId, ambiente, credencialId), {
-      method: "DELETE",
-      headers: cabecalhoElevado(tokenElevado),
-    });
+  // Atualiza a lista sem mostrar o ecrã de carregamento
+  const recarregarSistemas = async () => {
+    const sist = await fetchComToken("/sistemas");
+    setSistemas(Array.isArray(sist) ? sist.map(comTecnologiasCombinadas) : []);
   };
 
   return {
@@ -230,17 +291,11 @@ export function useSistemasData() {
     loading,
     criarSistema,
     editarSistema,
+    apagarSistema,
     anexarDocumento,
     editarDocumento,
     apagarDocumento,
     recarregar: fetchDados,
-    // infraestrutura
-    reautenticar,
-    listarInfraestruturas,
-    buscarInfraestrutura,
-    salvarInfraestrutura,
-    adicionarCredencial,
-    atualizarCredencial,
-    apagarCredencial,
+    recarregarSistemas,
   };
 }

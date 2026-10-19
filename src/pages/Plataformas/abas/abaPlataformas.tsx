@@ -16,6 +16,13 @@ import type {
   TipoPlataforma,
 } from "../../../types/plataforma";
 
+/* -------------------------------------------------------------------------- */
+/*  Configuração por tipo                                                     */
+/*  Cada tipo define o seu ícone e as métricas que fazem sentido mostrar.     */
+/*                                                                            */
+/*  Tipado com Record<TipoPlataforma, ...>: se um dia adicionar um tipo novo, */
+/*  o TypeScript obriga a configurá-lo aqui.                                  */
+/* -------------------------------------------------------------------------- */
 
 type Metrica = "servidores" | "dominios" | "imagens";
 
@@ -77,7 +84,7 @@ function CartaoPlataforma({
   const abrirDetalhes = () => aoAbrirDetalhes(plataforma);
 
   const aoPressionarTecla = (e: KeyboardEvent<HTMLDivElement>) => {
-    // Ignora teclas vindas dos botões internos (editar, eliminar, link).
+    // Ignora teclas vindas dos botões internos.
     if (e.target !== e.currentTarget) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -97,7 +104,7 @@ function CartaoPlataforma({
       className="bg-white rounded-2xl border border-slate-100 border-l-4 border-l-blue-900 p-5 shadow-xs hover:shadow-md transition-all flex flex-col gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40"
     >
       {/* Topo: cresce e empurra métricas e rodapé para o fundo,
-          assim todos os cartões ficam alinhados mesmo sem URL. */}
+          assim todos os cartões ficam alinhados. */}
       <div className={`flex-1 space-y-3 ${inativa ? "opacity-60" : ""}`}>
         <div className="flex items-start justify-between gap-2">
           <h3
@@ -136,7 +143,7 @@ function CartaoPlataforma({
         </div>
       )}
 
-      {/* Rodapé: ações. O clique aqui não abre os detalhes. */}
+      {/* Rodapé: só "Ver". Editar e eliminar ficam na página de detalhes. */}
       <div
         className="flex items-center justify-end pt-2 border-t border-slate-100"
         onClick={impedirPropagacao}
@@ -144,7 +151,6 @@ function CartaoPlataforma({
         <AcoesItem
           tituloVer="Ver detalhes da plataforma"
           onVer={abrirDetalhes}
-        
         />
       </div>
     </div>
@@ -160,12 +166,7 @@ interface AbaPlataformasProps {
   servidores: Servidor[];
   dominios: Dominio[];
   imagens: ImagemContainer[];
-  /** Hoje: ehAdmin. Depois: permissão "plataformas.editar". */
-  podeEditar: boolean;
-  /** Hoje: ehAdmin. Depois: permissão "plataformas.apagar". */
-  podeEliminar: boolean;
   aoAbrirDetalhes: (plataforma: Plataforma) => void;
-
 }
 
 export default function AbaPlataformas({

@@ -1,8 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { usePlataformasData } from "../../hooks/usePlataformasData";
 import { useUsuario } from "../../components/usuarioContext";
 import ModalConfirmacao from "../../components/modalConfirmacaoprops";
+import BotaoAba, {
+  type ComponenteIcone,
+} from "../../components/plataformas/botaoAba";
+import MenuAdicionar from "../../components/plataformas/menuAdicionar";
 import {
   IconPlataforma,
   IconServer,
@@ -15,15 +19,11 @@ import PlataformaFormularioPage, {
   type TipoFormularioPlataforma,
 } from "./formulario/page";
 import DetalhesPlataforma from "./detalhes/page";
-import BotaoAba, {
-  type ComponenteIcone,
-} from "../../components/plataformas/botaoAba";
-import MenuAdicionar from "../../components/plataformas/menuAdicionar";
 import AbaPlataformas from "./abas/abaPlataformas";
 import AbaServidores from "./abas/abaServidores";
 import AbaDominios from "./abas/abaDominios";
-import AbaTopologia from "./abas/abaTopologia";
 import AbaImagens from "./abas/abaImagens";
+import AbaTopologia from "./abas/abaTopologia";
 import type {
   DadosItemEdicao,
   AoEditarItem,
@@ -35,11 +35,11 @@ import type {
 /* ========================================================================== */
 
 type AbaPrincipal =
-  | "arvore"
   | "plataformas"
   | "servidores"
   | "dominios"
-  | "imagens";
+  | "imagens"
+  | "arvore";
 
 interface EstadoFormulario {
   aberto: boolean;
@@ -95,8 +95,8 @@ export default function PlataformasPage() {
     servidores,
     dominios,
     subdominios,
-    loading,
     imagens,
+    loading,
     carregarTodos,
     eliminarPlataforma,
     eliminarServidor,
@@ -107,6 +107,33 @@ export default function PlataformasPage() {
 
   const [abaAtiva, setAbaAtiva] = useState<AbaPrincipal>("plataformas");
   const [busca, setBusca] = useState("");
+  
+  // Estados para os filtros avançados por aba (com base nos formulários)
+  const [filtroTipoPlataforma, setFiltroTipoPlataforma] = useState("");
+  const [filtroSoServidor, setFiltroSoServidor] = useState("");
+  const [filtroCloudServidor, setFiltroCloudServidor] = useState("");
+  const [filtroEstadoServidor, setFiltroEstadoServidor] = useState("");
+  const [filtroDominioBase, setFiltroDominioBase] = useState("");
+  const [filtroTipoDns, setFiltroTipoDns] = useState("");
+  const [filtroOrigemImagem, setFiltroOrigemImagem] = useState("");
+  const [filtroVisibilidadeImagem, setFiltroVisibilidadeImagem] = useState("");
+
+  // Controlo dos dropdowns customizados com pesquisa interna
+  const [dropdownAberto, setDropdownAberto] = useState<string | null>(null);
+  const [buscaDropdown, setBuscaDropdown] = useState("");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownAberto(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const [formularioAberto, setFormularioAberto] =
     useState<EstadoFormulario | null>(null);
   const [modalExclusao, setModalExclusao] =
@@ -115,14 +142,12 @@ export default function PlataformasPage() {
     number | null
   >(null);
 
-  // Guarda-se só o id para os detalhes refletirem sempre os dados atualizados.
   const plataformaSelecionada =
     plataformaSelecionadaId !== null
       ? (plataformas.find((p) => p.id === plataformaSelecionadaId) ?? null)
       : null;
 
   /* ----------------------------- Abas ----------------------------------- */
-
   const abas: {
     id: AbaPrincipal;
     rotulo: string;
@@ -142,6 +167,12 @@ export default function PlataformasPage() {
       corIcone: "text-emerald-900",
     },
     {
+      id: "imagens",
+      rotulo: `Imagens (${imagens.length})`,
+      Icone: IconImagem,
+      corIcone: "text-violet-900",
+    },
+    {
       id: "dominios",
       rotulo: `Domínios & DNS (${dominios.length})`,
       Icone: IconDominio,
@@ -153,12 +184,6 @@ export default function PlataformasPage() {
       Icone: IconRede,
       corIcone: "text-amber-900",
     },
-    {
-      id: "imagens",
-      rotulo: `Imagens (${imagens.length})`,
-      Icone: IconImagem,
-      corIcone: "text-violet-900",
-    },
   ];
 
   /* ---------------------------- Filtros --------------------------------- */
@@ -166,33 +191,70 @@ export default function PlataformasPage() {
   const termoBusca = busca.trim().toLowerCase();
 
   const plataformasFiltradas = useMemo(() => {
-    if (!termoBusca) return plataformas;
-    return plataformas.filter(
-      (p) => textoContem(p.nome, termoBusca) || textoContem(p.tipo, termoBusca),
-    );
-  }, [plataformas, termoBusca]);
+    return plataformas.filter((p) => {
+      const matchBusca =
+        !termoBusca ||
+        textoContem(p.nome, termoBusca) ||
+        textoContem(p.tipo, termoBusca);
+      
+      const matchTipo =
+        !filtroTipoPlataforma || p.tipo === filtroTipoPlataforma;
+
+      return matchBusca && matchTipo;
+    });
+  }, [plataformas, termoBusca, filtroTipoPlataforma]);
 
   const servidoresFiltrados = useMemo(() => {
-    if (!termoBusca) return servidores;
-    return servidores.filter(
-      (s) =>
+    return servidores.filter((s) => {
+      const matchBusca =
+        !termoBusca ||
         textoContem(s.nome, termoBusca) ||
         textoContem(s.hostname, termoBusca) ||
         textoContem(s.ip, termoBusca) ||
-        textoContem(s.sistemaOperativo, termoBusca),
-    );
-  }, [servidores, termoBusca]);
+        textoContem(s.sistemaOperativo, termoBusca);
+
+      const matchSo = !filtroSoServidor || s.sistemaOperativo === filtroSoServidor;
+      const matchCloud = !filtroCloudServidor || s.cloud === filtroCloudServidor;
+      const matchEstado = !filtroEstadoServidor || s.estado === filtroEstadoServidor;
+
+      return matchBusca && matchSo && matchCloud && matchEstado;
+    });
+  }, [servidores, termoBusca, filtroSoServidor, filtroCloudServidor, filtroEstadoServidor]);
 
   const dominiosFiltrados = useMemo(() => {
-    if (!termoBusca) return dominios;
-    return dominios.filter((d) => textoContem(d.nome, termoBusca));
-  }, [dominios, termoBusca]);
+    return dominios.filter((d) => {
+      const matchBusca = !termoBusca || textoContem(d.nome, termoBusca);
+      const matchBase = !filtroDominioBase || String(d.id) === filtroDominioBase;
+      return matchBusca && matchBase;
+    });
+  }, [dominios, termoBusca, filtroDominioBase]);
+
   const imagensFiltradas = useMemo(() => {
-    if (!termoBusca) return imagens;
-    return imagens.filter(
-      (i) => textoContem(i.nome, termoBusca) || textoContem(i.tag, termoBusca),
-    );
-  }, [imagens, termoBusca]);
+    return imagens.filter((i) => {
+      const matchBusca =
+        !termoBusca ||
+        textoContem(i.nome, termoBusca) ||
+        textoContem(i.tag, termoBusca);
+
+      const matchOrigem = !filtroOrigemImagem || i.origem === filtroOrigemImagem;
+      const matchVisibilidade = !filtroVisibilidadeImagem || i.visibilidade === filtroVisibilidadeImagem;
+
+      return matchBusca && matchOrigem && matchVisibilidade;
+    });
+  }, [imagens, termoBusca, filtroOrigemImagem, filtroVisibilidadeImagem]);
+
+  const limparFiltros = () => {
+    setBusca("");
+    setFiltroTipoPlataforma("");
+    setFiltroSoServidor("");
+    setFiltroCloudServidor("");
+    setFiltroEstadoServidor("");
+    setFiltroDominioBase("");
+    setFiltroTipoDns("");
+    setFiltroOrigemImagem("");
+    setFiltroVisibilidadeImagem("");
+    setBuscaDropdown("");
+  };
 
   /* ---------------------------- Ações ----------------------------------- */
 
@@ -219,11 +281,10 @@ export default function PlataformasPage() {
       imagem: eliminarImagem,
     };
 
-       try {
+    try {
       await funcoesEliminar[modalExclusao.tipo](modalExclusao.id);
       toast.success(MENSAGENS_SUCESSO_EXCLUSAO[modalExclusao.tipo]);
 
-      // Se apagou a plataforma que estava aberta, volta à lista
       if (
         modalExclusao.tipo === "plataforma" &&
         modalExclusao.id === plataformaSelecionadaId
@@ -237,7 +298,6 @@ export default function PlataformasPage() {
     } finally {
       setModalExclusao(null);
     }
-  
   };
 
   /* ------------------------------ Modal --------------------------------- */
@@ -291,7 +351,81 @@ export default function PlataformasPage() {
     );
   }
 
-  /* ------------------------------ Lista --------------------------------- */
+  // Componente Auxiliar para Dropdown Moderno com Pesquisa Interna
+  const renderDropdownFiltro = (
+    id: string,
+    rotulo: string,
+    valorAtual: string,
+    onSelecionar: (val: string) => void,
+    opcoes: { valor: string; rotulo: string }[]
+  ) => {
+    const isOpen = dropdownAberto === id;
+    const opcoesFiltradas = opcoes.filter((op) =>
+      op.rotulo.toLowerCase().includes(buscaDropdown.toLowerCase())
+    );
+    const itemSelecionadoObj = opcoes.find((o) => o.valor === valorAtual);
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+          {rotulo}
+        </label>
+        <div
+          onClick={() => {
+            setDropdownAberto(isOpen ? null : id);
+            setBuscaDropdown("");
+          }}
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 cursor-pointer flex items-center justify-between shadow-sm hover:border-slate-300 transition-colors"
+        >
+          <span className={!valorAtual ? "text-slate-400" : "text-slate-800 font-medium"}>
+            {itemSelecionadoObj ? itemSelecionadoObj.rotulo : `Todos os ${rotulo}s`}
+          </span>
+          <span className="text-slate-400 text-xs">↕</span>
+        </div>
+
+        {isOpen && (
+          <div className="absolute top-full left-0 mt-1.5 w-full bg-white border border-slate-200 rounded-xl shadow-lg z-50 p-2 space-y-2">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Pesquisar..."
+                value={buscaDropdown}
+                onChange={(e) => setBuscaDropdown(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900/20"
+                autoFocus
+              />
+              <IconPesquisa className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            </div>
+            <div className="max-h-40 overflow-y-auto space-y-1">
+              <div
+                onClick={() => {
+                  onSelecionar("");
+                  setDropdownAberto(null);
+                }}
+                className="px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                Todos
+              </div>
+              {opcoesFiltradas.map((op) => (
+                <div
+                  key={op.valor}
+                  onClick={() => {
+                    onSelecionar(op.valor);
+                    setDropdownAberto(null);
+                  }}
+                  className={`px-2.5 py-1.5 text-xs rounded-lg cursor-pointer flex items-center justify-between ${
+                    valorAtual === op.valor ? "bg-blue-50 text-blue-900 font-semibold" : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <span>{op.rotulo}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -313,86 +447,220 @@ export default function PlataformasPage() {
         {ehAdmin && <MenuAdicionar onSelecionar={abrirFormularioCriacao} />}
       </div>
 
-      {/* ================= ABAS & BUSCA ================= */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto">
-          {abas.map((aba) => (
-            <BotaoAba
-              key={aba.id}
-              rotulo={aba.rotulo}
-              Icone={aba.Icone}
-              corIcone={aba.corIcone}
-              ativa={abaAtiva === aba.id}
-              onSelecionar={() => setAbaAtiva(aba.id)}
-            />
-          ))}
-        </div>
-
-        <div className="relative min-w-65">
-          <input
-            type="text"
-            placeholder="Pesquisar por nome, IP, hostname..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
+      {/* ================= ABAS ================= */}
+      <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto w-fit">
+        {abas.map((aba) => (
+          <BotaoAba
+            key={aba.id}
+            rotulo={aba.rotulo}
+            Icone={aba.Icone}
+            corIcone={aba.corIcone}
+            ativa={abaAtiva === aba.id}
+            onSelecionar={() => setAbaAtiva(aba.id)}
           />
-          <IconPesquisa className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        </div>
+        ))}
       </div>
 
-      {/* ================= CONTEÚDO ================= */}
-      {loading ? (
-        <div className="p-16 text-center text-slate-400 text-sm animate-pulse bg-white rounded-2xl border border-slate-100">
-          A carregar infraestrutura de plataformas...
+      {/* ================= LAYOUT PRINCIPAL (CONTEÚDO À ESQUERDA, FILTROS À DIREITA) ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        
+        {/* COLUNA ESQUERDA (3 colunas): PESQUISA E CONTEÚDO */}
+        <div className="lg:col-span-3 space-y-4 order-2 lg:order-1">
+          
+          {/* BARRA DE PESQUISA SUPERIOR */}
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Pesquisar por nome, IP, hostname..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              className="w-full pl-9 pr-9 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 shadow-sm transition-all"
+            />
+            <IconPesquisa className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            {busca && (
+              <button
+                type="button"
+                onClick={() => setBusca("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 transition-colors"
+                title="Limpar pesquisa"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {/* CONTEÚDO DAS ABAS */}
+          {loading ? (
+            <div className="p-16 text-center text-slate-400 text-sm animate-pulse bg-white rounded-2xl border border-slate-100 shadow-sm">
+              A carregar infraestrutura de plataformas...
+            </div>
+          ) : (
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+              {abaAtiva === "plataformas" && (
+                <AbaPlataformas
+                  plataformas={plataformasFiltradas}
+                  servidores={servidores}
+                  dominios={dominios}
+                  imagens={imagens}
+                  aoAbrirDetalhes={(plataforma) =>
+                    setPlataformaSelecionadaId(plataforma.id)
+                  }
+                />
+              )}
+
+              {abaAtiva === "servidores" && (
+                <AbaServidores
+                  servidores={servidoresFiltrados}
+                  plataformas={plataformas}
+                  ehAdmin={ehAdmin}
+                  aoEditar={abrirFormularioEdicao}
+                  aoEliminar={abrirModalExclusao}
+                />
+              )}
+
+              {abaAtiva === "dominios" && (
+                <AbaDominios
+                  dominios={dominiosFiltrados}
+                  subdominios={subdominios}
+                  servidores={servidores}
+                  ehAdmin={ehAdmin}
+                  aoEditar={abrirFormularioEdicao}
+                  aoEliminar={abrirModalExclusao}
+                />
+              )}
+
+              {abaAtiva === "imagens" && (
+                <AbaImagens
+                  imagens={imagensFiltradas}
+                  ehAdmin={ehAdmin}
+                  aoEditar={abrirFormularioEdicao}
+                  aoEliminar={abrirModalExclusao}
+                />
+              )}
+
+              {abaAtiva === "arvore" && <AbaTopologia arvore={arvore} />}
+            </div>
+          )}
         </div>
-      ) : (
-        <>
+
+        {/* COLUNA DIREITA (1 coluna): CARD DE FILTROS FIXO */}
+        <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-6 order-1 lg:order-2">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <span className="text-xs uppercase font-bold text-slate-700 tracking-wider">
+              Filtros
+            </span>
+            <button
+              type="button"
+              onClick={limparFiltros}
+              className="text-xs text-slate-400 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
+            >
+              ✕ Limpar
+            </button>
+          </div>
+
+          {/* Filtros para Plataformas */}
           {abaAtiva === "plataformas" && (
-            <AbaPlataformas
-              plataformas={plataformasFiltradas}
-              servidores={servidores}
-              dominios={dominios}
-              imagens={imagens}
-              podeEditar={ehAdmin}
-              podeEliminar={ehAdmin}
-              aoAbrirDetalhes={(plataforma) =>
-                setPlataformaSelecionadaId(plataforma.id)
-              }
-            />
+            <div className="space-y-4">
+              {renderDropdownFiltro(
+                "tipoPlataforma",
+                "Tipo",
+                filtroTipoPlataforma,
+                setFiltroTipoPlataforma,
+                [
+                  { valor: "CONTAINERIZACAO", rotulo: "Containerização & Nuvem" },
+                  { valor: "CLOUD_BASE_DADOS", rotulo: "Cloud Base de Dados" },
+                  { valor: "GESTAO_DOMINIO", rotulo: "Gestão de Domínio & DNS" },
+                ]
+              )}
+            </div>
           )}
 
+          {/* Filtros para Servidores */}
           {abaAtiva === "servidores" && (
-            <AbaServidores
-              servidores={servidoresFiltrados}
-              plataformas={plataformas}
-              ehAdmin={ehAdmin}
-              aoEditar={abrirFormularioEdicao}
-              aoEliminar={abrirModalExclusao}
-            />
+            <div className="space-y-4">
+              {renderDropdownFiltro(
+                "soServidor",
+                "Sistema Operativo",
+                filtroSoServidor,
+                setFiltroSoServidor,
+                Array.from(new Set(servidores.map((s) => s.sistemaOperativo).filter(Boolean))).map((so) => ({
+                  valor: so,
+                  rotulo: so,
+                }))
+              )}
+              {renderDropdownFiltro(
+                "cloudServidor",
+                "Provedor Cloud",
+                filtroCloudServidor,
+                setFiltroCloudServidor,
+                Array.from(new Set(servidores.map((s) => s.cloud).filter(Boolean))).map((c) => ({
+                  valor: c!,
+                  rotulo: c!,
+                }))
+              )}
+              {renderDropdownFiltro(
+                "estadoServidor",
+                "Estado",
+                filtroEstadoServidor,
+                setFiltroEstadoServidor,
+                [
+                  { valor: "ATIVO", rotulo: "Ativo" },
+                  { valor: "INATIVO", rotulo: "Inativo" },
+                ]
+              )}
+            </div>
           )}
 
+          {/* Filtros para Domínios & DNS */}
           {abaAtiva === "dominios" && (
-            <AbaDominios
-              dominios={dominiosFiltrados}
-              subdominios={subdominios}
-              servidores={servidores}
-              ehAdmin={ehAdmin}
-              aoEditar={abrirFormularioEdicao}
-              aoEliminar={abrirModalExclusao}
-            />
-          )}
-          {abaAtiva === "imagens" && (
-            <AbaImagens
-              imagens={imagensFiltradas}
-              ehAdmin={ehAdmin}
-              aoEditar={abrirFormularioEdicao}
-              aoEliminar={abrirModalExclusao}
-            />
+            <div className="space-y-4">
+              {renderDropdownFiltro(
+                "dominioBase",
+                "Domínio Base",
+                filtroDominioBase,
+                setFiltroDominioBase,
+                dominios.map((d) => ({
+                  valor: String(d.id),
+                  rotulo: d.nome,
+                }))
+              )}
+            </div>
           )}
 
-          {abaAtiva === "arvore" && <AbaTopologia arvore={arvore} />}
-        </>
-      )}
+          {/* Filtros para Imagens */}
+          {abaAtiva === "imagens" && (
+            <div className="space-y-4">
+              {renderDropdownFiltro(
+                "origemImagem",
+                "Origem",
+                filtroOrigemImagem,
+                setFiltroOrigemImagem,
+                [
+                  { valor: "PROPRIA", rotulo: "Própria / Interna" },
+                  { valor: "EXTERNA", rotulo: "Externa" },
+                ]
+              )}
+              {renderDropdownFiltro(
+                "visibilidadeImagem",
+                "Visibilidade",
+                filtroVisibilidadeImagem,
+                setFiltroVisibilidadeImagem,
+                [
+                  { valor: "PRIVADA", rotulo: "Privada" },
+                  { valor: "PUBLICA", rotulo: "Pública" },
+                ]
+              )}
+            </div>
+          )}
+
+          {abaAtiva === "arvore" && (
+            <p className="text-xs text-slate-400 italic">
+              Sem filtros para a topologia em árvore.
+            </p>
+          )}
+        </div>
+
+      </div>
 
       {modalExclusaoElemento}
     </div>

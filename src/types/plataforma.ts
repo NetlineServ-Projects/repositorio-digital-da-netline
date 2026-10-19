@@ -43,6 +43,7 @@ export interface Servidor {
   versaoSo?: string | null;
   cloud?: string | null;
   regiao?: string | null;
+  estado: "ATIVO" | "INATIVO"
   plataformaId: number;
   plataforma?: {
     id: number;

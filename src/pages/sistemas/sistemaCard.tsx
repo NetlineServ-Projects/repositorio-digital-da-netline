@@ -1,10 +1,11 @@
 import { IconSistema, IconVer } from "../../components/icons";
 import type { Sistema, Documento } from "../../hooks/useSistemasData";
+import { rotuloStatus } from "../../utils/status";
 
 function renderBadgeStatus(status: string) {
   switch (status) {
-    case "Em Produção": return "bg-emerald-100 text-emerald-800 border-emerald-200";
-    case "Manutenção": return "bg-amber-100 text-amber-800 border-amber-200";
+    case "EM_PRODUCAO": return "bg-emerald-100 text-emerald-800 border-emerald-200";
+    case "MANUTENCAO": return "bg-amber-100 text-amber-800 border-amber-200";
     default: return "bg-blue-100 text-blue-800 border-blue-200";
   }
 }
@@ -31,7 +32,7 @@ export default function SistemaCard({ sistema, documentos, onVerDetalhes }: Sist
         <div className="flex items-center justify-between mb-3">
           <div className="p-2.5 bg-blue-50 text-blue-900 rounded-lg"><IconSistema className="w-5 h-5 text-blue-900" /></div>
           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${renderBadgeStatus(sistema.status)}`}>
-            {sistema.status || "Em Desenvolvimento"}
+            {rotuloStatus(sistema.status || "EM_DESENVOLVIMENTO")}
           </span>
         </div>
 

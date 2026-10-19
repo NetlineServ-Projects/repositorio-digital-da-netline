@@ -78,6 +78,22 @@ function ListaEditavel({
   );
 }
 
+const STATUS_VALIDOS = ["Em Produção", "Em Desenvolvimento", "Manutenção"];
+const STATUS_PADRAO = "Em Desenvolvimento";
+
+// A API devolve as chaves do enum; o formulário trabalha com os rótulos
+const ROTULO_POR_CHAVE: Record<string, string> = {
+  EM_PRODUCAO: "Em Produção",
+  EM_DESENVOLVIMENTO: "Em Desenvolvimento",
+  MANUTENCAO: "Manutenção",
+};
+
+function statusInicial(status?: string): string {
+  if (!status) return STATUS_PADRAO;
+  if (STATUS_VALIDOS.includes(status)) return status;
+  return ROTULO_POR_CHAVE[status] ?? STATUS_PADRAO;
+}
+
 export default function SistemaFormulario({
   sistemaExistente,
   salvando,
@@ -93,12 +109,8 @@ export default function SistemaFormulario({
   const [descLonga, setDescLonga] = useState(
     sistemaExistente?.descricaoLonga ?? "",
   );
-  const STATUS_VALIDOS = ["Em Produção", "Em Desenvolvimento", "Manutenção"];
-  const [status, setStatus] = useState(
-    sistemaExistente?.status && STATUS_VALIDOS.includes(sistemaExistente.status)
-      ? sistemaExistente.status
-      : "Em Desenvolvimento",
-  );
+
+  const [status, setStatus] = useState(statusInicial(sistemaExistente?.status));
   const [dataInicio, setDataInicio] = useState(
     sistemaExistente?.dataInicio?.slice(0, 10) ?? "",
   );
@@ -137,6 +149,12 @@ export default function SistemaFormulario({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) return toast.error("O nome do sistema é obrigatório!");
+
+    if (dataInicio && dataEntrega && dataEntrega < dataInicio) {
+      return toast.error(
+        "A data de entrega não pode ser anterior à data de início.",
+      );
+    }
 
     await onSubmit({
       nome,
@@ -249,6 +267,7 @@ export default function SistemaFormulario({
             </label>
             <input
               type="text"
+              maxLength={255}
               placeholder="Resumo em uma frase para o cartão do sistema..."
               value={descCurta}
               onChange={(e) => setDescCurta(e.target.value)}

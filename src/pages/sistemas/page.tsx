@@ -1,10 +1,15 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
-
-import { useSistemasData, TOKEN_ELEVADO_DURACAO_MS, type Sistema } from "../../hooks/useSistemasData";
+import {
+  useSistemasData,
+  listarServidores,
+  listarPlataformas,
+  listarDominios,
+  TOKEN_ELEVADO_DURACAO_MS,
+  type Sistema,
+} from "../../hooks/useSistemasData";
 import type { Documento } from "../../types/documento";
-
 import SistemasHeader from "./sistemasHeader";
 import SistemasGrid from "./sistemasGrid";
 import SistemaFormulario from "./formulario/page";
@@ -15,7 +20,7 @@ import DocumentosDoSistemaTabela from "./documentosDoSistemaTabela";
 import FilterSelect from "../../components/filterSelect";
 import ReautenticacaoModal from "./infraestrutura/reautenticacaoModal";
 import InfraestruturaTab from "./infraestrutura/infraestruraTab";
-
+import {rotuloStatus} from "../../utils/status";
 
 
 interface DashboardContext {
@@ -25,8 +30,8 @@ interface DashboardContext {
 export default function SistemasPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
-    const { usuario } = useOutletContext<DashboardContext>();
-    const ehAdmin = usuario?.perfil === "ADMIN";
+  const { usuario } = useOutletContext<DashboardContext>();
+  const ehAdmin = usuario?.perfil === "ADMIN";
 
   const {
     sistemas,
@@ -37,6 +42,8 @@ export default function SistemasPage() {
     editarSistema,
     anexarDocumento,
     apagarDocumento,
+    recarregarSistemas,
+    apagarSistema,
     reautenticar,
     listarInfraestruturas,
     buscarInfraestrutura,
@@ -48,14 +55,16 @@ export default function SistemasPage() {
 
   // Estados de controlo da página e modais
   const [sistemaAtivo, setSistemaAtivo] = useState<Sistema | null>(null);
-  const [formularioAberto, setFormularioAberto] = useState < "novo" | Sistema | null >(null);
+  const [formularioAberto, setFormularioAberto] = useState<
+    "novo" | Sistema | null
+  >(null);
   const [salvando, setSalvando] = useState(false);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
 
   // Estado para controlar a navegação por separadores na vista detalhada
-  const [abaAtiva, setAbaAtiva] = useState<"geral" | "documentos" | "credenciais">(
-    "geral",
-  );
+  const [abaAtiva, setAbaAtiva] = useState<
+    "geral" | "documentos" | "credenciais"
+  >("geral");
 
   // Reautenticação / acesso à infraestrutura (dados sensíveis, protegidos)
   const [tokenElevado, setTokenElevado] = useState<string | null>(null);
@@ -88,11 +97,16 @@ export default function SistemasPage() {
   // Bloqueia sozinho quando os 3 minutos terminam, mesmo sem nenhuma ação
   useEffect(() => {
     if (tokenExpiraEm === null) return;
-    const timer = setTimeout(() => {
-      bloquearCredenciais();
-      setAbaAtiva((atual) => (atual === "credenciais" ? "geral" : atual));
-      toast.info("O acesso às credenciais expirou. Reautentique-se para voltar a ver.");
-    }, Math.max(tokenExpiraEm - Date.now(), 0));  
+    const timer = setTimeout(
+      () => {
+        bloquearCredenciais();
+        setAbaAtiva((atual) => (atual === "credenciais" ? "geral" : atual));
+        toast.info(
+          "O acesso às credenciais expirou. Reautentique-se para voltar a ver.",
+        );
+      },
+      Math.max(tokenExpiraEm - Date.now(), 0),
+    );
     return () => clearTimeout(timer);
   }, [tokenExpiraEm, bloquearCredenciais]);
 
@@ -130,7 +144,7 @@ export default function SistemasPage() {
       .sort()
       .map((st) => ({
         valor: st,
-        label: st.replace(/_/g, " "),
+        label: rotuloStatus(st),
       }));
   }, [sistemas]);
 
@@ -160,9 +174,6 @@ export default function SistemasPage() {
     try {
       if (formularioAberto && formularioAberto !== "novo") {
         await editarSistema(formularioAberto.id, dados);
-        setSistemaAtivo((prev) =>
-          prev ? ({ ...prev, ...dados } as Sistema) : null,
-        );
         toast.success("Sistema atualizado com sucesso!");
       } else {
         await criarSistema(dados);
@@ -232,12 +243,34 @@ export default function SistemasPage() {
     });
   };
 
+    const handleApagarSistema = (sistema: Sistema) => {
+    toast(`Apagar o sistema "${sistema.nome}"?`, {
+      description:
+        "Apaga também a infraestrutura, as credenciais e os subdomínios deste sistema. Os documentos ficam, sem sistema associado.",
+      action: {
+        label: "Apagar",
+        onClick: async () => {
+          try {
+            await apagarSistema(sistema.id);
+            toast.success("Sistema apagado.");
+            navigate("/dashboard/sistemas");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Erro ao apagar o sistema.");
+          }
+        },
+      },
+      cancel: { label: "Cancelar", onClick: () => {} },
+    });
+  };
+
   // =======================================
   // Reautenticação / acesso à aba de Credenciais
   // =======================================
 
   const tokenElevadoValido = () =>
-    tokenElevado !== null && tokenExpiraEm !== null && Date.now() < tokenExpiraEm;
+    tokenElevado !== null &&
+    tokenExpiraEm !== null &&
+    Date.now() < tokenExpiraEm;
 
   const handleClickAbaCredenciais = () => {
     if (tokenElevadoValido()) {
@@ -266,11 +299,11 @@ export default function SistemasPage() {
     }
   };
 
-  const handleSessaoExpirada = () => {
+  const handleSessaoExpirada = useCallback(() => {
     bloquearCredenciais();
     setAbaAtiva("geral");
     setReautenticacaoAberta(true);
-  };
+  }, [bloquearCredenciais]);
 
   const sistemasFiltrados = useMemo(() => {
     const termoBusca = busca.trim().toLowerCase();
@@ -423,15 +456,7 @@ export default function SistemasPage() {
         sistema={sistemaAtivo}
         onVoltar={() => navigate("/dashboard/sistemas")}
         onEditar={() => setFormularioAberto(sistemaAtivo)}
-        onApagar={() => {
-          // lógica de exclusão, ex:
-          if (
-            confirm(`Tem certeza que deseja apagar "${sistemaAtivo.nome}"?`)
-          ) {
-            // chamar sua função/hook de exclusão aqui, ex: excluirSistema(sistemaAtivo.id)
-            navigate("/dashboard/sistemas");
-          }
-        }}
+        onApagar={() => handleApagarSistema(sistemaAtivo)}
       />
 
       {/* Navegação por Separadores (Tabs) */}
@@ -467,7 +492,7 @@ export default function SistemasPage() {
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Credenciais
+          Infraestrutura & Credenciais
         </button>
       </div>
 
@@ -498,12 +523,18 @@ export default function SistemasPage() {
             tokenElevado={tokenElevado}
             ehAdmin={ehAdmin}
             onSessaoExpirada={handleSessaoExpirada}
-            listarInfraestruturas={listarInfraestruturas}
-            buscarInfraestrutura={buscarInfraestrutura}
-            salvarInfraestrutura={salvarInfraestrutura}
-            adicionarCredencial={adicionarCredencial}
-            atualizarCredencial={atualizarCredencial}
-            apagarCredencial={apagarCredencial}
+            onDadosAlterados={recarregarSistemas} 
+            api={{
+              listarInfraestruturas,
+              buscarInfraestrutura,
+              salvarInfraestrutura,
+              adicionarCredencial,
+              atualizarCredencial,
+              apagarCredencial,
+            }}
+            listarServidores={listarServidores}
+            listarPlataformas={listarPlataformas}
+            listarDominios={listarDominios}
           />
         )
       )}

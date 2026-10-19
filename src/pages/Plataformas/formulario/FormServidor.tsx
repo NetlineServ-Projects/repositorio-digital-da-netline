@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import type { Plataforma, Servidor } from "../../../types/plataforma";
 import { IconOlhoAberto, IconOlhoFechado } from "../../../components/icons";
 
+type EstadoServidor = "ATIVO" | "INATIVO";
 interface FormServidorProps {
   servidorExistente?: Servidor | null;
   plataformas: Plataforma[];
@@ -19,45 +20,51 @@ export default function FormServidor({
   onSubmit,
 }: FormServidorProps) {
   const [plataformaId, setPlataformaId] = useState<number | string>(
-    servidorExistente?.plataformaId ?? (plataformas[0]?.id || "")
+    servidorExistente?.plataformaId ?? (plataformas[0]?.id || ""),
   );
   const [nome, setNome] = useState(servidorExistente?.nome ?? "");
   const [hostname, setHostname] = useState(servidorExistente?.hostname ?? "");
   const [ip, setIp] = useState(servidorExistente?.ip ?? "");
   const [usernameSsh, setUsernameSsh] = useState(
-    servidorExistente?.usernameSsh ?? "root"
+    servidorExistente?.usernameSsh ?? "root",
   );
   const [password, setPassword] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
   const [numeroCpu, setNumeroCpu] = useState(
-    servidorExistente?.numeroCpu?.toString() ?? "2"
+    servidorExistente?.numeroCpu?.toString() ?? "2",
   );
   const [memoriaRam, setMemoriaRam] = useState(
-    servidorExistente?.memoriaRam?.toString() ?? "4"
+    servidorExistente?.memoriaRam?.toString() ?? "4",
   );
-  const [memoriaRamUnidade, setMemoriaRamUnidade] = useState<"MB" | "GB" | "TB">(
-    servidorExistente?.memoriaRamUnidade ?? "GB"
-  );
+  const [memoriaRamUnidade, setMemoriaRamUnidade] = useState<
+    "MB" | "GB" | "TB"
+  >(servidorExistente?.memoriaRamUnidade ?? "GB");
   const [disco, setDisco] = useState(
-    servidorExistente?.disco?.toString() ?? "40"
+    servidorExistente?.disco?.toString() ?? "40",
   );
   const [discoUnidade, setDiscoUnidade] = useState<"MB" | "GB" | "TB">(
-    servidorExistente?.discoUnidade ?? "GB"
+    servidorExistente?.discoUnidade ?? "GB",
   );
   const [larguraBanda, setLarguraBanda] = useState(
-    servidorExistente?.larguraBanda?.toString() ?? "1000"
+    servidorExistente?.larguraBanda?.toString() ?? "1000",
   );
   const [larguraBandaUnidade, setLarguraBandaUnidade] = useState<
     "MBPS" | "GBPS"
   >(servidorExistente?.larguraBandaUnidade ?? "MBPS");
 
   const [sistemaOperativo, setSistemaOperativo] = useState(
-    servidorExistente?.sistemaOperativo ?? "Ubuntu Server"
+    servidorExistente?.sistemaOperativo ?? "Ubuntu Server",
   );
-  const [versaoSo, setVersaoSo] = useState(servidorExistente?.versaoSo ?? "24.04 LTS");
+  const [versaoSo, setVersaoSo] = useState(
+    servidorExistente?.versaoSo ?? "24.04 LTS",
+  );
   const [cloud, setCloud] = useState(servidorExistente?.cloud ?? "");
   const [regiao, setRegiao] = useState(servidorExistente?.regiao ?? "");
+
+  const [estado, setEstado] = useState<EstadoServidor>(
+    servidorExistente?.estado ?? "INATIVO",
+  );
 
   useEffect(() => {
     if (servidorExistente) {
@@ -77,6 +84,7 @@ export default function FormServidor({
       setVersaoSo(servidorExistente.versaoSo ?? "");
       setCloud(servidorExistente.cloud ?? "");
       setRegiao(servidorExistente.regiao ?? "");
+      setEstado(servidorExistente.estado ?? "INATIVO");
     }
   }, [servidorExistente]);
 
@@ -121,6 +129,7 @@ export default function FormServidor({
       versaoSo: versaoSo.trim() || null,
       cloud: cloud.trim() || null,
       regiao: regiao.trim() || null,
+      estado: estado,
     };
 
     if (password.trim()) {
@@ -138,7 +147,8 @@ export default function FormServidor({
             {servidorExistente ? "Editar Servidor" : "Novo Servidor"}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Cadastre um servidor físico ou máquina virtual com as suas credenciais e recursos
+            Cadastre um servidor físico ou máquina virtual com as suas
+            credenciais e recursos
           </p>
         </div>
 
@@ -153,12 +163,28 @@ export default function FormServidor({
             required
             className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 text-slate-800"
           >
-            <option value="" disabled>Selecione a plataforma...</option>
+            <option value="" disabled>
+              Selecione a plataforma...
+            </option>
             {plataformas.map((plat) => (
               <option key={plat.id} value={plat.id}>
                 {plat.nome} ({plat.tipo})
               </option>
             ))}
+          </select>
+        </div>
+        {/* Estado do Servidor */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            Estado do Servidor *
+          </label>
+          <select
+            value={estado}
+            onChange={(e) => setEstado(e.target.value as EstadoServidor)}
+            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 text-slate-800"
+          >
+            <option value="INATIVO">Inativo</option>
+            <option value="ATIVO">Ativo</option>
           </select>
         </div>
 
@@ -226,13 +252,16 @@ export default function FormServidor({
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Password SSH {servidorExistente ? "(Deixe em branco para manter)" : "*"}
+                Password SSH{" "}
+                {servidorExistente ? "(Deixe em branco para manter)" : "*"}
               </label>
               <div className="relative">
                 <input
                   type={mostrarPassword ? "text" : "password"}
                   required={!servidorExistente}
-                  placeholder={servidorExistente ? "••••••••••••" : "Palavra-passe segura"}
+                  placeholder={
+                    servidorExistente ? "••••••••••••" : "Palavra-passe segura"
+                  }
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 pr-10 text-slate-800"
@@ -286,7 +315,9 @@ export default function FormServidor({
                 />
                 <select
                   value={memoriaRamUnidade}
-                  onChange={(e) => setMemoriaRamUnidade(e.target.value as "MB" | "GB" | "TB")}
+                  onChange={(e) =>
+                    setMemoriaRamUnidade(e.target.value as "MB" | "GB" | "TB")
+                  }
                   className="px-2.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-slate-700"
                 >
                   <option value="MB">MB</option>
@@ -312,7 +343,9 @@ export default function FormServidor({
                 />
                 <select
                   value={discoUnidade}
-                  onChange={(e) => setDiscoUnidade(e.target.value as "MB" | "GB" | "TB")}
+                  onChange={(e) =>
+                    setDiscoUnidade(e.target.value as "MB" | "GB" | "TB")
+                  }
                   className="px-2.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-slate-700"
                 >
                   <option value="MB">MB</option>
@@ -338,7 +371,9 @@ export default function FormServidor({
                 />
                 <select
                   value={larguraBandaUnidade}
-                  onChange={(e) => setLarguraBandaUnidade(e.target.value as "MBPS" | "GBPS")}
+                  onChange={(e) =>
+                    setLarguraBandaUnidade(e.target.value as "MBPS" | "GBPS")
+                  }
                   className="px-2.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-slate-700"
                 >
                   <option value="MBPS">Mbps</option>
@@ -418,10 +453,13 @@ export default function FormServidor({
           disabled={salvando}
           className="px-6 py-2.5 bg-[#18357a] hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
         >
-          {salvando ? "A salvar..." : servidorExistente ? "Atualizar Servidor" : "Criar Servidor"}
+          {salvando
+            ? "A salvar..."
+            : servidorExistente
+              ? "Atualizar Servidor"
+              : "Criar Servidor"}
         </button>
       </div>
     </form>
   );
 }
-
