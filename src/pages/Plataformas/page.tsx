@@ -107,14 +107,14 @@ export default function PlataformasPage() {
 
   const [abaAtiva, setAbaAtiva] = useState<AbaPrincipal>("plataformas");
   const [busca, setBusca] = useState("");
-  
+
   // Estados para os filtros avançados por aba (com base nos formulários)
   const [filtroTipoPlataforma, setFiltroTipoPlataforma] = useState("");
   const [filtroSoServidor, setFiltroSoServidor] = useState("");
   const [filtroCloudServidor, setFiltroCloudServidor] = useState("");
   const [filtroEstadoServidor, setFiltroEstadoServidor] = useState("");
   const [filtroDominioBase, setFiltroDominioBase] = useState("");
-  const [filtroTipoDns, setFiltroTipoDns] = useState("");
+  const [, setFiltroTipoDns] = useState("");
   const [filtroOrigemImagem, setFiltroOrigemImagem] = useState("");
   const [filtroVisibilidadeImagem, setFiltroVisibilidadeImagem] = useState("");
 
@@ -126,7 +126,10 @@ export default function PlataformasPage() {
   // Fechar dropdown ao clicar fora
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setDropdownAberto(null);
       }
     }
@@ -196,7 +199,7 @@ export default function PlataformasPage() {
         !termoBusca ||
         textoContem(p.nome, termoBusca) ||
         textoContem(p.tipo, termoBusca);
-      
+
       const matchTipo =
         !filtroTipoPlataforma || p.tipo === filtroTipoPlataforma;
 
@@ -213,18 +216,28 @@ export default function PlataformasPage() {
         textoContem(s.ip, termoBusca) ||
         textoContem(s.sistemaOperativo, termoBusca);
 
-      const matchSo = !filtroSoServidor || s.sistemaOperativo === filtroSoServidor;
-      const matchCloud = !filtroCloudServidor || s.cloud === filtroCloudServidor;
-      const matchEstado = !filtroEstadoServidor || s.estado === filtroEstadoServidor;
+      const matchSo =
+        !filtroSoServidor || s.sistemaOperativo === filtroSoServidor;
+      const matchCloud =
+        !filtroCloudServidor || s.cloud === filtroCloudServidor;
+      const matchEstado =
+        !filtroEstadoServidor || s.estado === filtroEstadoServidor;
 
       return matchBusca && matchSo && matchCloud && matchEstado;
     });
-  }, [servidores, termoBusca, filtroSoServidor, filtroCloudServidor, filtroEstadoServidor]);
+  }, [
+    servidores,
+    termoBusca,
+    filtroSoServidor,
+    filtroCloudServidor,
+    filtroEstadoServidor,
+  ]);
 
   const dominiosFiltrados = useMemo(() => {
     return dominios.filter((d) => {
       const matchBusca = !termoBusca || textoContem(d.nome, termoBusca);
-      const matchBase = !filtroDominioBase || String(d.id) === filtroDominioBase;
+      const matchBase =
+        !filtroDominioBase || String(d.id) === filtroDominioBase;
       return matchBusca && matchBase;
     });
   }, [dominios, termoBusca, filtroDominioBase]);
@@ -236,8 +249,11 @@ export default function PlataformasPage() {
         textoContem(i.nome, termoBusca) ||
         textoContem(i.tag, termoBusca);
 
-      const matchOrigem = !filtroOrigemImagem || i.origem === filtroOrigemImagem;
-      const matchVisibilidade = !filtroVisibilidadeImagem || i.visibilidade === filtroVisibilidadeImagem;
+      const matchOrigem =
+        !filtroOrigemImagem || i.origem === filtroOrigemImagem;
+      const matchVisibilidade =
+        !filtroVisibilidadeImagem ||
+        i.visibilidade === filtroVisibilidadeImagem;
 
       return matchBusca && matchOrigem && matchVisibilidade;
     });
@@ -357,11 +373,11 @@ export default function PlataformasPage() {
     rotulo: string,
     valorAtual: string,
     onSelecionar: (val: string) => void,
-    opcoes: { valor: string; rotulo: string }[]
+    opcoes: { valor: string; rotulo: string }[],
   ) => {
     const isOpen = dropdownAberto === id;
     const opcoesFiltradas = opcoes.filter((op) =>
-      op.rotulo.toLowerCase().includes(buscaDropdown.toLowerCase())
+      op.rotulo.toLowerCase().includes(buscaDropdown.toLowerCase()),
     );
     const itemSelecionadoObj = opcoes.find((o) => o.valor === valorAtual);
 
@@ -377,8 +393,14 @@ export default function PlataformasPage() {
           }}
           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 cursor-pointer flex items-center justify-between shadow-sm hover:border-slate-300 transition-colors"
         >
-          <span className={!valorAtual ? "text-slate-400" : "text-slate-800 font-medium"}>
-            {itemSelecionadoObj ? itemSelecionadoObj.rotulo : `Todos os ${rotulo}s`}
+          <span
+            className={
+              !valorAtual ? "text-slate-400" : "text-slate-800 font-medium"
+            }
+          >
+            {itemSelecionadoObj
+              ? itemSelecionadoObj.rotulo
+              : `Todos os ${rotulo}s`}
           </span>
           <span className="text-slate-400 text-xs">↕</span>
         </div>
@@ -414,7 +436,9 @@ export default function PlataformasPage() {
                     setDropdownAberto(null);
                   }}
                   className={`px-2.5 py-1.5 text-xs rounded-lg cursor-pointer flex items-center justify-between ${
-                    valorAtual === op.valor ? "bg-blue-50 text-blue-900 font-semibold" : "text-slate-700 hover:bg-slate-100"
+                    valorAtual === op.valor
+                      ? "bg-blue-50 text-blue-900 font-semibold"
+                      : "text-slate-700 hover:bg-slate-100"
                   }`}
                 >
                   <span>{op.rotulo}</span>
@@ -463,10 +487,8 @@ export default function PlataformasPage() {
 
       {/* ================= LAYOUT PRINCIPAL (CONTEÚDO À ESQUERDA, FILTROS À DIREITA) ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-        
         {/* COLUNA ESQUERDA (3 colunas): PESQUISA E CONTEÚDO */}
         <div className="lg:col-span-3 space-y-4 order-2 lg:order-1">
-          
           {/* BARRA DE PESQUISA SUPERIOR */}
           <div className="relative w-full">
             <input
@@ -567,10 +589,16 @@ export default function PlataformasPage() {
                 filtroTipoPlataforma,
                 setFiltroTipoPlataforma,
                 [
-                  { valor: "CONTAINERIZACAO", rotulo: "Containerização & Nuvem" },
+                  {
+                    valor: "CONTAINERIZACAO",
+                    rotulo: "Containerização & Nuvem",
+                  },
                   { valor: "CLOUD_BASE_DADOS", rotulo: "Cloud Base de Dados" },
-                  { valor: "GESTAO_DOMINIO", rotulo: "Gestão de Domínio & DNS" },
-                ]
+                  {
+                    valor: "GESTAO_DOMINIO",
+                    rotulo: "Gestão de Domínio & DNS",
+                  },
+                ],
               )}
             </div>
           )}
@@ -583,20 +611,26 @@ export default function PlataformasPage() {
                 "Sistema Operativo",
                 filtroSoServidor,
                 setFiltroSoServidor,
-                Array.from(new Set(servidores.map((s) => s.sistemaOperativo).filter(Boolean))).map((so) => ({
+                Array.from(
+                  new Set(
+                    servidores.map((s) => s.sistemaOperativo).filter(Boolean),
+                  ),
+                ).map((so) => ({
                   valor: so,
                   rotulo: so,
-                }))
+                })),
               )}
               {renderDropdownFiltro(
                 "cloudServidor",
                 "Provedor Cloud",
                 filtroCloudServidor,
                 setFiltroCloudServidor,
-                Array.from(new Set(servidores.map((s) => s.cloud).filter(Boolean))).map((c) => ({
+                Array.from(
+                  new Set(servidores.map((s) => s.cloud).filter(Boolean)),
+                ).map((c) => ({
                   valor: c!,
                   rotulo: c!,
-                }))
+                })),
               )}
               {renderDropdownFiltro(
                 "estadoServidor",
@@ -606,7 +640,7 @@ export default function PlataformasPage() {
                 [
                   { valor: "ATIVO", rotulo: "Ativo" },
                   { valor: "INATIVO", rotulo: "Inativo" },
-                ]
+                ],
               )}
             </div>
           )}
@@ -622,7 +656,7 @@ export default function PlataformasPage() {
                 dominios.map((d) => ({
                   valor: String(d.id),
                   rotulo: d.nome,
-                }))
+                })),
               )}
             </div>
           )}
@@ -638,7 +672,7 @@ export default function PlataformasPage() {
                 [
                   { valor: "PROPRIA", rotulo: "Própria / Interna" },
                   { valor: "EXTERNA", rotulo: "Externa" },
-                ]
+                ],
               )}
               {renderDropdownFiltro(
                 "visibilidadeImagem",
@@ -648,7 +682,7 @@ export default function PlataformasPage() {
                 [
                   { valor: "PRIVADA", rotulo: "Privada" },
                   { valor: "PUBLICA", rotulo: "Pública" },
-                ]
+                ],
               )}
             </div>
           )}
@@ -659,7 +693,6 @@ export default function PlataformasPage() {
             </p>
           )}
         </div>
-
       </div>
 
       {modalExclusaoElemento}

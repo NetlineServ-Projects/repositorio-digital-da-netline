@@ -24,9 +24,13 @@ import SistemasPage from "./pages/sistemas/page";
 import PlataformasPage from "./pages/Plataformas/page";
 import { Toaster } from "sonner";
 import NovoDocumentoPage from "./pages/documentos/new/page";
+import { AcessoInfraestruturaLayout } from "./pages/sistemas/infraestrutura/acessoInfraestrutura";
 
 import EditarDocumentoPage from "./pages/documentos/[id]/editar/page";
 import EditarSistemaPage from "./pages/sistemas/editar/page";
+
+import EditarInfraestruturaPage from "./pages/sistemas/infraestrutura/editar/page";
+import CredencialPage from "./pages/sistemas/infraestrutura/credenciais/page";
 
 function RotaProtegida({ children }: { children: React.ReactNode }) {
   const { usuarioLogado } = useUsuario();
@@ -85,11 +89,24 @@ function App() {
             <Route path="usuarios" element={<Usuarios />} />
             <Route path="lixeira" element={<Lixeira />} />
             <Route path="perfil" element={<Perfil />} />
-            <Route path="sistemas" element={<SistemasPage />} />
-            <Route path="sistemas/:id" element={<SistemasPage />} />
-            <Route path="sistemas/:id/editar" element={<EditarSistemaPage />} />
+                       <Route path="sistemas/:id" element={<AcessoInfraestruturaLayout />}>
+              <Route index element={<SistemasPage />} />
+              <Route path="editar" element={<EditarSistemaPage />} />
+              <Route
+                path="infraestrutura/:ambiente/editar"
+                element={<EditarInfraestruturaPage />}
+              />
+              <Route
+                path="infraestrutura/:ambiente/credenciais/nova"
+                element={<CredencialPage />}
+              />
+              <Route
+                path="infraestrutura/:ambiente/credenciais/:credencialId/editar"
+                element={<CredencialPage />}
+              />
+            </Route>
             <Route path="plataformas" element={<PlataformasPage />} />
-          
+
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>
         </Routes>

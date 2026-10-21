@@ -1,14 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useNavigate, useParams, useOutletContext } from "react-router-dom";
-import { toast } from "sonner";
 import {
-  useSistemasData,
-  listarServidores,
-  listarPlataformas,
-  listarDominios,
-  TOKEN_ELEVADO_DURACAO_MS,
-  type Sistema,
-} from "../../hooks/useSistemasData";
+  useNavigate,
+  useParams,
+  useOutletContext,
+  useSearchParams,
+} from "react-router-dom";
+import { toast } from "sonner";
+import { useSistemasData, type Sistema } from "../../hooks/useSistemasData";
 import type { Documento } from "../../types/documento";
 import SistemasHeader from "./sistemasHeader";
 import SistemasGrid from "./sistemasGrid";
@@ -18,20 +16,24 @@ import SistemaFichaTecnica from "./sistemaFichaTecnica";
 import AnexarDocumentoForm from "./anexarDocumentoForm";
 import DocumentosDoSistemaTabela from "./documentosDoSistemaTabela";
 import FilterSelect from "../../components/filterSelect";
-import ReautenticacaoModal from "./infraestrutura/reautenticacaoModal";
-import InfraestruturaTab from "./infraestrutura/infraestruraTab";
-import {rotuloStatus} from "../../utils/status";
-
+import InfraestruturaTab from "./infraestrutura/infraestruturaTab";
+import { useAcessoInfraestruturaOpcional } from "./infraestrutura/acessoInfraestrutura";
+import { rotuloStatus } from "../../utils/status";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
 }
+
+type Aba = "geral" | "documentos" | "infraestrutura";
 
 export default function SistemasPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const { usuario } = useOutletContext<DashboardContext>();
   const ehAdmin = usuario?.perfil === "ADMIN";
+
+  // Só existe na página de um sistema (não na lista)
+  const acesso = useAcessoInfraestruturaOpcional();
 
   const {
     sistemas,
@@ -40,20 +42,12 @@ export default function SistemasPage() {
     loading,
     criarSistema,
     editarSistema,
+    apagarSistema,
     anexarDocumento,
     apagarDocumento,
-    recarregarSistemas,
-    apagarSistema,
-    reautenticar,
-    listarInfraestruturas,
-    buscarInfraestrutura,
-    salvarInfraestrutura,
-    adicionarCredencial,
-    atualizarCredencial,
-    apagarCredencial,
   } = useSistemasData();
 
-  // Estados de controlo da página e modais
+  // Estados de controlo da página
   const [sistemaAtivo, setSistemaAtivo] = useState<Sistema | null>(null);
   const [formularioAberto, setFormularioAberto] = useState<
     "novo" | Sistema | null
@@ -61,54 +55,21 @@ export default function SistemasPage() {
   const [salvando, setSalvando] = useState(false);
   const [enviandoDoc, setEnviandoDoc] = useState(false);
 
-  // Estado para controlar a navegação por separadores na vista detalhada
-  const [abaAtiva, setAbaAtiva] = useState<
-    "geral" | "documentos" | "credenciais"
-  >("geral");
+  // A aba ativa vive no endereço: ?aba=documentos | ?aba=infraestrutura
+  const [searchParams, setSearchParams] = useSearchParams();
+  const parametroAba = searchParams.get("aba");
+  const abaAtiva: Aba =
+    parametroAba === "documentos" || parametroAba === "infraestrutura"
+      ? parametroAba
+      : "geral";
 
-  // Reautenticação / acesso à infraestrutura (dados sensíveis, protegidos)
-  const [tokenElevado, setTokenElevado] = useState<string | null>(null);
-  const [tokenExpiraEm, setTokenExpiraEm] = useState<number | null>(null);
-  const [reautenticacaoAberta, setReautenticacaoAberta] = useState(false);
-  const [reautenticando, setReautenticando] = useState(false);
-  const [erroReautenticacao, setErroReautenticacao] = useState<string | null>(
-    null,
-  );
-
-  // Descarta o acesso elevado (o token só existe em memória, neste estado)
-  const bloquearCredenciais = useCallback(() => {
-    setTokenElevado(null);
-    setTokenExpiraEm(null);
-  }, []);
-
-  // Sair do separador Credenciais bloqueia-o; voltar exige nova reautenticação
-  const mudarAba = (aba: "geral" | "documentos") => {
-    if (abaAtiva === "credenciais") bloquearCredenciais();
-    setAbaAtiva(aba);
+  // Sair da aba Infraestrutura bloqueia o acesso; voltar exige nova palavra-passe
+  const mudarAba = (aba: Aba) => {
+    if (abaAtiva === "infraestrutura" && aba !== "infraestrutura") {
+      acesso?.bloquear();
+    }
+    setSearchParams(aba === "geral" ? {} : { aba }, { replace: true });
   };
-
-  // Ao mudar de sistema (ou sair para a lista), o acesso elevado nunca transita
-  useEffect(() => {
-    bloquearCredenciais();
-    setAbaAtiva("geral");
-    setReautenticacaoAberta(false);
-  }, [id, bloquearCredenciais]);
-
-  // Bloqueia sozinho quando os 3 minutos terminam, mesmo sem nenhuma ação
-  useEffect(() => {
-    if (tokenExpiraEm === null) return;
-    const timer = setTimeout(
-      () => {
-        bloquearCredenciais();
-        setAbaAtiva((atual) => (atual === "credenciais" ? "geral" : atual));
-        toast.info(
-          "O acesso às credenciais expirou. Reautentique-se para voltar a ver.",
-        );
-      },
-      Math.max(tokenExpiraEm - Date.now(), 0),
-    );
-    return () => clearTimeout(timer);
-  }, [tokenExpiraEm, bloquearCredenciais]);
 
   // Estados de busca
   const [busca, setBusca] = useState("");
@@ -243,7 +204,7 @@ export default function SistemasPage() {
     });
   };
 
-    const handleApagarSistema = (sistema: Sistema) => {
+  const handleApagarSistema = (sistema: Sistema) => {
     toast(`Apagar o sistema "${sistema.nome}"?`, {
       description:
         "Apaga também a infraestrutura, as credenciais e os subdomínios deste sistema. Os documentos ficam, sem sistema associado.",
@@ -255,55 +216,15 @@ export default function SistemasPage() {
             toast.success("Sistema apagado.");
             navigate("/dashboard/sistemas");
           } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Erro ao apagar o sistema.");
+            toast.error(
+              err instanceof Error ? err.message : "Erro ao apagar o sistema.",
+            );
           }
         },
       },
       cancel: { label: "Cancelar", onClick: () => {} },
     });
   };
-
-  // =======================================
-  // Reautenticação / acesso à aba de Credenciais
-  // =======================================
-
-  const tokenElevadoValido = () =>
-    tokenElevado !== null &&
-    tokenExpiraEm !== null &&
-    Date.now() < tokenExpiraEm;
-
-  const handleClickAbaCredenciais = () => {
-    if (tokenElevadoValido()) {
-      setAbaAtiva("credenciais");
-    } else {
-      setErroReautenticacao(null);
-      setReautenticacaoAberta(true);
-    }
-  };
-
-  const handleConfirmarReautenticacao = async (senha: string) => {
-    setReautenticando(true);
-    setErroReautenticacao(null);
-    try {
-      const resultado = await reautenticar(senha);
-      setTokenElevado(resultado.tokenElevado);
-      setTokenExpiraEm(Date.now() + TOKEN_ELEVADO_DURACAO_MS);
-      setReautenticacaoAberta(false);
-      setAbaAtiva("credenciais");
-    } catch (err) {
-      setErroReautenticacao(
-        err instanceof Error ? err.message : "Erro ao reautenticar.",
-      );
-    } finally {
-      setReautenticando(false);
-    }
-  };
-
-  const handleSessaoExpirada = useCallback(() => {
-    bloquearCredenciais();
-    setAbaAtiva("geral");
-    setReautenticacaoAberta(true);
-  }, [bloquearCredenciais]);
 
   const sistemasFiltrados = useMemo(() => {
     const termoBusca = busca.trim().toLowerCase();
@@ -485,9 +406,9 @@ export default function SistemasPage() {
           </span>
         </button>
         <button
-          onClick={handleClickAbaCredenciais}
+          onClick={() => mudarAba("infraestrutura")}
           className={`pb-3 transition-colors relative cursor-pointer ${
-            abaAtiva === "credenciais"
+            abaAtiva === "infraestrutura"
               ? "text-blue-900 font-semibold border-b-2 border-blue-900"
               : "text-slate-500 hover:text-slate-700"
           }`}
@@ -517,35 +438,8 @@ export default function SistemasPage() {
           />
         </div>
       ) : (
-        tokenElevado && (
-          <InfraestruturaTab
-            sistemaId={sistemaAtivo.id}
-            tokenElevado={tokenElevado}
-            ehAdmin={ehAdmin}
-            onSessaoExpirada={handleSessaoExpirada}
-            onDadosAlterados={recarregarSistemas} 
-            api={{
-              listarInfraestruturas,
-              buscarInfraestrutura,
-              salvarInfraestrutura,
-              adicionarCredencial,
-              atualizarCredencial,
-              apagarCredencial,
-            }}
-            listarServidores={listarServidores}
-            listarPlataformas={listarPlataformas}
-            listarDominios={listarDominios}
-          />
-        )
+        <InfraestruturaTab sistema={sistemaAtivo} ehAdmin={ehAdmin} />
       )}
-
-      <ReautenticacaoModal
-        aberto={reautenticacaoAberta}
-        enviando={reautenticando}
-        erro={erroReautenticacao}
-        onConfirmar={handleConfirmarReautenticacao}
-        onCancelar={() => setReautenticacaoAberta(false)}
-      />
     </div>
   );
 }

@@ -1,4 +1,14 @@
-import type { TipoAmbiente, TipoCredencial } from "../../../hooks/useSistemasData";
+import {
+  TIPOS_DNS,
+  type TipoAmbiente,
+  type TipoCredencial,
+  type TipoDns,
+} from "../../../hooks/useSistemasData";
+
+// Classes partilhadas pelos formulários
+export const CLASSE_ROTULO = "text-xs font-semibold text-slate-500 uppercase";
+export const CLASSE_CAMPO =
+  "w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900";
 
 export const AMBIENTES: { valor: TipoAmbiente; label: string }[] = [
   { valor: "PRODUCAO", label: "Produção" },
@@ -26,7 +36,29 @@ export const TIPOS_CREDENCIAL: { valor: TipoCredencial; label: string }[] = [
 export const rotuloTipoCredencial = (tipo: TipoCredencial) =>
   TIPOS_CREDENCIAL.find((t) => t.valor === tipo)?.label ?? tipo;
 
-// Endereços das páginas da infraestrutura de um sistema, num só sítio
+// ─── Subdomínio ──────────────────────────────────────────────────────────────
+
+// A e AAAA usam o IP do servidor; os restantes tipos usam o campo "destino"
+export const TIPOS_DNS_COM_SERVIDOR: TipoDns[] = ["A", "AAAA"];
+export const TIPO_DNS_PADRAO: TipoDns = "CNAME";
+
+export const registoUsaServidor = (tipoDns: TipoDns, temServidor: boolean) =>
+  temServidor && TIPOS_DNS_COM_SERVIDOR.includes(tipoDns);
+
+// Sem servidor, A e AAAA não se aplicam
+export const tiposDnsDisponiveis = (temServidor: boolean): readonly TipoDns[] =>
+  temServidor
+    ? TIPOS_DNS
+    : TIPOS_DNS.filter((t) => !TIPOS_DNS_COM_SERVIDOR.includes(t));
+
+export function montarEndereco(nome: string, dominio?: string): string {
+  const prefixo = nome.trim().toLowerCase();
+  if (!dominio || !prefixo) return "";
+  return prefixo === "@" ? dominio : `${prefixo}.${dominio}`;
+}
+
+// ─── Endereços das páginas da infraestrutura de um sistema ───────────────────
+
 export function caminhosInfraestrutura(
   sistemaId: string | number,
   ambiente: TipoAmbiente,

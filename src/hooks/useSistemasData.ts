@@ -12,6 +12,7 @@ export interface OpcaoHospedagem {
   id: number;
   nome: string;
   tipo?: string;
+  plataforma?: string;
 }
 
 export const TIPOS_DNS = [
@@ -101,6 +102,19 @@ export interface SistemaInfraestrutura {
   subdominio?: SubdominioInfra | null;
   credenciais: Credencial[];
 }
+
+export interface ImagemOpcao {
+  id: number;
+  nome: string;
+  tag: string;
+  plataformaId?: number;
+  plataforma?: { id: number };
+}
+
+export const listarImagens = async (): Promise<ImagemOpcao[]> => {
+  const resposta = await fetchComToken(API_ENDPOINTS.IMAGENS);
+  return Array.isArray(resposta) ? resposta : [];
+};
 
 function comTecnologiasCombinadas(sis: Sistema): Sistema {
   return {

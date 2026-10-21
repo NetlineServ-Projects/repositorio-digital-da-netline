@@ -74,12 +74,8 @@ export default function SistemaFichaTecnica({
   const temDescricao = Boolean(
     sistema.descricaoCurta || sistema.descricaoLonga,
   );
-  const urlProducao =
-    sistema.urlsAmbientes?.find((u) => u.ambiente === "PRODUCAO")?.url ||
-    sistema.urlProducao;
-  const urlTestes = sistema.urlsAmbientes?.find(
-    (u) => u.ambiente === "TESTES",
-  )?.url;
+  const urlProducao = sistema.urlProducao;
+  const urlTestes = sistema.urlTestes;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
