@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   useNavigate,
   useParams,
@@ -6,7 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { toast } from "sonner";
-import { useSistemasData, type Sistema } from "../../hooks/useSistemasData";
+import { useSistemasData, podeGerirSistema, type Sistema } from "../../hooks/useSistemasData";
 import type { Documento } from "../../types/documento";
 import SistemasHeader from "./sistemasHeader";
 import SistemasGrid from "./sistemasGrid";
@@ -16,12 +16,13 @@ import SistemaFichaTecnica from "./sistemaFichaTecnica";
 import AnexarDocumentoForm from "./anexarDocumentoForm";
 import DocumentosDoSistemaTabela from "./documentosDoSistemaTabela";
 import FilterSelect from "../../components/filterSelect";
+import PainelFiltros from "../../components/painelFiltros";
 import InfraestruturaTab from "./infraestrutura/infraestruturaTab";
 import { useAcessoInfraestruturaOpcional } from "./infraestrutura/acessoInfraestrutura";
 import { rotuloStatus } from "../../utils/status";
 
 interface DashboardContext {
-  usuario: { nome: string; perfil?: string } | null;
+  usuario: { id?: number; nome: string; perfil?: string } | null;
 }
 
 type Aba = "geral" | "documentos" | "infraestrutura";
@@ -70,6 +71,14 @@ export default function SistemasPage() {
     }
     setSearchParams(aba === "geral" ? {} : { aba }, { replace: true });
   };
+
+  // Com as abas em scroll horizontal, mantém a aba ativa à vista (ex.: ao abrir ?aba=infraestrutura)
+  const abasRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const barra = abasRef.current;
+    const ativa = barra?.querySelector<HTMLElement>("[aria-current=page]");
+    if (barra && ativa) barra.scrollLeft = ativa.offsetLeft - (barra.clientWidth - ativa.offsetWidth) / 2;
+  }, [abaAtiva, sistemaAtivo]);
 
   // Estados de busca
   const [busca, setBusca] = useState("");
@@ -167,7 +176,12 @@ export default function SistemasPage() {
       formData.append("descricao", dados.descricao);
 
       await anexarDocumento(formData);
-      toast.success("Documento anexado com sucesso!");
+      // Segue o mesmo fluxo da aba Documentos: só os ADMIN publicam de imediato
+      toast.success(
+        ehAdmin
+          ? "Documento publicado no sistema."
+          : "Documento enviado para aprovação. Será notificado quando for revisto.",
+      );
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Erro ao anexar o documento.",
@@ -288,6 +302,24 @@ export default function SistemasPage() {
     );
   }
 
+  // Um :id na URL que não corresponde a nenhum sistema (apagado, ou link errado)
+  if (id && !sistemas.some((s) => String(s.id) === id)) {
+    return (
+      <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
+        <p className="text-slate-700 font-semibold">Sistema não encontrado.</p>
+        <p className="text-sm text-slate-500">
+          O sistema pode ter sido apagado ou o link está incorreto.
+        </p>
+        <button
+          onClick={() => navigate("/dashboard/sistemas")}
+          className="text-sm text-[#18357a] font-semibold hover:underline cursor-pointer"
+        >
+          Voltar aos Sistemas
+        </button>
+      </div>
+    );
+  }
+
   // Vista 1: Formulário de Criação/Edição de Sistema
   if (formularioAberto) {
     return (
@@ -309,18 +341,19 @@ export default function SistemasPage() {
           onNovoSistema={() => setFormularioAberto("novo")}
         />
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
           <div className="w-full md:w-80 relative">
             <input
               type="text"
-              placeholder="Pesquisar por título ou autor..."
+              placeholder="Pesquisar por nome, descrição, equipa ou cliente..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="w-full pl-4 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 placeholder-slate-400 transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <PainelFiltros ativos={statusFiltro.length + clienteFiltro.length + tecnologiaFiltro.length}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <FilterSelect
               label="Status"
               placeholder="Todos os Status"
@@ -345,6 +378,7 @@ export default function SistemasPage() {
               onChange={setTecnologiaFiltro}
             />
           </div>
+          </PainelFiltros>
 
           {possuiFiltrosAtivos && (
             <div className="flex justify-end pt-1">
@@ -378,13 +412,15 @@ export default function SistemasPage() {
         onVoltar={() => navigate("/dashboard/sistemas")}
         onEditar={() => setFormularioAberto(sistemaAtivo)}
         onApagar={() => handleApagarSistema(sistemaAtivo)}
+        podeGerir={podeGerirSistema(sistemaAtivo, usuario)}
       />
 
-      {/* Navegação por Separadores (Tabs) */}
-      <div className="border-b border-slate-200 flex gap-6 text-sm font-medium">
+      {/* Navegação por Separadores (Tabs): uma só linha, com scroll horizontal nos ecrãs pequenos */}
+      <div className="border-b border-slate-200 flex gap-6 text-sm font-medium overflow-x-auto whitespace-nowrap [scrollbar-width:none] relative" ref={abasRef}>
         <button
           onClick={() => mudarAba("geral")}
-          className={`pb-3 transition-colors relative cursor-pointer ${
+          aria-current={abaAtiva === "geral" ? "page" : undefined}
+          className={`pb-3 shrink-0 transition-colors relative cursor-pointer ${
             abaAtiva === "geral"
               ? "text-blue-900 font-semibold border-b-2 border-blue-900"
               : "text-slate-500 hover:text-slate-700"
@@ -394,7 +430,8 @@ export default function SistemasPage() {
         </button>
         <button
           onClick={() => mudarAba("documentos")}
-          className={`pb-3 transition-colors relative flex items-center gap-2 cursor-pointer ${
+          aria-current={abaAtiva === "documentos" ? "page" : undefined}
+          className={`pb-3 shrink-0 transition-colors relative flex items-center gap-2 cursor-pointer ${
             abaAtiva === "documentos"
               ? "text-blue-900 font-semibold border-b-2 border-blue-900"
               : "text-slate-500 hover:text-slate-700"
@@ -407,7 +444,8 @@ export default function SistemasPage() {
         </button>
         <button
           onClick={() => mudarAba("infraestrutura")}
-          className={`pb-3 transition-colors relative cursor-pointer ${
+          aria-current={abaAtiva === "infraestrutura" ? "page" : undefined}
+          className={`pb-3 shrink-0 transition-colors relative cursor-pointer ${
             abaAtiva === "infraestrutura"
               ? "text-blue-900 font-semibold border-b-2 border-blue-900"
               : "text-slate-500 hover:text-slate-700"
@@ -435,6 +473,7 @@ export default function SistemasPage() {
             onBuscaChange={setBuscaDoc}
             onEditar={abrirEditarDocumento}
             onApagar={handleApagarDoc}
+            ehAdmin={ehAdmin}
           />
         </div>
       ) : (

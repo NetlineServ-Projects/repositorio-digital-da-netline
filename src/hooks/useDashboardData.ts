@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
+import { aplicarTema } from "../utils/tema";
 
 export interface UsuarioData {
   id?: number;
@@ -11,6 +12,7 @@ export interface UsuarioData {
   departamento?: string;
   numero?: string;
   fotografia?: string | null;
+  temaEscuro?: boolean;
 }
 
 export interface Documento {
@@ -57,6 +59,8 @@ export function useDashboardData() {
       ]);
 
       setUsuario(auth);
+      // A preferência do backend manda (ex: mudada noutro computador)
+      aplicarTema(Boolean(auth?.temaEscuro));
       setDocumentos(Array.isArray(docs) ? docs : []);
       setTotalCategorias(Array.isArray(cats) ? cats.length : 0);
       setTotalSistemas(Array.isArray(sist) ? sist.length : 0);

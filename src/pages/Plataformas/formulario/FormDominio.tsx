@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { Plataforma, Dominio } from "../../../types/plataforma";
+import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 interface FormDominioProps {
   dominioExistente?: Dominio | null;
@@ -82,7 +84,7 @@ export default function FormDominio({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
             {dominioExistente ? "Editar Domínio" : "Novo Domínio"}
@@ -94,22 +96,21 @@ export default function FormDominio({
 
         {/* Plataforma Pai */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+          <label htmlFor="dominio-plataforma" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
             Plataforma / Registrador DNS *
           </label>
-          <select
-            value={plataformaId}
-            onChange={(e) => setPlataformaId(e.target.value)}
+          <SelectPesquisavel
+            id="dominio-plataforma"
+            valor={String(plataformaId)}
+            onChange={setPlataformaId}
             required
-            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
-          >
-            <option value="" disabled>Selecione a plataforma...</option>
-            {listaPlataformas.map((plat) => (
-              <option key={plat.id} value={plat.id}>
-                {plat.nome} ({plat.tipo === "GESTAO_DOMINIO" ? "Gestão de Domínio" : plat.tipo})
-              </option>
-            ))}
-          </select>
+            placeholder="Selecione a plataforma..."
+            opcoes={listaPlataformas.map((plat) => ({
+              valor: String(plat.id),
+              label: plat.nome,
+              descricao: ROTULOS_TIPO_PLATAFORMA[plat.tipo] ?? plat.tipo,
+            }))}
+          />
         </div>
 
         {/* Nome do Domínio */}
@@ -146,7 +147,7 @@ export default function FormDominio({
       </div>
 
       {/* Botões de Ação */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
         <button
           type="button"
           onClick={onCancelar}

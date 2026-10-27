@@ -5,7 +5,7 @@ interface SistemasHeaderProps {
 
 export default function SistemasHeader({ total, onNovoSistema }: SistemasHeaderProps) {
   return (
-    <div className="bg-[#1e3a8a] p-6 rounded-xl text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="bg-blue-900 p-5 sm:p-6 rounded-xl text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">
           Gestão de Sistemas
@@ -18,14 +18,14 @@ export default function SistemasHeader({ total, onNovoSistema }: SistemasHeaderP
         </p>
       </div>
 
-      <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-        <div className="text-xs font-medium text-slate-200 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-sm">
+      <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="text-xs font-medium text-slate-200 bg-white/10 px-3 py-2.5 rounded-lg backdrop-blur-sm whitespace-nowrap">
           Total: <span className="font-bold text-white">{total}</span>
         </div>
 
         <button
           onClick={onNovoSistema}
-          className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 text-xs font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap"
+          className="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 bg-white hover:bg-slate-100 text-slate-800 text-xs font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
         >
           <span>+ Novo Sistema</span>
         </button>

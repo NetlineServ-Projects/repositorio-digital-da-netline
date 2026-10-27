@@ -38,6 +38,8 @@ interface AbaTopologiaProps {
 
 export default function AbaTopologia({ arvore }: AbaTopologiaProps) {
   const [direcao, setDirecao] = useState<DirecaoTopologia>("TB");
+  // No telemóvel a legenda tapa o grafo: fica recolhida atrás de um botão
+  const [legendaAberta, setLegendaAberta] = useState(false);
 
   const { nos, ligacoes } = useMemo(
     () => construirGrafoTopologia(arvore, direcao),
@@ -49,7 +51,7 @@ export default function AbaTopologia({ arvore }: AbaTopologiaProps) {
   }
 
   return (
-    <div className="h-[70vh] bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+    <div className="h-[65vh] sm:h-[70vh] min-h-96 bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
       {/* key: obriga o fitView a correr outra vez quando a direção muda */}
       <ReactFlow
         key={direcao}
@@ -85,8 +87,18 @@ export default function AbaTopologia({ arvore }: AbaTopologiaProps) {
           </div>
         </Panel>
 
-        <Panel position="top-right">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-3 space-y-3 text-[11px] text-slate-600">
+        <Panel position="top-right" className="flex flex-col items-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => setLegendaAberta((a) => !a)}
+            aria-expanded={legendaAberta}
+            className="sm:hidden px-3 py-1.5 bg-white rounded-xl border border-slate-200 shadow-xs text-xs font-semibold text-slate-600 cursor-pointer"
+          >
+            Legenda {legendaAberta ? "▴" : "▾"}
+          </button>
+          <div
+            className={`${legendaAberta ? "block" : "hidden"} sm:block bg-white rounded-xl border border-slate-200 shadow-xs p-3 space-y-3 text-[11px] text-slate-600`}
+          >
             <div className="space-y-1.5">
               <p className="font-bold text-slate-400 uppercase tracking-wider text-[10px]">
                 Elementos

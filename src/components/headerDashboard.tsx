@@ -2,6 +2,8 @@
 import { useNavigate } from "react-router-dom";
 import { IconUsuario, IconLogout } from "./icons";
 import AvatarUsuario from "./avatarUsuario";
+import SinoNotificacoes from "./sinoNotificacoes";
+import { useUsuario } from "./usuarioContext";
 
 interface HeaderDashboardProps {
   sidebarFechada: boolean;
@@ -31,18 +33,15 @@ export default function HeaderDashboard({
     return () => document.removeEventListener("mousedown", aoClicarFora);
   }, []);
 
-  const lidarComLogout = () => {
-    localStorage.removeItem("token_sistema");
-    localStorage.removeItem("usuario_logado");
-    window.location.href = "./";
-  };
+  const { fazerLogout } = useUsuario();
+  const lidarComLogout = fazerLogout;
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
+    <header className="h-16 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
       <div className="flex items-center gap-4">
         <button
           onClick={() => setSidebarFechada(!sidebarFechada)}
-          className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+          className="p-2.5 sm:p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
           title={sidebarFechada ? "Expandir Menu" : "Recolher Menu"}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -51,17 +50,19 @@ export default function HeaderDashboard({
           </svg>
         </button>
 
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium border border-slate-200">
+        <div className="hidden lg:flex items-center gap-2 px-4 py-1.5 whitespace-nowrap bg-slate-100 text-slate-600 rounded-full text-xs font-medium border border-slate-200">
           <span className="w-2 h-2 rounded-full bg-blue-600"></span>
           <span>Repositório Interno da Netline</span>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
+        <SinoNotificacoes />
+
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuAberto((v) => !v)}
-            className="flex items-center gap-3 border-l border-slate-200 pl-4 cursor-pointer"
+            className="flex items-center gap-3 border-l border-slate-200 pl-3 sm:pl-4 cursor-pointer"
           >
             <AvatarUsuario nome={nomeUsuario} fotografia={usuario?.fotografia} tamanho="sm" />
             <span className="text-sm font-medium text-slate-700 hidden sm:inline">
@@ -70,7 +71,7 @@ export default function HeaderDashboard({
           </button>
 
           {menuAberto && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-lg py-2 z-20">
+            <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-white rounded-xl border border-slate-200 shadow-lg py-2 z-20">
               <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-100">
                 <AvatarUsuario nome={nomeUsuario} fotografia={usuario?.fotografia} tamanho="md" />
                 <div className="min-w-0">

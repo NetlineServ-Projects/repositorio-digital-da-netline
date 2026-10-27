@@ -18,6 +18,34 @@ function formatarData(data: string | null): string {
   return data ? new Date(data).toLocaleDateString("pt-PT") : "-";
 }
 
+function SeloVisibilidade({ imagem }: { imagem: ImagemContainer }) {
+  return (
+    <span
+      className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
+        imagem.visibilidade === "PRIVADA"
+          ? "bg-amber-50 text-amber-700"
+          : "bg-slate-100 text-slate-700"
+      }`}
+    >
+      {ROTULOS_VISIBILIDADE_IMAGEM[imagem.visibilidade]}
+    </span>
+  );
+}
+
+function SeloEstado({ imagem }: { imagem: ImagemContainer }) {
+  return (
+    <span
+      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+        imagem.ativo
+          ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+          : "bg-slate-100 text-slate-500 border-slate-200"
+      }`}
+    >
+      {imagem.ativo ? "Ativa" : "Inativa"}
+    </span>
+  );
+}
+
 export default function AbaImagens({
   imagens,
   ehAdmin,
@@ -28,9 +56,47 @@ export default function AbaImagens({
     return <EstadoVazio mensagem="Nenhuma imagem registada." />;
   }
 
+  // As mesmas ações na tabela e nos cartões do telemóvel
+  const acoes = (imagem: ImagemContainer) =>
+    ehAdmin && (
+      <AcoesItem
+        tituloEditar="Editar imagem"
+        tituloEliminar="Eliminar imagem"
+        onEditar={() => aoEditar("imagem", imagem)}
+        onEliminar={() =>
+          aoEliminar("imagem", imagem.id, `${imagem.nome}:${imagem.tag}`)
+        }
+      />
+    );
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-      <div className="overflow-x-auto">
+    // A troca cartões/tabela depende da largura disponível (container query), não do ecrã
+    <div className="@container bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+      {/* Espaço estreito: um cartão por imagem (a tabela não cabe) */}
+      <ul className="@2xl:hidden divide-y divide-slate-100">
+        {imagens.map((imagem) => (
+          <li key={imagem.id} className="p-4 flex items-start gap-3">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div>
+                <p className="font-bold text-slate-800 text-sm break-all">{imagem.nome}</p>
+                <p className="text-slate-400 font-mono text-[11px] break-all">:{imagem.tag}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <SeloVisibilidade imagem={imagem} />
+                <SeloEstado imagem={imagem} />
+              </div>
+              <p className="text-[11px] text-slate-500">
+                {ROTULOS_ORIGEM_IMAGEM[imagem.origem]}
+                {imagem.portaExposta != null && <> · Porta <span className="font-mono">{imagem.portaExposta}</span></>}
+                {" · "}Último push: {formatarData(imagem.ultimoPushEm)}
+              </p>
+            </div>
+            {ehAdmin && <div className="shrink-0 -mr-1">{acoes(imagem)}</div>}
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden @2xl:block overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase tracking-wider font-semibold">
             <tr>
@@ -59,42 +125,17 @@ export default function AbaImagens({
                   {ROTULOS_ORIGEM_IMAGEM[imagem.origem]}
                 </td>
                 <td className="px-5 py-3.5">
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${
-                      imagem.visibilidade === "PRIVADA"
-                        ? "bg-amber-50 text-amber-700"
-                        : "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    {ROTULOS_VISIBILIDADE_IMAGEM[imagem.visibilidade]}
-                  </span>
+                  <SeloVisibilidade imagem={imagem} />
                 </td>
                 <td className="px-5 py-3.5 font-mono text-slate-600">
                   {imagem.portaExposta ?? "-"}
                 </td>
                 <td className="px-5 py-3.5">{formatarData(imagem.ultimoPushEm)}</td>
                 <td className="px-5 py-3.5">
-                  <span
-                    className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
-                      imagem.ativo
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                        : "bg-slate-100 text-slate-500 border-slate-200"
-                    }`}
-                  >
-                    {imagem.ativo ? "Ativa" : "Inativa"}
-                  </span>
+                  <SeloEstado imagem={imagem} />
                 </td>
                 {ehAdmin && (
-                  <td className="px-5 py-3.5 text-right">
-                    <AcoesItem
-                      tituloEditar="Editar imagem"
-                      tituloEliminar="Eliminar imagem"
-                      onEditar={() => aoEditar("imagem", imagem)}
-                      onEliminar={() =>
-                        aoEliminar("imagem", imagem.id, `${imagem.nome}:${imagem.tag}`)
-                      }
-                    />
-                  </td>
+                  <td className="px-5 py-3.5 text-right">{acoes(imagem)}</td>
                 )}
               </tr>
             ))}

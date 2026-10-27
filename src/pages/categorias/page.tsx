@@ -8,6 +8,7 @@ import DocumentoRow from "../../components/documentoRow";
 import DocumentoCard from "../../components/documentoCard";
 import ModalConfirmacao from "../../components/modalConfirmacaoprops";
 import FilterSelect from "../../components/filterSelect";
+import PainelFiltros from "../../components/painelFiltros";
 import { IconVer, IconPasta, IconSetaDireita } from "../../components/icons";
 import { classificarTipo, OPCOES_TIPO } from "../../utils/tipoDocumento";
 import type { Categoria } from "../../types/documento";
@@ -122,6 +123,8 @@ export default function CategoriasPage() {
       });
   }, [documentos, categoriaAtiva, buscaDoc, autorFiltro, tipoFiltro, mesFiltro, anoFiltro]);
 
+  const totalFiltrosSelecionados = [autorFiltro, tipoFiltro, mesFiltro, anoFiltro].filter((f) => f.length > 0).length;
+
   const filtrosAtivos =
     buscaDoc !== "" ||
     autorFiltro.length > 0 ||
@@ -155,9 +158,9 @@ export default function CategoriasPage() {
   if (!categoriaAtiva) {
     return (
       <div className="space-y-6">
-        <div className="bg-[#18357a] text-white p-6 md:p-8 rounded-2xl shadow-sm">
+        <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm">
           <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">{t("categorias.repositorio")}</p>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">{t("categorias.titulo")}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">{t("categorias.titulo")}</h1>
           <p className="text-sm text-blue-100/80 mt-1">
             {t("categorias.contagemDisponivel", { count: categorias.length })}
           </p>
@@ -167,7 +170,7 @@ export default function CategoriasPage() {
           <SearchInput value={buscaCategoria} onChange={setBuscaCategoria} placeholder={t("categorias.pesquisarCategoria")} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {categoriasFiltradas.map((cat) => {
             const totalDocs = contarDocumentos(cat.id);
             const temDocs = totalDocs > 0;
@@ -179,7 +182,7 @@ export default function CategoriasPage() {
                   setCategoriaAtiva(cat);
                   limparFiltrosDoc();
                 }}
-                className="group flex flex-col justify-between text-left bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-200"
+                className="group flex flex-col justify-between text-left bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-200"
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
@@ -188,7 +191,7 @@ export default function CategoriasPage() {
                     </div>
 
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      className={`inline-flex items-center shrink-0 whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         temDocs
                           ? "bg-emerald-50 text-emerald-700 border border-emerald-200/80"
                           : "bg-slate-100 text-slate-400 border border-slate-200/60"
@@ -223,18 +226,18 @@ export default function CategoriasPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-[#18357a] text-white p-6 md:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <button
             onClick={() => {
               setCategoriaAtiva(null);
               limparFiltrosDoc();
             }}
-            className="text-xs text-blue-200 hover:text-white font-medium mb-2 flex items-center gap-1 transition-colors"
+            className="text-xs text-blue-200 hover:text-white font-medium mb-2 py-1 flex items-center gap-1 transition-colors"
           >
             ← {t("categorias.voltar")}
           </button>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">{categoriaAtiva.nome}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white wrap-break-word">{categoriaAtiva.nome}</h1>
           <p className="text-sm text-blue-100/80 mt-1">
             {t("categorias.contagemNestaCategoria", { count: documentosDaCategoria.length })}
           </p>
@@ -242,7 +245,7 @@ export default function CategoriasPage() {
         {ehAdmin && (
           <button
             onClick={abrirCriar}
-            className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto"
+            className="w-full sm:w-auto text-center px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors sm:self-start md:self-auto"
           >
             {t("categorias.novoDocumento")}
           </button>
@@ -250,7 +253,7 @@ export default function CategoriasPage() {
       </div>
 
       {/* Painel de Filtros Customizados */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="w-full md:w-80 relative">
             <SearchInput
@@ -259,43 +262,47 @@ export default function CategoriasPage() {
               placeholder={t("categorias.pesquisarDocumento")}
             />
           </div>
-          <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          <div className="hidden xl:block">
+            <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          </div>
         </div>
 
-        {/* Custom Selects de Filtro */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end pt-2">
-          <FilterSelect
-            label={t("comum.autor")}
-            placeholder={t("comum.todosAutores")}
-            opcoes={autoresUnicos.map((a) => ({ valor: a, label: a }))}
-            selecionados={autorFiltro}
-            onChange={setAutorFiltro}
-          />
+        {/* Custom Selects de Filtro (recolhidos atrás de "Filtros" no telemóvel) */}
+        <PainelFiltros ativos={totalFiltrosSelecionados}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end md:pt-2">
+            <FilterSelect
+              label={t("comum.autor")}
+              placeholder={t("comum.todosAutores")}
+              opcoes={autoresUnicos.map((a) => ({ valor: a, label: a }))}
+              selecionados={autorFiltro}
+              onChange={setAutorFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.tipoFicheiro")}
-            placeholder={t("comum.todosTipos")}
-            opcoes={OPCOES_TIPO.filter((tipo) => tipo.valor !== "TODOS").map((tipo) => ({ valor: tipo.valor, label: tipo.label }))}
-            selecionados={tipoFiltro}
-            onChange={setTipoFiltro}
-          />
+            <FilterSelect
+              label={t("comum.tipoFicheiro")}
+              placeholder={t("comum.todosTipos")}
+              opcoes={OPCOES_TIPO.filter((tipo) => tipo.valor !== "TODOS").map((tipo) => ({ valor: tipo.valor, label: tipo.label }))}
+              selecionados={tipoFiltro}
+              onChange={setTipoFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.mes")}
-            placeholder={t("comum.todosMeses")}
-            opcoes={MESES}
-            selecionados={mesFiltro}
-            onChange={setMesFiltro}
-          />
+            <FilterSelect
+              label={t("comum.mes")}
+              placeholder={t("comum.todosMeses")}
+              opcoes={MESES}
+              selecionados={mesFiltro}
+              onChange={setMesFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.ano")}
-            placeholder={t("comum.todosAnos")}
-            opcoes={anosUnicos.map((ano) => ({ valor: ano, label: ano }))}
-            selecionados={anoFiltro}
-            onChange={setAnoFiltro}
-          />
-        </div>
+            <FilterSelect
+              label={t("comum.ano")}
+              placeholder={t("comum.todosAnos")}
+              opcoes={anosUnicos.map((ano) => ({ valor: ano, label: ano }))}
+              selecionados={anoFiltro}
+              onChange={setAnoFiltro}
+            />
+          </div>
+        </PainelFiltros>
 
         {filtrosAtivos && (
           <div className="flex justify-end pt-1">
@@ -310,8 +317,9 @@ export default function CategoriasPage() {
       </div>
 
       {/* Lista de Documentos (Tabela ou Cards) */}
-      {modoExibicao === "tabela" ? (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* A tabela só aparece a partir de xl (com a barra lateral não cabe antes); no telemóvel usam-se sempre os cartões */}
+      {modoExibicao === "tabela" && (
+        <div className="hidden xl:block bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-400 uppercase text-xs border-b border-slate-100">
@@ -333,7 +341,7 @@ export default function CategoriasPage() {
                         <>
                           <Link
                             to={`/dashboard/documentos/${doc.id}`}
-                            className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+                            className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
                             title={t("comum.verDocumento")}
                           >
                             <IconVer />
@@ -360,7 +368,7 @@ export default function CategoriasPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="text-center py-8 text-slate-400">
+                    <td colSpan={4} className="text-center py-8 text-slate-400">
                       {t("categorias.nenhumDocumento")}
                     </td>
                   </tr>
@@ -369,49 +377,48 @@ export default function CategoriasPage() {
             </table>
           </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documentosDaCategoria.length > 0 ? (
-            documentosDaCategoria.map((doc) => (
-              <DocumentoCard
-                key={doc.id}
-                doc={doc}
-                acoes={
-                  <>
-                    <Link
-                      to={`/dashboard/documentos/${doc.id}`}
-                      className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                      title={t("comum.ver")}
-                    >
-                      <IconVer />
-                    </Link>
-                    {ehAdmin && (
-                      <>
-                        <Link
-                          to={`/dashboard/documentos/${doc.id}/editar`}
-                          className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
-                        >
-                          {t("comum.editar")}
-                        </Link>
-                        <button
-                          onClick={() => setDocumentoParaApagar(doc.id)}
-                          className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60"
-                        >
-                          {t("comum.apagar")}
-                        </button>
-                      </>
-                    )}
-                  </>
-                }
-              />
-            ))
-          ) : (
-            <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-              {t("categorias.nenhumDocumento")}
-            </div>
-          )}
-        </div>
       )}
+      <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 ${modoExibicao === "tabela" ? "xl:hidden" : ""}`}>
+        {documentosDaCategoria.length > 0 ? (
+          documentosDaCategoria.map((doc) => (
+            <DocumentoCard
+              key={doc.id}
+              doc={doc}
+              acoes={
+                <>
+                  <Link
+                    to={`/dashboard/documentos/${doc.id}`}
+                    className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+                    title={t("comum.ver")}
+                  >
+                    <IconVer />
+                  </Link>
+                  {ehAdmin && (
+                    <>
+                      <Link
+                        to={`/dashboard/documentos/${doc.id}/editar`}
+                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                      >
+                        {t("comum.editar")}
+                      </Link>
+                      <button
+                        onClick={() => setDocumentoParaApagar(doc.id)}
+                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60"
+                      >
+                        {t("comum.apagar")}
+                      </button>
+                    </>
+                  )}
+                </>
+              }
+            />
+          ))
+        ) : (
+          <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
+            {t("categorias.nenhumDocumento")}
+          </div>
+        )}
+      </div>
 
       {/* Modal de Confirmação para Remoção */}
       <ModalConfirmacao

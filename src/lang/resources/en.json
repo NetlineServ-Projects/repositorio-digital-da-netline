@@ -1,4 +1,21 @@
 {
+  "notificacoes": {
+    "titulo": "Notifications",
+    "abrir": "Open notifications",
+    "porLer_one": "{{count}} unread notification",
+    "porLer_other": "{{count}} unread notifications",
+    "marcarTodas": "Mark all as read",
+    "vazio": "You have no notifications.",
+    "erro": "Could not load notifications.",
+    "motivo": "Reason",
+    "tipos": {
+      "DOCUMENTO_SUBMETIDO": "New document to approve: “{{referencia}}”",
+      "DOCUMENTO_APROVADO": "Your document “{{referencia}}” was approved.",
+      "DOCUMENTO_REJEITADO": "Your document “{{referencia}}” was rejected.",
+      "DOMINIO_A_EXPIRAR": "The domain {{referencia}} expires on {{data}}. Renew it in time.",
+      "DOMINIO_EXPIRADO": "The domain {{referencia}} expired on {{data}}."
+    }
+  },
   "configuracoes": {
     "titulo": "System Settings",
     "subtitulo": "Manage your interface and notification preferences.",
@@ -202,6 +219,7 @@
     "entrar": "Sign In",
     "erroPadrao": "An error occurred while trying to sign in.",
     "erroCredenciais": "Incorrect email or password",
+    "sessaoExpirada": "Your session has expired. Please sign in again to continue.",
     "direitosReservados": "© {{ano}} Netline.Serv,Lda. All rights reserved."
   },
    "sidebar": {

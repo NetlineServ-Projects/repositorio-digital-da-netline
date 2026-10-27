@@ -49,10 +49,10 @@ export default function AtividadeRecente({
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-120">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-120">
       {/* Cabeçalho fixo no topo do card */}
       <div className="flex-none mb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center lg:flex-col lg:items-start justify-between gap-2 mb-4">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-800">
               {ehAdmin
@@ -68,11 +68,11 @@ export default function AtividadeRecente({
 
           {/* Filtros para Administrador */}
           {ehAdmin && (
-            <div className="inline-flex p-0.5 bg-slate-100 rounded-lg text-[11px]">
+            <div className="inline-flex max-w-full overflow-x-auto whitespace-nowrap p-0.5 bg-slate-100 rounded-lg text-[11px]">
               <button
                 type="button"
                 onClick={() => setFiltroPerfil("TODOS")}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                className={`shrink-0 px-2.5 py-1.5 sm:py-1 rounded-md font-semibold transition-all cursor-pointer ${
                   filtroPerfil === "TODOS"
                     ? "bg-white text-slate-800 shadow-xs"
                     : "text-slate-500 hover:text-slate-800"
@@ -83,7 +83,7 @@ export default function AtividadeRecente({
               <button
                 type="button"
                 onClick={() => setFiltroPerfil("FUNCIONARIO")}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                className={`shrink-0 px-2.5 py-1.5 sm:py-1 rounded-md font-semibold transition-all cursor-pointer ${
                   filtroPerfil === "FUNCIONARIO"
                     ? "bg-white text-slate-800 shadow-xs"
                     : "text-slate-500 hover:text-slate-800"
@@ -94,7 +94,7 @@ export default function AtividadeRecente({
               <button
                 type="button"
                 onClick={() => setFiltroPerfil("ADMIN")}
-                className={`px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer ${
+                className={`shrink-0 px-2.5 py-1.5 sm:py-1 rounded-md font-semibold transition-all cursor-pointer ${
                   filtroPerfil === "ADMIN"
                     ? "bg-white text-slate-800 shadow-xs"
                     : "text-slate-500 hover:text-slate-800"

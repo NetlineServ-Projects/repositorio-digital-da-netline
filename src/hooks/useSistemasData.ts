@@ -12,7 +12,7 @@ export interface OpcaoHospedagem {
   id: number;
   nome: string;
   tipo?: string;
-  plataforma?: string;
+  plataformaId?: number;
 }
 
 export const TIPOS_DNS = [
@@ -22,14 +22,17 @@ export const TIPOS_DNS = [
 
 export type TipoDns = (typeof TIPOS_DNS)[number];
 
-export interface SubdominioInfra {
+// Endereço público do sistema num ambiente (no máximo um por ambiente)
+export interface SubdominioDoSistema {
   id: number;
-  nomeCompleto?: string;
-  dominioId?: number;
+  ambiente: TipoAmbiente;
   nome: string;
+  nomeCompleto: string;
   tipoDns: TipoDns;
   destino: string | null;
-  dominio?: { id: number; nome: string };
+  dominioId: number;
+  servidorId: number | null;
+  dominio: { id: number; nome: string };
 }
 
 // Tem de coincidir com o enum TipoAmbiente do schema.prisma
@@ -62,9 +65,23 @@ export interface Sistema {
   urlTestes?: string | null;
   plataformaFrontendId?: number | null;
   plataformaFrontend?: PlataformaResumo | null;
+  subdominios?: SubdominioDoSistema[];
+  urlsAmbientes?: { ambiente: TipoAmbiente; url: string }[];
   responsavelTecnico?: string;
   versaoAtual?: string;
   totalDocumentos?: number;
+  // Quem criou o sistema: só essa pessoa (ou um ADMIN) o pode editar e eliminar
+  criadoPorId?: number | null;
+  criadoPor?: { id: number; nome: string } | null;
+}
+
+// Mesma regra do backend (sistemasService.garantirPodeGerir)
+export function podeGerirSistema(
+  sistema: Sistema,
+  usuario: { id?: number; perfil?: string } | null,
+): boolean {
+  if (usuario?.perfil === "ADMIN") return true;
+  return sistema.criadoPorId != null && sistema.criadoPorId === usuario?.id;
 }
 
 export type TipoCredencial =
@@ -98,8 +115,8 @@ export interface SistemaInfraestrutura {
   servidorId?: number | null;
   servidor?: { id: number; nome: string; hostname?: string } | null;
   imagemId?: number | null;
-  imagem?: { id: number; nome: string; tag: string } | null;
-  subdominio?: SubdominioInfra | null;
+  // A imagem vem de um registo (containerização), que pode não ser a plataforma onde corre
+  imagem?: { id: number; nome: string; tag: string; plataforma?: { id: number; nome: string } } | null;
   credenciais: Credencial[];
 }
 

@@ -1,8 +1,35 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
-import type { Plataforma, Servidor, Dominio, Subdominio,ImagemContainer, DadosPlataforma} from "../types/plataforma";
+import type { Plataforma, Servidor, Dominio, Subdominio,ImagemContainer, DadosPlataforma, CatalogoFornecedores} from "../types/plataforma";
 import type { PlataformaArvore } from "../types/plataformaArvore";
+
+// Fornecedores de cada tipo de plataforma (a fonte é o backend)
+export const listarFornecedores = (): Promise<CatalogoFornecedores> =>
+  fetchComToken(API_ENDPOINTS.PLATAFORMA_FORNECEDORES);
+
+// Só deve ser chamada com o token elevado (ver useAcessoElevado)
+export const revelarTokenPlataforma = async (
+  id: number | string,
+  tokenElevado: string,
+): Promise<string> => {
+  const resposta = await fetchComToken(API_ENDPOINTS.PLATAFORMA_TOKEN(id), {
+    headers: { "x-token-elevado": tokenElevado },
+  });
+  return (resposta as { token?: string })?.token ?? "";
+};
+
+// Só deve ser chamada com o token elevado (ver useAcessoElevado)
+export const revelarPasswordServidor = async (
+  id: number | string,
+  tokenElevado: string,
+): Promise<string> => {
+  const resposta = await fetchComToken(API_ENDPOINTS.SERVIDOR_PASSWORD(id), {
+    headers: { "x-token-elevado": tokenElevado },
+  });
+  return (resposta as { password?: string })?.password ?? "";
+};
+
 
 export function usePlataformasData() {
   const [plataformas, setPlataformas] = useState<Plataforma[]>([]);
@@ -57,21 +84,33 @@ export function usePlataformasData() {
   // ==========================================
   // OPERAÇÕES: PLATAFORMA
   // ==========================================
-   const criarPlataforma = async (dados: DadosPlataforma) => {
-    await fetchComToken(API_ENDPOINTS.PLATAFORMAS, {
+   const criarPlataforma = async (dados: DadosPlataforma): Promise<Plataforma> => {
+    const criada = await fetchComToken(API_ENDPOINTS.PLATAFORMAS, {
       method: "POST",
       body: JSON.stringify(dados),
     });
     await carregarTodos();
+    return criada as Plataforma;
   };
 
   const atualizarPlataforma = async (
     id: number | string,
     dados: Partial<DadosPlataforma>
-  ) => {
-    await fetchComToken(API_ENDPOINTS.PLATAFORMA_BY_ID(id), {
+  ): Promise<Plataforma> => {
+    const atualizada = await fetchComToken(API_ENDPOINTS.PLATAFORMA_BY_ID(id), {
       method: "PATCH",
       body: JSON.stringify(dados),
+    });
+    await carregarTodos();
+    return atualizada as Plataforma;
+  };
+
+  const enviarLogotipoPlataforma = async (id: number | string, ficheiro: File) => {
+    const formData = new FormData();
+    formData.append("logotipo", ficheiro);
+    await fetchComToken(API_ENDPOINTS.PLATAFORMA_LOGOTIPO(id), {
+      method: "PATCH",
+      body: formData,
     });
     await carregarTodos();
   };
@@ -111,20 +150,6 @@ export function usePlataformasData() {
     await carregarTodos();
   };
 
-  const revelarPasswordServidor = async (
-    id: number | string,
-    tokenElevado?: string
-  ): Promise<string> => {
-    const headers: Record<string, string> = {};
-    if (tokenElevado) {
-      headers["x-token-elevado"] = tokenElevado;
-    }
-    const res = await fetchComToken(API_ENDPOINTS.SERVIDOR_PASSWORD(id), {
-      headers,
-    });
-    return (res as { password?: string })?.password || "";
-  };
-
   // ==========================================
   // OPERAÇÕES: DOMÍNIO
   // ==========================================
@@ -162,46 +187,7 @@ export function usePlataformasData() {
     await carregarTodos();
   };
 
-  // ==========================================
-  // OPERAÇÕES: SUBDOMÍNIO (REGISTO DNS)
-  // ==========================================
-  const criarSubdominio = async (dados: {
-    dominioId: number;
-    nome: string;
-    tipoDns: string;
-    servidorId?: number | null;
-    destino?: string | null;
-  }) => {
-    await fetchComToken(API_ENDPOINTS.SUBDOMINIOS, {
-      method: "POST",
-      body: JSON.stringify(dados),
-    });
-    await carregarTodos();
-  };
-
-  const atualizarSubdominio = async (
-    id: number | string,
-    dados: Partial<{
-      dominioId: number;
-      nome: string;
-      tipoDns: string;
-      servidorId?: number | null;
-      destino?: string | null;
-    }>
-  ) => {
-    await fetchComToken(API_ENDPOINTS.SUBDOMINIO_BY_ID(id), {
-      method: "PATCH",
-      body: JSON.stringify(dados),
-    });
-    await carregarTodos();
-  };
-
-  const eliminarSubdominio = async (id: number | string) => {
-    await fetchComToken(API_ENDPOINTS.SUBDOMINIO_BY_ID(id), {
-      method: "DELETE",
-    });
-    await carregarTodos();
-  };
+  // Os subdomínios são só de leitura aqui: criam-se e editam-se no formulário do sistema
    // ==========================================
    // OPERAÇÕES: IMAGEM DE CONTAINER
    // ==========================================
@@ -243,16 +229,13 @@ export function usePlataformasData() {
     criarPlataforma,
     atualizarPlataforma,
     eliminarPlataforma,
+    enviarLogotipoPlataforma,
     criarServidor,
     atualizarServidor,
     eliminarServidor,
-    revelarPasswordServidor,
     criarDominio,
     atualizarDominio,
     eliminarDominio,
-    criarSubdominio,
-    atualizarSubdominio,
-    eliminarSubdominio,
     criarImagem,
     atualizarImagem,
     eliminarImagem,

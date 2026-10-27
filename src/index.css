@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap' );
+@import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -7,6 +7,1198 @@ body {
   background-color: #ffffff;
 }
 
+/* Landing page: movimento suave dos elementos à volta do logótipo */
+@keyframes flutuar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.animate-flutuar { animation: flutuar 6s ease-in-out infinite; }
+.animate-flutuar-lento { animation: flutuar 8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-flutuar, .animate-flutuar-lento { animation: none; }
+}
+
+/* ==========================================================================
+   TEMA ESCURO
+   A classe .dark (no <html>) remapeia as cores do Tailwind em vez de exigir
+   classes dark: em cada componente. Assim cobre todas as páginas de uma vez:
+   - cinzentos (slate/gray/zinc) invertem-se: fundos claros ficam escuros e
+     textos escuros ficam claros;
+   - os tons claros das cores (50/100/200, usados em selos e realces) passam a
+     tons escuros, e o texto escuro dessas cores (600-950) fica claro;
+   - azuis fortes de botões e cabeçalhos (bg-blue-900, #18357a) e o branco
+     translúcido sobre eles (bg-white/10, text-white) ficam como estão.
+   Classes novas destas famílias ficam cobertas sem mais trabalho.
+   ========================================================================== */
+
+.dark {
+  color-scheme: dark;
+
+  --fundo-pagina: #0b1220;
+  --fundo-cartao: #131c2e;
+
+  /* Cinzentos invertidos (o 50 é o fundo mais escuro, o 950 o texto mais claro) */
+  --color-slate-50: #0f172a;
+  --color-slate-100: #1c2638;
+  --color-slate-200: #2a3750;
+  --color-slate-300: #415069;
+  --color-slate-400: #7d8ba1;
+  --color-slate-500: #9aa8bc;
+  --color-slate-600: #b6c1d1;
+  --color-slate-700: #cfd7e2;
+  --color-slate-800: #e3e8ef;
+  --color-slate-900: #f1f4f8;
+  --color-slate-950: #ffffff;
+
+  --color-gray-50: #0f172a;
+  --color-gray-100: #1c2638;
+  --color-gray-200: #2a3750;
+  --color-gray-300: #415069;
+  --color-gray-400: #7d8ba1;
+  --color-gray-500: #9aa8bc;
+  --color-gray-600: #b6c1d1;
+  --color-gray-700: #cfd7e2;
+  --color-gray-800: #e3e8ef;
+  --color-gray-900: #f1f4f8;
+
+  --color-zinc-50: #0f172a;
+  --color-zinc-100: #1c2638;
+  --color-zinc-200: #2a3750;
+  --color-zinc-300: #415069;
+  --color-zinc-400: #7d8ba1;
+  --color-zinc-500: #9aa8bc;
+  --color-zinc-600: #b6c1d1;
+  --color-zinc-700: #cfd7e2;
+  --color-zinc-800: #e3e8ef;
+  --color-zinc-900: #f1f4f8;
+
+  /* Tons claros das cores: passam a uma mistura discreta da cor com o fundo */
+  --color-blue-50: color-mix(in oklab, #3b82f6 14%, var(--fundo-cartao));
+  --color-blue-100: color-mix(in oklab, #3b82f6 22%, var(--fundo-cartao));
+  --color-blue-200: color-mix(in oklab, #3b82f6 34%, var(--fundo-cartao));
+  --color-sky-50: color-mix(in oklab, #0ea5e9 14%, var(--fundo-cartao));
+  --color-sky-100: color-mix(in oklab, #0ea5e9 22%, var(--fundo-cartao));
+  --color-sky-200: color-mix(in oklab, #0ea5e9 34%, var(--fundo-cartao));
+  --color-indigo-50: color-mix(in oklab, #6366f1 14%, var(--fundo-cartao));
+  --color-indigo-100: color-mix(in oklab, #6366f1 22%, var(--fundo-cartao));
+  --color-indigo-200: color-mix(in oklab, #6366f1 34%, var(--fundo-cartao));
+  --color-violet-50: color-mix(in oklab, #8b5cf6 14%, var(--fundo-cartao));
+  --color-violet-100: color-mix(in oklab, #8b5cf6 22%, var(--fundo-cartao));
+  --color-violet-200: color-mix(in oklab, #8b5cf6 34%, var(--fundo-cartao));
+  --color-purple-50: color-mix(in oklab, #a855f7 14%, var(--fundo-cartao));
+  --color-purple-100: color-mix(in oklab, #a855f7 22%, var(--fundo-cartao));
+  --color-purple-200: color-mix(in oklab, #a855f7 34%, var(--fundo-cartao));
+  --color-emerald-50: color-mix(in oklab, #10b981 14%, var(--fundo-cartao));
+  --color-emerald-100: color-mix(in oklab, #10b981 22%, var(--fundo-cartao));
+  --color-emerald-200: color-mix(in oklab, #10b981 34%, var(--fundo-cartao));
+  --color-green-50: color-mix(in oklab, #22c55e 14%, var(--fundo-cartao));
+  --color-green-100: color-mix(in oklab, #22c55e 22%, var(--fundo-cartao));
+  --color-green-200: color-mix(in oklab, #22c55e 34%, var(--fundo-cartao));
+  --color-teal-50: color-mix(in oklab, #14b8a6 14%, var(--fundo-cartao));
+  --color-teal-100: color-mix(in oklab, #14b8a6 22%, var(--fundo-cartao));
+  --color-teal-200: color-mix(in oklab, #14b8a6 34%, var(--fundo-cartao));
+  --color-rose-50: color-mix(in oklab, #f43f5e 14%, var(--fundo-cartao));
+  --color-rose-100: color-mix(in oklab, #f43f5e 22%, var(--fundo-cartao));
+  --color-rose-200: color-mix(in oklab, #f43f5e 34%, var(--fundo-cartao));
+  --color-red-50: color-mix(in oklab, #ef4444 14%, var(--fundo-cartao));
+  --color-red-100: color-mix(in oklab, #ef4444 22%, var(--fundo-cartao));
+  --color-red-200: color-mix(in oklab, #ef4444 34%, var(--fundo-cartao));
+  --color-amber-50: color-mix(in oklab, #f59e0b 14%, var(--fundo-cartao));
+  --color-amber-100: color-mix(in oklab, #f59e0b 22%, var(--fundo-cartao));
+  --color-amber-200: color-mix(in oklab, #f59e0b 34%, var(--fundo-cartao));
+  --color-yellow-50: color-mix(in oklab, #eab308 14%, var(--fundo-cartao));
+  --color-yellow-100: color-mix(in oklab, #eab308 22%, var(--fundo-cartao));
+  --color-yellow-200: color-mix(in oklab, #eab308 34%, var(--fundo-cartao));
+  --color-orange-50: color-mix(in oklab, #f97316 14%, var(--fundo-cartao));
+  --color-orange-100: color-mix(in oklab, #f97316 22%, var(--fundo-cartao));
+  --color-orange-200: color-mix(in oklab, #f97316 34%, var(--fundo-cartao));
+}
+
 .dark body {
-  background-color: #0f172a; /* slate-900, combina com os teus dark:bg-slate-800 nos cards */
+  background-color: var(--fundo-pagina);
+  color: var(--color-slate-800);
+}
+
+/* Cartões e superfícies brancas (o branco translúcido sobre cabeçalhos azuis fica igual) */
+.dark .bg-white,
+.dark .hover\:bg-white:hover,
+.dark .bg-white\/90,
+.dark .bg-white\/95 {
+  background-color: var(--fundo-cartao);
+}
+
+/* Os cinzentos escuros são usados como fundo de botões com texto branco:
+   com a inversão ficariam claros, por isso mantêm-se escuros */
+.dark .bg-slate-700,
+.dark .hover\:bg-slate-700:hover {
+  background-color: #334155;
+}
+.dark .bg-slate-800,
+.dark .hover\:bg-slate-800:hover,
+.dark .bg-zinc-900 {
+  background-color: #24324a;
+}
+.dark .bg-slate-900,
+.dark .hover\:bg-slate-900:hover {
+  background-color: #0f172a;
+}
+.dark .bg-slate-900\/40 {
+  background-color: rgb(2 6 23 / 0.6);
+}
+
+/* Texto azul da marca usado como link ou destaque sobre branco */
+.dark .text-\[\#18357a\],
+.dark .hover\:text-\[\#18357a\]:hover,
+.dark .text-\[\#1b365d\] {
+  color: #93c5fd;
+}
+
+/* Texto escuro das cores (links, selos): fica claro para ter contraste */
+.dark .text-blue-600,
+.dark .hover\:text-blue-600:hover,
+.dark .text-blue-700,
+.dark .hover\:text-blue-700:hover,
+.dark .text-blue-800,
+.dark .hover\:text-blue-800:hover,
+.dark .text-blue-900,
+.dark .hover\:text-blue-900:hover,
+.dark .text-blue-950,
+.dark .hover\:text-blue-950:hover {
+  color: #93c5fd;
+}
+
+.dark .text-sky-600,
+.dark .hover\:text-sky-600:hover,
+.dark .text-sky-700,
+.dark .hover\:text-sky-700:hover,
+.dark .text-sky-800,
+.dark .hover\:text-sky-800:hover,
+.dark .text-sky-900,
+.dark .hover\:text-sky-900:hover,
+.dark .text-sky-950,
+.dark .hover\:text-sky-950:hover {
+  color: #7dd3fc;
+}
+
+.dark .text-indigo-600,
+.dark .hover\:text-indigo-600:hover,
+.dark .text-indigo-700,
+.dark .hover\:text-indigo-700:hover,
+.dark .text-indigo-800,
+.dark .hover\:text-indigo-800:hover,
+.dark .text-indigo-900,
+.dark .hover\:text-indigo-900:hover,
+.dark .text-indigo-950,
+.dark .hover\:text-indigo-950:hover {
+  color: #a5b4fc;
+}
+
+.dark .text-violet-600,
+.dark .hover\:text-violet-600:hover,
+.dark .text-violet-700,
+.dark .hover\:text-violet-700:hover,
+.dark .text-violet-800,
+.dark .hover\:text-violet-800:hover,
+.dark .text-violet-900,
+.dark .hover\:text-violet-900:hover,
+.dark .text-violet-950,
+.dark .hover\:text-violet-950:hover {
+  color: #c4b5fd;
+}
+
+.dark .text-purple-600,
+.dark .hover\:text-purple-600:hover,
+.dark .text-purple-700,
+.dark .hover\:text-purple-700:hover,
+.dark .text-purple-800,
+.dark .hover\:text-purple-800:hover,
+.dark .text-purple-900,
+.dark .hover\:text-purple-900:hover,
+.dark .text-purple-950,
+.dark .hover\:text-purple-950:hover {
+  color: #d8b4fe;
+}
+
+.dark .text-emerald-600,
+.dark .hover\:text-emerald-600:hover,
+.dark .text-emerald-700,
+.dark .hover\:text-emerald-700:hover,
+.dark .text-emerald-800,
+.dark .hover\:text-emerald-800:hover,
+.dark .text-emerald-900,
+.dark .hover\:text-emerald-900:hover,
+.dark .text-emerald-950,
+.dark .hover\:text-emerald-950:hover {
+  color: #6ee7b7;
+}
+
+.dark .text-green-600,
+.dark .hover\:text-green-600:hover,
+.dark .text-green-700,
+.dark .hover\:text-green-700:hover,
+.dark .text-green-800,
+.dark .hover\:text-green-800:hover,
+.dark .text-green-900,
+.dark .hover\:text-green-900:hover,
+.dark .text-green-950,
+.dark .hover\:text-green-950:hover {
+  color: #86efac;
+}
+
+.dark .text-teal-600,
+.dark .hover\:text-teal-600:hover,
+.dark .text-teal-700,
+.dark .hover\:text-teal-700:hover,
+.dark .text-teal-800,
+.dark .hover\:text-teal-800:hover,
+.dark .text-teal-900,
+.dark .hover\:text-teal-900:hover,
+.dark .text-teal-950,
+.dark .hover\:text-teal-950:hover {
+  color: #5eead4;
+}
+
+.dark .text-rose-600,
+.dark .hover\:text-rose-600:hover,
+.dark .text-rose-700,
+.dark .hover\:text-rose-700:hover,
+.dark .text-rose-800,
+.dark .hover\:text-rose-800:hover,
+.dark .text-rose-900,
+.dark .hover\:text-rose-900:hover,
+.dark .text-rose-950,
+.dark .hover\:text-rose-950:hover {
+  color: #fda4af;
+}
+
+.dark .text-red-600,
+.dark .hover\:text-red-600:hover,
+.dark .text-red-700,
+.dark .hover\:text-red-700:hover,
+.dark .text-red-800,
+.dark .hover\:text-red-800:hover,
+.dark .text-red-900,
+.dark .hover\:text-red-900:hover,
+.dark .text-red-950,
+.dark .hover\:text-red-950:hover {
+  color: #fca5a5;
+}
+
+.dark .text-amber-600,
+.dark .hover\:text-amber-600:hover,
+.dark .text-amber-700,
+.dark .hover\:text-amber-700:hover,
+.dark .text-amber-800,
+.dark .hover\:text-amber-800:hover,
+.dark .text-amber-900,
+.dark .hover\:text-amber-900:hover,
+.dark .text-amber-950,
+.dark .hover\:text-amber-950:hover {
+  color: #fcd34d;
+}
+
+.dark .text-yellow-600,
+.dark .hover\:text-yellow-600:hover,
+.dark .text-yellow-700,
+.dark .hover\:text-yellow-700:hover,
+.dark .text-yellow-800,
+.dark .hover\:text-yellow-800:hover,
+.dark .text-yellow-900,
+.dark .hover\:text-yellow-900:hover,
+.dark .text-yellow-950,
+.dark .hover\:text-yellow-950:hover {
+  color: #fde047;
+}
+
+.dark .text-orange-600,
+.dark .hover\:text-orange-600:hover,
+.dark .text-orange-700,
+.dark .hover\:text-orange-700:hover,
+.dark .text-orange-800,
+.dark .hover\:text-orange-800:hover,
+.dark .text-orange-900,
+.dark .hover\:text-orange-900:hover,
+.dark .text-orange-950,
+.dark .hover\:text-orange-950:hover {
+  color: #fdba74;
+}
+
+/* Texto claro (tons 50-300) é usado sobre fundos azuis: sidebar, cabeçalhos e banners.
+   Com os remapeamentos acima ficaria escuro, por isso mantém a cor original. */
+.dark .text-blue-50,
+.dark .hover\:text-blue-50:hover {
+  color: #eff6ff;
+}
+
+.dark .text-blue-50\/70 {
+  color: color-mix(in srgb, #eff6ff 70%, transparent);
+}
+
+.dark .text-blue-50\/80 {
+  color: color-mix(in srgb, #eff6ff 80%, transparent);
+}
+
+.dark .text-blue-50\/90 {
+  color: color-mix(in srgb, #eff6ff 90%, transparent);
+}
+
+.dark .text-blue-100,
+.dark .hover\:text-blue-100:hover {
+  color: #dbeafe;
+}
+
+.dark .text-blue-100\/70 {
+  color: color-mix(in srgb, #dbeafe 70%, transparent);
+}
+
+.dark .text-blue-100\/80 {
+  color: color-mix(in srgb, #dbeafe 80%, transparent);
+}
+
+.dark .text-blue-100\/90 {
+  color: color-mix(in srgb, #dbeafe 90%, transparent);
+}
+
+.dark .text-blue-200,
+.dark .hover\:text-blue-200:hover {
+  color: #bfdbfe;
+}
+
+.dark .text-blue-200\/70 {
+  color: color-mix(in srgb, #bfdbfe 70%, transparent);
+}
+
+.dark .text-blue-200\/80 {
+  color: color-mix(in srgb, #bfdbfe 80%, transparent);
+}
+
+.dark .text-blue-200\/90 {
+  color: color-mix(in srgb, #bfdbfe 90%, transparent);
+}
+
+.dark .text-sky-50,
+.dark .hover\:text-sky-50:hover {
+  color: #f0f9ff;
+}
+
+.dark .text-sky-50\/70 {
+  color: color-mix(in srgb, #f0f9ff 70%, transparent);
+}
+
+.dark .text-sky-50\/80 {
+  color: color-mix(in srgb, #f0f9ff 80%, transparent);
+}
+
+.dark .text-sky-50\/90 {
+  color: color-mix(in srgb, #f0f9ff 90%, transparent);
+}
+
+.dark .text-sky-100,
+.dark .hover\:text-sky-100:hover {
+  color: #e0f2fe;
+}
+
+.dark .text-sky-100\/70 {
+  color: color-mix(in srgb, #e0f2fe 70%, transparent);
+}
+
+.dark .text-sky-100\/80 {
+  color: color-mix(in srgb, #e0f2fe 80%, transparent);
+}
+
+.dark .text-sky-100\/90 {
+  color: color-mix(in srgb, #e0f2fe 90%, transparent);
+}
+
+.dark .text-sky-200,
+.dark .hover\:text-sky-200:hover {
+  color: #bae6fd;
+}
+
+.dark .text-sky-200\/70 {
+  color: color-mix(in srgb, #bae6fd 70%, transparent);
+}
+
+.dark .text-sky-200\/80 {
+  color: color-mix(in srgb, #bae6fd 80%, transparent);
+}
+
+.dark .text-sky-200\/90 {
+  color: color-mix(in srgb, #bae6fd 90%, transparent);
+}
+
+.dark .text-indigo-50,
+.dark .hover\:text-indigo-50:hover {
+  color: #eef2ff;
+}
+
+.dark .text-indigo-50\/70 {
+  color: color-mix(in srgb, #eef2ff 70%, transparent);
+}
+
+.dark .text-indigo-50\/80 {
+  color: color-mix(in srgb, #eef2ff 80%, transparent);
+}
+
+.dark .text-indigo-50\/90 {
+  color: color-mix(in srgb, #eef2ff 90%, transparent);
+}
+
+.dark .text-indigo-100,
+.dark .hover\:text-indigo-100:hover {
+  color: #e0e7ff;
+}
+
+.dark .text-indigo-100\/70 {
+  color: color-mix(in srgb, #e0e7ff 70%, transparent);
+}
+
+.dark .text-indigo-100\/80 {
+  color: color-mix(in srgb, #e0e7ff 80%, transparent);
+}
+
+.dark .text-indigo-100\/90 {
+  color: color-mix(in srgb, #e0e7ff 90%, transparent);
+}
+
+.dark .text-indigo-200,
+.dark .hover\:text-indigo-200:hover {
+  color: #c7d2fe;
+}
+
+.dark .text-indigo-200\/70 {
+  color: color-mix(in srgb, #c7d2fe 70%, transparent);
+}
+
+.dark .text-indigo-200\/80 {
+  color: color-mix(in srgb, #c7d2fe 80%, transparent);
+}
+
+.dark .text-indigo-200\/90 {
+  color: color-mix(in srgb, #c7d2fe 90%, transparent);
+}
+
+.dark .text-violet-50,
+.dark .hover\:text-violet-50:hover {
+  color: #f5f3ff;
+}
+
+.dark .text-violet-50\/70 {
+  color: color-mix(in srgb, #f5f3ff 70%, transparent);
+}
+
+.dark .text-violet-50\/80 {
+  color: color-mix(in srgb, #f5f3ff 80%, transparent);
+}
+
+.dark .text-violet-50\/90 {
+  color: color-mix(in srgb, #f5f3ff 90%, transparent);
+}
+
+.dark .text-violet-100,
+.dark .hover\:text-violet-100:hover {
+  color: #ede9fe;
+}
+
+.dark .text-violet-100\/70 {
+  color: color-mix(in srgb, #ede9fe 70%, transparent);
+}
+
+.dark .text-violet-100\/80 {
+  color: color-mix(in srgb, #ede9fe 80%, transparent);
+}
+
+.dark .text-violet-100\/90 {
+  color: color-mix(in srgb, #ede9fe 90%, transparent);
+}
+
+.dark .text-violet-200,
+.dark .hover\:text-violet-200:hover {
+  color: #ddd6fe;
+}
+
+.dark .text-violet-200\/70 {
+  color: color-mix(in srgb, #ddd6fe 70%, transparent);
+}
+
+.dark .text-violet-200\/80 {
+  color: color-mix(in srgb, #ddd6fe 80%, transparent);
+}
+
+.dark .text-violet-200\/90 {
+  color: color-mix(in srgb, #ddd6fe 90%, transparent);
+}
+
+.dark .text-purple-50,
+.dark .hover\:text-purple-50:hover {
+  color: #faf5ff;
+}
+
+.dark .text-purple-50\/70 {
+  color: color-mix(in srgb, #faf5ff 70%, transparent);
+}
+
+.dark .text-purple-50\/80 {
+  color: color-mix(in srgb, #faf5ff 80%, transparent);
+}
+
+.dark .text-purple-50\/90 {
+  color: color-mix(in srgb, #faf5ff 90%, transparent);
+}
+
+.dark .text-purple-100,
+.dark .hover\:text-purple-100:hover {
+  color: #f3e8ff;
+}
+
+.dark .text-purple-100\/70 {
+  color: color-mix(in srgb, #f3e8ff 70%, transparent);
+}
+
+.dark .text-purple-100\/80 {
+  color: color-mix(in srgb, #f3e8ff 80%, transparent);
+}
+
+.dark .text-purple-100\/90 {
+  color: color-mix(in srgb, #f3e8ff 90%, transparent);
+}
+
+.dark .text-purple-200,
+.dark .hover\:text-purple-200:hover {
+  color: #e9d5ff;
+}
+
+.dark .text-purple-200\/70 {
+  color: color-mix(in srgb, #e9d5ff 70%, transparent);
+}
+
+.dark .text-purple-200\/80 {
+  color: color-mix(in srgb, #e9d5ff 80%, transparent);
+}
+
+.dark .text-purple-200\/90 {
+  color: color-mix(in srgb, #e9d5ff 90%, transparent);
+}
+
+.dark .text-emerald-50,
+.dark .hover\:text-emerald-50:hover {
+  color: #ecfdf5;
+}
+
+.dark .text-emerald-50\/70 {
+  color: color-mix(in srgb, #ecfdf5 70%, transparent);
+}
+
+.dark .text-emerald-50\/80 {
+  color: color-mix(in srgb, #ecfdf5 80%, transparent);
+}
+
+.dark .text-emerald-50\/90 {
+  color: color-mix(in srgb, #ecfdf5 90%, transparent);
+}
+
+.dark .text-emerald-100,
+.dark .hover\:text-emerald-100:hover {
+  color: #d1fae5;
+}
+
+.dark .text-emerald-100\/70 {
+  color: color-mix(in srgb, #d1fae5 70%, transparent);
+}
+
+.dark .text-emerald-100\/80 {
+  color: color-mix(in srgb, #d1fae5 80%, transparent);
+}
+
+.dark .text-emerald-100\/90 {
+  color: color-mix(in srgb, #d1fae5 90%, transparent);
+}
+
+.dark .text-emerald-200,
+.dark .hover\:text-emerald-200:hover {
+  color: #a7f3d0;
+}
+
+.dark .text-emerald-200\/70 {
+  color: color-mix(in srgb, #a7f3d0 70%, transparent);
+}
+
+.dark .text-emerald-200\/80 {
+  color: color-mix(in srgb, #a7f3d0 80%, transparent);
+}
+
+.dark .text-emerald-200\/90 {
+  color: color-mix(in srgb, #a7f3d0 90%, transparent);
+}
+
+.dark .text-green-50,
+.dark .hover\:text-green-50:hover {
+  color: #f0fdf4;
+}
+
+.dark .text-green-50\/70 {
+  color: color-mix(in srgb, #f0fdf4 70%, transparent);
+}
+
+.dark .text-green-50\/80 {
+  color: color-mix(in srgb, #f0fdf4 80%, transparent);
+}
+
+.dark .text-green-50\/90 {
+  color: color-mix(in srgb, #f0fdf4 90%, transparent);
+}
+
+.dark .text-green-100,
+.dark .hover\:text-green-100:hover {
+  color: #dcfce7;
+}
+
+.dark .text-green-100\/70 {
+  color: color-mix(in srgb, #dcfce7 70%, transparent);
+}
+
+.dark .text-green-100\/80 {
+  color: color-mix(in srgb, #dcfce7 80%, transparent);
+}
+
+.dark .text-green-100\/90 {
+  color: color-mix(in srgb, #dcfce7 90%, transparent);
+}
+
+.dark .text-green-200,
+.dark .hover\:text-green-200:hover {
+  color: #bbf7d0;
+}
+
+.dark .text-green-200\/70 {
+  color: color-mix(in srgb, #bbf7d0 70%, transparent);
+}
+
+.dark .text-green-200\/80 {
+  color: color-mix(in srgb, #bbf7d0 80%, transparent);
+}
+
+.dark .text-green-200\/90 {
+  color: color-mix(in srgb, #bbf7d0 90%, transparent);
+}
+
+.dark .text-teal-50,
+.dark .hover\:text-teal-50:hover {
+  color: #f0fdfa;
+}
+
+.dark .text-teal-50\/70 {
+  color: color-mix(in srgb, #f0fdfa 70%, transparent);
+}
+
+.dark .text-teal-50\/80 {
+  color: color-mix(in srgb, #f0fdfa 80%, transparent);
+}
+
+.dark .text-teal-50\/90 {
+  color: color-mix(in srgb, #f0fdfa 90%, transparent);
+}
+
+.dark .text-teal-100,
+.dark .hover\:text-teal-100:hover {
+  color: #ccfbf1;
+}
+
+.dark .text-teal-100\/70 {
+  color: color-mix(in srgb, #ccfbf1 70%, transparent);
+}
+
+.dark .text-teal-100\/80 {
+  color: color-mix(in srgb, #ccfbf1 80%, transparent);
+}
+
+.dark .text-teal-100\/90 {
+  color: color-mix(in srgb, #ccfbf1 90%, transparent);
+}
+
+.dark .text-teal-200,
+.dark .hover\:text-teal-200:hover {
+  color: #99f6e4;
+}
+
+.dark .text-teal-200\/70 {
+  color: color-mix(in srgb, #99f6e4 70%, transparent);
+}
+
+.dark .text-teal-200\/80 {
+  color: color-mix(in srgb, #99f6e4 80%, transparent);
+}
+
+.dark .text-teal-200\/90 {
+  color: color-mix(in srgb, #99f6e4 90%, transparent);
+}
+
+.dark .text-rose-50,
+.dark .hover\:text-rose-50:hover {
+  color: #fff1f2;
+}
+
+.dark .text-rose-50\/70 {
+  color: color-mix(in srgb, #fff1f2 70%, transparent);
+}
+
+.dark .text-rose-50\/80 {
+  color: color-mix(in srgb, #fff1f2 80%, transparent);
+}
+
+.dark .text-rose-50\/90 {
+  color: color-mix(in srgb, #fff1f2 90%, transparent);
+}
+
+.dark .text-rose-100,
+.dark .hover\:text-rose-100:hover {
+  color: #ffe4e6;
+}
+
+.dark .text-rose-100\/70 {
+  color: color-mix(in srgb, #ffe4e6 70%, transparent);
+}
+
+.dark .text-rose-100\/80 {
+  color: color-mix(in srgb, #ffe4e6 80%, transparent);
+}
+
+.dark .text-rose-100\/90 {
+  color: color-mix(in srgb, #ffe4e6 90%, transparent);
+}
+
+.dark .text-rose-200,
+.dark .hover\:text-rose-200:hover {
+  color: #fecdd3;
+}
+
+.dark .text-rose-200\/70 {
+  color: color-mix(in srgb, #fecdd3 70%, transparent);
+}
+
+.dark .text-rose-200\/80 {
+  color: color-mix(in srgb, #fecdd3 80%, transparent);
+}
+
+.dark .text-rose-200\/90 {
+  color: color-mix(in srgb, #fecdd3 90%, transparent);
+}
+
+.dark .text-red-50,
+.dark .hover\:text-red-50:hover {
+  color: #fef2f2;
+}
+
+.dark .text-red-50\/70 {
+  color: color-mix(in srgb, #fef2f2 70%, transparent);
+}
+
+.dark .text-red-50\/80 {
+  color: color-mix(in srgb, #fef2f2 80%, transparent);
+}
+
+.dark .text-red-50\/90 {
+  color: color-mix(in srgb, #fef2f2 90%, transparent);
+}
+
+.dark .text-red-100,
+.dark .hover\:text-red-100:hover {
+  color: #fee2e2;
+}
+
+.dark .text-red-100\/70 {
+  color: color-mix(in srgb, #fee2e2 70%, transparent);
+}
+
+.dark .text-red-100\/80 {
+  color: color-mix(in srgb, #fee2e2 80%, transparent);
+}
+
+.dark .text-red-100\/90 {
+  color: color-mix(in srgb, #fee2e2 90%, transparent);
+}
+
+.dark .text-red-200,
+.dark .hover\:text-red-200:hover {
+  color: #fecaca;
+}
+
+.dark .text-red-200\/70 {
+  color: color-mix(in srgb, #fecaca 70%, transparent);
+}
+
+.dark .text-red-200\/80 {
+  color: color-mix(in srgb, #fecaca 80%, transparent);
+}
+
+.dark .text-red-200\/90 {
+  color: color-mix(in srgb, #fecaca 90%, transparent);
+}
+
+.dark .text-amber-50,
+.dark .hover\:text-amber-50:hover {
+  color: #fffbeb;
+}
+
+.dark .text-amber-50\/70 {
+  color: color-mix(in srgb, #fffbeb 70%, transparent);
+}
+
+.dark .text-amber-50\/80 {
+  color: color-mix(in srgb, #fffbeb 80%, transparent);
+}
+
+.dark .text-amber-50\/90 {
+  color: color-mix(in srgb, #fffbeb 90%, transparent);
+}
+
+.dark .text-amber-100,
+.dark .hover\:text-amber-100:hover {
+  color: #fef3c7;
+}
+
+.dark .text-amber-100\/70 {
+  color: color-mix(in srgb, #fef3c7 70%, transparent);
+}
+
+.dark .text-amber-100\/80 {
+  color: color-mix(in srgb, #fef3c7 80%, transparent);
+}
+
+.dark .text-amber-100\/90 {
+  color: color-mix(in srgb, #fef3c7 90%, transparent);
+}
+
+.dark .text-amber-200,
+.dark .hover\:text-amber-200:hover {
+  color: #fde68a;
+}
+
+.dark .text-amber-200\/70 {
+  color: color-mix(in srgb, #fde68a 70%, transparent);
+}
+
+.dark .text-amber-200\/80 {
+  color: color-mix(in srgb, #fde68a 80%, transparent);
+}
+
+.dark .text-amber-200\/90 {
+  color: color-mix(in srgb, #fde68a 90%, transparent);
+}
+
+.dark .text-yellow-50,
+.dark .hover\:text-yellow-50:hover {
+  color: #fefce8;
+}
+
+.dark .text-yellow-50\/70 {
+  color: color-mix(in srgb, #fefce8 70%, transparent);
+}
+
+.dark .text-yellow-50\/80 {
+  color: color-mix(in srgb, #fefce8 80%, transparent);
+}
+
+.dark .text-yellow-50\/90 {
+  color: color-mix(in srgb, #fefce8 90%, transparent);
+}
+
+.dark .text-yellow-100,
+.dark .hover\:text-yellow-100:hover {
+  color: #fef9c3;
+}
+
+.dark .text-yellow-100\/70 {
+  color: color-mix(in srgb, #fef9c3 70%, transparent);
+}
+
+.dark .text-yellow-100\/80 {
+  color: color-mix(in srgb, #fef9c3 80%, transparent);
+}
+
+.dark .text-yellow-100\/90 {
+  color: color-mix(in srgb, #fef9c3 90%, transparent);
+}
+
+.dark .text-yellow-200,
+.dark .hover\:text-yellow-200:hover {
+  color: #fef08a;
+}
+
+.dark .text-yellow-200\/70 {
+  color: color-mix(in srgb, #fef08a 70%, transparent);
+}
+
+.dark .text-yellow-200\/80 {
+  color: color-mix(in srgb, #fef08a 80%, transparent);
+}
+
+.dark .text-yellow-200\/90 {
+  color: color-mix(in srgb, #fef08a 90%, transparent);
+}
+
+.dark .text-orange-50,
+.dark .hover\:text-orange-50:hover {
+  color: #fff7ed;
+}
+
+.dark .text-orange-50\/70 {
+  color: color-mix(in srgb, #fff7ed 70%, transparent);
+}
+
+.dark .text-orange-50\/80 {
+  color: color-mix(in srgb, #fff7ed 80%, transparent);
+}
+
+.dark .text-orange-50\/90 {
+  color: color-mix(in srgb, #fff7ed 90%, transparent);
+}
+
+.dark .text-orange-100,
+.dark .hover\:text-orange-100:hover {
+  color: #ffedd5;
+}
+
+.dark .text-orange-100\/70 {
+  color: color-mix(in srgb, #ffedd5 70%, transparent);
+}
+
+.dark .text-orange-100\/80 {
+  color: color-mix(in srgb, #ffedd5 80%, transparent);
+}
+
+.dark .text-orange-100\/90 {
+  color: color-mix(in srgb, #ffedd5 90%, transparent);
+}
+
+.dark .text-orange-200,
+.dark .hover\:text-orange-200:hover {
+  color: #fed7aa;
+}
+
+.dark .text-orange-200\/70 {
+  color: color-mix(in srgb, #fed7aa 70%, transparent);
+}
+
+.dark .text-orange-200\/80 {
+  color: color-mix(in srgb, #fed7aa 80%, transparent);
+}
+
+.dark .text-orange-200\/90 {
+  color: color-mix(in srgb, #fed7aa 90%, transparent);
+}
+
+.dark .text-slate-50,
+.dark .hover\:text-slate-50:hover {
+  color: #f8fafc;
+}
+
+.dark .text-slate-50\/70 {
+  color: color-mix(in srgb, #f8fafc 70%, transparent);
+}
+
+.dark .text-slate-50\/80 {
+  color: color-mix(in srgb, #f8fafc 80%, transparent);
+}
+
+.dark .text-slate-50\/90 {
+  color: color-mix(in srgb, #f8fafc 90%, transparent);
+}
+
+.dark .text-slate-100,
+.dark .hover\:text-slate-100:hover {
+  color: #f1f5f9;
+}
+
+.dark .text-slate-100\/70 {
+  color: color-mix(in srgb, #f1f5f9 70%, transparent);
+}
+
+.dark .text-slate-100\/80 {
+  color: color-mix(in srgb, #f1f5f9 80%, transparent);
+}
+
+.dark .text-slate-100\/90 {
+  color: color-mix(in srgb, #f1f5f9 90%, transparent);
+}
+
+.dark .text-slate-200,
+.dark .hover\:text-slate-200:hover {
+  color: #e2e8f0;
+}
+
+.dark .text-slate-200\/70 {
+  color: color-mix(in srgb, #e2e8f0 70%, transparent);
+}
+
+.dark .text-slate-200\/80 {
+  color: color-mix(in srgb, #e2e8f0 80%, transparent);
+}
+
+.dark .text-slate-200\/90 {
+  color: color-mix(in srgb, #e2e8f0 90%, transparent);
+}
+
+.dark .text-slate-300,
+.dark .hover\:text-slate-300:hover {
+  color: #cbd5e1;
+}
+
+.dark .text-slate-300\/70 {
+  color: color-mix(in srgb, #cbd5e1 70%, transparent);
+}
+
+.dark .text-slate-300\/80 {
+  color: color-mix(in srgb, #cbd5e1 80%, transparent);
+}
+
+.dark .text-slate-300\/90 {
+  color: color-mix(in srgb, #cbd5e1 90%, transparent);
+}
+
+.dark .text-gray-50,
+.dark .hover\:text-gray-50:hover {
+  color: #f8fafc;
+}
+
+.dark .text-gray-50\/70 {
+  color: color-mix(in srgb, #f8fafc 70%, transparent);
+}
+
+.dark .text-gray-50\/80 {
+  color: color-mix(in srgb, #f8fafc 80%, transparent);
+}
+
+.dark .text-gray-50\/90 {
+  color: color-mix(in srgb, #f8fafc 90%, transparent);
+}
+
+.dark .text-gray-100,
+.dark .hover\:text-gray-100:hover {
+  color: #f1f5f9;
+}
+
+.dark .text-gray-100\/70 {
+  color: color-mix(in srgb, #f1f5f9 70%, transparent);
+}
+
+.dark .text-gray-100\/80 {
+  color: color-mix(in srgb, #f1f5f9 80%, transparent);
+}
+
+.dark .text-gray-100\/90 {
+  color: color-mix(in srgb, #f1f5f9 90%, transparent);
+}
+
+.dark .text-gray-200,
+.dark .hover\:text-gray-200:hover {
+  color: #e2e8f0;
+}
+
+.dark .text-gray-200\/70 {
+  color: color-mix(in srgb, #e2e8f0 70%, transparent);
+}
+
+.dark .text-gray-200\/80 {
+  color: color-mix(in srgb, #e2e8f0 80%, transparent);
+}
+
+.dark .text-gray-200\/90 {
+  color: color-mix(in srgb, #e2e8f0 90%, transparent);
+}
+
+.dark .text-gray-300,
+.dark .hover\:text-gray-300:hover {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-300\/70 {
+  color: color-mix(in srgb, #cbd5e1 70%, transparent);
+}
+
+.dark .text-gray-300\/80 {
+  color: color-mix(in srgb, #cbd5e1 80%, transparent);
+}
+
+.dark .text-gray-300\/90 {
+  color: color-mix(in srgb, #cbd5e1 90%, transparent);
+}
+
+.dark .text-zinc-50,
+.dark .hover\:text-zinc-50:hover {
+  color: #f8fafc;
+}
+
+.dark .text-zinc-50\/70 {
+  color: color-mix(in srgb, #f8fafc 70%, transparent);
+}
+
+.dark .text-zinc-50\/80 {
+  color: color-mix(in srgb, #f8fafc 80%, transparent);
+}
+
+.dark .text-zinc-50\/90 {
+  color: color-mix(in srgb, #f8fafc 90%, transparent);
+}
+
+.dark .text-zinc-100,
+.dark .hover\:text-zinc-100:hover {
+  color: #f1f5f9;
+}
+
+.dark .text-zinc-100\/70 {
+  color: color-mix(in srgb, #f1f5f9 70%, transparent);
+}
+
+.dark .text-zinc-100\/80 {
+  color: color-mix(in srgb, #f1f5f9 80%, transparent);
+}
+
+.dark .text-zinc-100\/90 {
+  color: color-mix(in srgb, #f1f5f9 90%, transparent);
+}
+
+.dark .text-zinc-200,
+.dark .hover\:text-zinc-200:hover {
+  color: #e2e8f0;
+}
+
+.dark .text-zinc-200\/70 {
+  color: color-mix(in srgb, #e2e8f0 70%, transparent);
+}
+
+.dark .text-zinc-200\/80 {
+  color: color-mix(in srgb, #e2e8f0 80%, transparent);
+}
+
+.dark .text-zinc-200\/90 {
+  color: color-mix(in srgb, #e2e8f0 90%, transparent);
+}
+
+.dark .text-zinc-300,
+.dark .hover\:text-zinc-300:hover {
+  color: #cbd5e1;
+}
+
+.dark .text-zinc-300\/70 {
+  color: color-mix(in srgb, #cbd5e1 70%, transparent);
+}
+
+.dark .text-zinc-300\/80 {
+  color: color-mix(in srgb, #cbd5e1 80%, transparent);
+}
+
+.dark .text-zinc-300\/90 {
+  color: color-mix(in srgb, #cbd5e1 90%, transparent);
+}
+
+/* Topologia (@xyflow) */
+.dark .react-flow {
+  --xy-background-color: var(--fundo-pagina);
+  --xy-node-background-color: var(--fundo-cartao);
+  --xy-node-color: var(--color-slate-800);
+  --xy-edge-stroke: #64748b;
+  --xy-controls-button-background-color: var(--fundo-cartao);
+  --xy-controls-button-color: var(--color-slate-800);
+  --xy-minimap-background-color: var(--fundo-cartao);
 }

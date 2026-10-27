@@ -22,6 +22,7 @@ import {
   caminhosInfraestrutura,
   rotuloAmbiente,
 } from "../constantes";
+import SelectPesquisavel from "../../../../components/selectPesquisavel";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
@@ -134,25 +135,20 @@ export default function CredencialPage() {
 
       <form
         onSubmit={handleSalvar}
-        className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5"
+        className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-5"
       >
         <h1 className="font-bold text-slate-800 text-lg">
           {emEdicao ? "Editar credencial" : "Nova credencial"} — Backend, {rotuloAmbiente(ambiente)}
         </h1>
 
         <div className="space-y-1.5">
-          <label className={CLASSE_ROTULO}>Tipo</label>
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value as TipoCredencial)}
-            className={CLASSE_CAMPO}
-          >
-            {TIPOS_CREDENCIAL.map((t) => (
-              <option key={t.valor} value={t.valor}>
-                {t.label}
-              </option>
-            ))}
-          </select>
+          <label htmlFor="credencial-tipo" className={CLASSE_ROTULO}>Tipo</label>
+          <SelectPesquisavel
+            id="credencial-tipo"
+            valor={tipo}
+            onChange={(v) => setTipo(v as TipoCredencial)}
+            opcoes={TIPOS_CREDENCIAL.map((t) => ({ valor: t.valor, label: t.label }))}
+          />
         </div>
 
         <div className="space-y-1.5">

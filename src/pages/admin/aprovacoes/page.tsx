@@ -8,6 +8,7 @@ import DocumentoRow from "../../../components/documentoRow";
 import DocumentoCard from "../../../components/documentoCard";
 import ModalMotivoRejeicao from "./modalMotivoRejeicao";
 import { toast } from "sonner";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 export default function AprovacoesPage() {
   const { documentos, categorias, loading, erro, recarregar, alterarEstado } =
@@ -85,12 +86,12 @@ export default function AprovacoesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#18357a] text-white p-6 md:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">
             Gestão de Submissões
           </p>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Painel de Aprovações
           </h1>
           <p className="text-sm text-blue-100/80 mt-1">
@@ -98,7 +99,7 @@ export default function AprovacoesPage() {
             colaboradores
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-4 py-2.5 rounded-xl backdrop-blur-sm self-start md:self-auto">
+        <div className="flex items-center gap-2 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-4 py-2.5 rounded-xl backdrop-blur-sm self-start md:self-auto shrink-0">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
           <span className="text-xs font-bold">
             {totalPendentes} Solicitações Pendentes
@@ -114,35 +115,38 @@ export default function AprovacoesPage() {
             placeholder="Pesquisar por documento ou colaborador..."
           />
         </div>
-        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <select
-            value={statusFiltro}
-            onChange={(e) => setStatusFiltro(e.target.value)}
-            className="px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-900/20"
-          >
-            <option value="PENDENTE">Apenas Pendentes</option>
-            <option value="APROVADO">Apenas Aprovados</option>
-            <option value="REJEITADO">Apenas Rejeitados</option>
-            <option value="Todos">Todos os Status</option>
-          </select>
-          <select
-            value={categoriaFiltro}
-            onChange={(e) => setCategoriaFiltro(e.target.value)}
-            className="px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-900/20"
-          >
-            <option value="Todas">Todas as Categorias</option>
-            {categorias.map((cat) => (
-              <option key={cat.id} value={cat.nome}>
-                {cat.nome}
-              </option>
-            ))}
-          </select>
-          <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full md:flex md:flex-wrap md:items-center md:gap-3 md:w-auto">
+          <SelectPesquisavel
+            aria-label="Filtrar por estado"
+            className="w-full md:w-48"
+            valor={statusFiltro}
+            onChange={setStatusFiltro}
+            opcoes={[
+              { valor: "PENDENTE", label: "Apenas Pendentes" },
+              { valor: "APROVADO", label: "Apenas Aprovados" },
+              { valor: "REJEITADO", label: "Apenas Rejeitados" },
+              { valor: "Todos", label: "Todos os Status" },
+            ]}
+          />
+          <SelectPesquisavel
+            aria-label="Filtrar por categoria"
+            className="w-full md:w-56"
+            valor={categoriaFiltro}
+            onChange={setCategoriaFiltro}
+            opcoes={[
+              { valor: "Todas", label: "Todas as Categorias" },
+              ...categorias.map((cat) => ({ valor: cat.nome, label: cat.nome })),
+            ]}
+          />
+          <div className="hidden xl:block">
+            <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          </div>
         </div>
       </div>
 
-      {modoExibicao === "tabela" ? (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* A tabela só aparece a partir de xl (com a barra lateral não cabe antes); no telemóvel usam-se sempre os cartões */}
+      {modoExibicao === "tabela" && (
+        <div className="hidden xl:block bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-400 uppercase text-xs border-b border-slate-100">
@@ -166,7 +170,7 @@ export default function AprovacoesPage() {
                         <>
                           <Link
                             to={`/dashboard/aprovacoes/details/${doc.id}`}
-                            className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60 inline-flex"
+                            className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60 inline-flex"
                             title="Ver detalhes"
                           >
                             <IconVer />
@@ -175,13 +179,13 @@ export default function AprovacoesPage() {
                             <>
                               <button
                                 onClick={() => handleAprovar(doc.id)}
-                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                                className="px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
                               >
                                 Aprovar
                               </button>
                               <button
                                 onClick={() => setIdParaRejeitar(doc.id)}
-                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
+                                className="px-3 py-2 md:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
                               >
                                 Rejeitar
                               </button>
@@ -206,53 +210,52 @@ export default function AprovacoesPage() {
             </table>
           </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documentosFiltrados.length > 0 ? (
-            documentosFiltrados.map((doc) => (
-              <DocumentoCard
-                key={doc.id}
-                doc={doc}
-                acoes={
-                  <>
-                    <Link
-                      to={`/dashboard/aprovacoes/details/${doc.id}`}
-                      className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                      title="Ver detalhes"
-                    >
-                      <IconVer />
-                    </Link>
-                    {doc.estado === "PENDENTE" ? (
-                      <>
-                        <button
-                          onClick={() => handleAprovar(doc.id)}
-                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
-                        >
-                          Aprovar
-                        </button>
-                        <button
-                          onClick={() => setIdParaRejeitar(doc.id)}
-                          className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
-                        >
-                          Rejeitar
-                        </button>
-                      </>
-                    ) : (
-                      <span className="text-xs text-slate-400 italic pl-2">
-                        Concluído
-                      </span>
-                    )}
-                  </>
-                }
-              />
-            ))
-          ) : (
-            <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-              Nenhuma solicitação encontrada para o filtro selecionado.
-            </div>
-          )}
-        </div>
       )}
+      <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 ${modoExibicao === "tabela" ? "xl:hidden" : ""}`}>
+        {documentosFiltrados.length > 0 ? (
+          documentosFiltrados.map((doc) => (
+            <DocumentoCard
+              key={doc.id}
+              doc={doc}
+              acoes={
+                <>
+                  <Link
+                    to={`/dashboard/aprovacoes/details/${doc.id}`}
+                    className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+                    title="Ver detalhes"
+                  >
+                    <IconVer />
+                  </Link>
+                  {doc.estado === "PENDENTE" ? (
+                    <>
+                      <button
+                        onClick={() => handleAprovar(doc.id)}
+                        className="px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                      >
+                        Aprovar
+                      </button>
+                      <button
+                        onClick={() => setIdParaRejeitar(doc.id)}
+                        className="px-3 py-2 md:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
+                      >
+                        Rejeitar
+                      </button>
+                    </>
+                  ) : (
+                    <span className="text-xs text-slate-400 italic pl-2">
+                      Concluído
+                    </span>
+                  )}
+                </>
+              }
+            />
+          ))
+        ) : (
+          <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
+            Nenhuma solicitação encontrada para o filtro selecionado.
+          </div>
+        )}
+      </div>
 
       <ModalMotivoRejeicao
         aberto={idParaRejeitar !== null}

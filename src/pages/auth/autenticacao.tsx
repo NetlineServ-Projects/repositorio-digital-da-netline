@@ -9,14 +9,20 @@ import {
   IconOlhoFechado,
   IconEmail,
 } from "../../components/icons";
-import { API_BASE } from "../../utils/api";
+import { API_BASE, TIMEOUT_PADRAO_MS, erroDeLigacao } from "../../utils/api";
+import { aplicarTema } from "../../utils/tema";
 
 export default function Autenticacao() {
   const { t, i18n } = useTranslation();
   const { fazerLogin } = useUsuario();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+  // fetchComToken redireciona para aqui com ?sessao=expirada quando o token deixa de ser válido
+  const [erro, setErro] = useState(() =>
+    new URLSearchParams(window.location.search).get("sessao") === "expirada"
+      ? t("auth.sessaoExpirada")
+      : "",
+  );
   const [carregando, setCarregando] = useState(false);
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
@@ -34,6 +40,7 @@ export default function Autenticacao() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
+        signal: AbortSignal.timeout(TIMEOUT_PADRAO_MS),
       });
 
       const corpo = await resposta.json();
@@ -43,11 +50,13 @@ export default function Autenticacao() {
 
       localStorage.setItem("token_sistema", token);
       localStorage.setItem("usuario_logado", JSON.stringify(user));
+      aplicarTema(Boolean(user.temaEscuro));
       fazerLogin({ name: user.name || user.nome, perfil: user.perfil });
 
       window.location.href = "/dashboard";
     } catch (err: any) {
-      setErro(err.message || t("auth.erroPadrao"));
+      const erro = erroDeLigacao(err) as Error;
+      setErro(erro.message || t("auth.erroPadrao"));
     } finally {
       setCarregando(false);
     }

@@ -68,7 +68,7 @@ export default function DocumentoDetalhesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
 
-        <div className="lg:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center h-[75vh] min-h-125">
+        <div className="lg:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center h-[65vh] sm:h-[75vh] min-h-80 sm:min-h-125">
           <DocumentoViewerFactory
             extensao={dados.extensao}
             url={dados.urlFicheiro}
@@ -77,17 +77,17 @@ export default function DocumentoDetalhesPage() {
           />
         </div>
 
-        <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-5 h-fit">
+        <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-xl border border-slate-100 shadow-sm space-y-5 h-fit">
           <div className="flex items-start gap-3">
             <span className="p-2.5 bg-blue-50 text-[#18357a] rounded-lg text-xs font-extrabold uppercase border border-blue-100/50 shrink-0">
               {dados.extensao}
             </span>
-            <div className="space-y-1">
-              <h1 className="font-bold text-slate-800 text-lg leading-snug">
+            <div className="space-y-1 min-w-0">
+              <h1 className="font-bold text-slate-800 text-lg leading-snug wrap-break-word">
                 {dados.nomeExibicao}
               </h1>
               {documento.descricao && (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-400 wrap-break-word">
                   {documento.descricao}
                 </p>
               )}
@@ -98,7 +98,7 @@ export default function DocumentoDetalhesPage() {
             <StatusBadge estado={documento.estado} />
           </div>
 
-          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 text-sm border-t border-slate-100 pt-4">
+          <dl className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4 text-sm border-t border-slate-100 pt-4">
             <div>
               <dt className="text-slate-400 text-xs uppercase font-semibold">{t("documentos.detalhes.categoria")}</dt>
               <dd className="text-slate-700 mt-0.5 font-medium wrap-break-word">

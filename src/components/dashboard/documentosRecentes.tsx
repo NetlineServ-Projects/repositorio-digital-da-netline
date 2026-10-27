@@ -16,8 +16,11 @@ const corEstado: Record<string, string> = {
 export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: DocumentosRecentesProps) {
   const { t, i18n } = useTranslation();
 
+  const formatarData = (data?: string) =>
+    data ? new Date(data).toLocaleDateString(i18n.language === "en" ? "en-GB" : "pt-PT") : "-";
+
   return (
-    <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+    <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-bold text-slate-800">{t("dashboard.documentosRecentes.titulo")}</h3>
         <button onClick={onVerTodos} className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer">
@@ -25,7 +28,35 @@ export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: 
         </button>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Telemóvel: lista empilhada em vez da tabela */}
+      <ul className="xl:hidden divide-y divide-slate-100">
+        {documentos.length > 0 ? (
+          documentos.map((doc) => {
+            const estado = doc.estado || "APROVADO";
+            return (
+              <li key={doc.id} className="py-3 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-800 truncate" title={doc.titulo}>
+                    {doc.titulo || doc.nomeArquivo || t("dashboard.documentosRecentes.semNome")}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    {doc.categoria?.nome || t("dashboard.documentosRecentes.geral")} · {formatarData(doc.dataSubmissao)}
+                  </p>
+                </div>
+                {ehAdmin && (
+                  <span className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-semibold ${corEstado[estado]}`}>
+                    {t(`comum.status.${estado}`)}
+                  </span>
+                )}
+              </li>
+            );
+          })
+        ) : (
+          <li className="text-center py-6 text-slate-400 text-xs">{t("dashboard.documentosRecentes.nenhumDocumento")}</li>
+        )}
+      </ul>
+
+      <div className="hidden xl:block overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-400 uppercase text-xs">
             <tr>
@@ -46,9 +77,7 @@ export default function DocumentosRecentes({ documentos, onVerTodos, ehAdmin }: 
                     </td>
                     <td className="py-3 px-4">{doc.categoria?.nome || t("dashboard.documentosRecentes.geral")}</td>
                     <td className="py-3 px-4 text-xs">
-                      {doc.dataSubmissao
-                        ? new Date(doc.dataSubmissao).toLocaleDateString(i18n.language === "en" ? "en-GB" : "pt-PT")
-                        : "-"}
+                      {formatarData(doc.dataSubmissao)}
                     </td>
                     {ehAdmin && (
                       <td className="py-3 px-4">

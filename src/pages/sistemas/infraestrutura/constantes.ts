@@ -1,8 +1,7 @@
-import {
-  TIPOS_DNS,
-  type TipoAmbiente,
-  type TipoCredencial,
-  type TipoDns,
+import type {
+  TipoAmbiente,
+  TipoCredencial,
+  TipoDns,
 } from "../../../hooks/useSistemasData";
 
 // Classes partilhadas pelos formulários
@@ -38,18 +37,12 @@ export const rotuloTipoCredencial = (tipo: TipoCredencial) =>
 
 // ─── Subdomínio ──────────────────────────────────────────────────────────────
 
-// A e AAAA usam o IP do servidor; os restantes tipos usam o campo "destino"
+// A e AAAA apontam para o IP de um servidor; os restantes tipos usam o campo "destino"
 export const TIPOS_DNS_COM_SERVIDOR: TipoDns[] = ["A", "AAAA"];
 export const TIPO_DNS_PADRAO: TipoDns = "CNAME";
 
-export const registoUsaServidor = (tipoDns: TipoDns, temServidor: boolean) =>
-  temServidor && TIPOS_DNS_COM_SERVIDOR.includes(tipoDns);
-
-// Sem servidor, A e AAAA não se aplicam
-export const tiposDnsDisponiveis = (temServidor: boolean): readonly TipoDns[] =>
-  temServidor
-    ? TIPOS_DNS
-    : TIPOS_DNS.filter((t) => !TIPOS_DNS_COM_SERVIDOR.includes(t));
+export const registoUsaServidor = (tipoDns: TipoDns) =>
+  TIPOS_DNS_COM_SERVIDOR.includes(tipoDns);
 
 export function montarEndereco(nome: string, dominio?: string): string {
   const prefixo = nome.trim().toLowerCase();

@@ -1,11 +1,12 @@
-import type { KeyboardEvent, MouseEvent } from "react";
-import AcoesItem from "../../../components/plataformas/acoesItem";
+import type { ComponentType, KeyboardEvent } from "react";
 import EstadoVazio from "../../../components/plataformas/estadoVazio";
-import type { ComponenteIcone } from "../../../components/plataformas/botaoAba";
+import LogotipoPlataforma from "../../../components/plataformas/logotipoPlataforma";
 import {
-  IconImagem,
-  IconDatabase,
   IconDominio,
+  IconImagem,
+  IconServer,
+  IconSetaDireita,
+  IconSistemas,
 } from "../../../components/icons";
 import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
 import type {
@@ -17,82 +18,53 @@ import type {
 } from "../../../types/plataforma";
 
 /* -------------------------------------------------------------------------- */
-/*  Configuração por tipo                                                     */
-/*  Cada tipo define o seu ícone e as métricas que fazem sentido mostrar.     */
-/*                                                                            */
+/*  O número que cada tipo mostra no cartão (um só, para o cartão ficar leve)  */
 /*  Tipado com Record<TipoPlataforma, ...>: se um dia adicionar um tipo novo, */
 /*  o TypeScript obriga a configurá-lo aqui.                                  */
 /* -------------------------------------------------------------------------- */
 
-type Metrica = "servidores" | "dominios" | "imagens";
+type Metrica = "servidores" | "dominios" | "imagens" | "sistemas";
 
-interface ConfigTipo {
-  Icone: ComponenteIcone;
-  metricas: Metrica[];
-}
-
-const CONFIG_POR_TIPO: Record<TipoPlataforma, ConfigTipo> = {
-  CONTAINERIZACAO: {
-    Icone: IconImagem,
-    metricas: ["imagens"],
-  },
-  CLOUD_BASE_DADOS: {
-    Icone: IconDatabase,
-    metricas: ["servidores"],
-  },
-  GESTAO_DOMINIO: {
-    Icone: IconDominio,
-    metricas: ["dominios"],
-  },
+const METRICA_POR_TIPO: Record<TipoPlataforma, Metrica> = {
+  CLOUD_BASE_DADOS: "servidores",
+  CONTAINERIZACAO: "imagens",
+  GESTAO_DOMINIO: "dominios",
 };
 
-const ROTULOS_METRICA: Record<Metrica, string> = {
-  servidores: "Servidores",
-  dominios: "Domínios",
-  imagens: "Imagens",
+const DADOS_METRICA: Record<Metrica, { rotulo: string; Icone: ComponentType<{ className?: string }> }> = {
+  servidores: { rotulo: "Servidores", Icone: IconServer },
+  dominios: { rotulo: "Domínios", Icone: IconDominio },
+  imagens: { rotulo: "Imagens", Icone: IconImagem },
+  sistemas: { rotulo: "Sistemas", Icone: IconSistemas },
 };
 
-/* -------------------------------------------------------------------------- */
-/*  Subcomponentes                                                            */
-/* -------------------------------------------------------------------------- */
-
-function BlocoMetrica({ valor, rotulo }: { valor: number; rotulo: string }) {
-  return (
-    <div className="bg-slate-50/80 rounded-xl p-3 text-center flex flex-col items-center justify-center">
-      <span className="text-base font-extrabold text-slate-800">{valor}</span>
-      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
-        {rotulo}
-      </span>
-    </div>
-  );
+// Uma cloud sem servidores (ex: Vercel) é ela própria o alojamento: mostra os sistemas
+function metricaDe(plataforma: Plataforma, totais: Record<Metrica, number>): Metrica {
+  const metrica = METRICA_POR_TIPO[plataforma.tipo];
+  return metrica === "servidores" && totais.servidores === 0 ? "sistemas" : metrica;
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Cartão                                                                    */
+/* -------------------------------------------------------------------------- */
 
 interface CartaoPlataformaProps {
   plataforma: Plataforma;
-  totais: Record<Metrica, number>;
+  metrica: Metrica;
+  total: number;
   aoAbrirDetalhes: (plataforma: Plataforma) => void;
 }
 
-function CartaoPlataforma({
-  plataforma,
-  totais,
-  aoAbrirDetalhes,
-}: CartaoPlataformaProps) {
-  const { Icone, metricas } = CONFIG_POR_TIPO[plataforma.tipo];
-  const inativa = !plataforma.ativo;
-
+function CartaoPlataforma({ plataforma, metrica, total, aoAbrirDetalhes }: CartaoPlataformaProps) {
+  const { rotulo, Icone } = DADOS_METRICA[metrica];
   const abrirDetalhes = () => aoAbrirDetalhes(plataforma);
 
   const aoPressionarTecla = (e: KeyboardEvent<HTMLDivElement>) => {
-    // Ignora teclas vindas dos botões internos.
-    if (e.target !== e.currentTarget) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       abrirDetalhes();
     }
   };
-
-  const impedirPropagacao = (e: MouseEvent) => e.stopPropagation();
 
   return (
     <div
@@ -101,57 +73,40 @@ function CartaoPlataforma({
       onClick={abrirDetalhes}
       onKeyDown={aoPressionarTecla}
       aria-label={`Ver detalhes da plataforma ${plataforma.nome}`}
-      className="bg-white rounded-2xl border border-slate-100 border-l-4 border-l-blue-900 p-5 shadow-xs hover:shadow-md transition-all flex flex-col gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40"
+      className="group bg-white rounded-2xl border border-slate-100 border-l-4 border-l-blue-900 p-5 shadow-xs hover:shadow-md transition-all flex flex-col gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40"
     >
-      {/* Topo: cresce e empurra métricas e rodapé para o fundo,
-          assim todos os cartões ficam alinhados. */}
-      <div className={`flex-1 space-y-3 ${inativa ? "opacity-60" : ""}`}>
-        <div className="flex items-start justify-between gap-2">
+      <div className={`flex items-start gap-3 ${plataforma.ativo ? "" : "opacity-60"}`}>
+        <LogotipoPlataforma nome={plataforma.nome} logotipo={plataforma.logotipo} />
+        <div className="min-w-0 flex-1">
           <h3
             className="text-sm font-bold text-slate-800 leading-snug line-clamp-2"
             title={plataforma.nome}
           >
             {plataforma.nome}
           </h3>
-          <div className="p-2 rounded-xl bg-slate-50 text-slate-400 shrink-0">
-            <Icone className="w-4 h-4" />
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-blue-50 text-blue-900 border border-blue-100/60">
-            {ROTULOS_TIPO_PLATAFORMA[plataforma.tipo]}
-          </span>
-          {inativa && (
-            <span className="inline-block text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-              Inativa
+          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+            <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-900 border border-blue-100/60">
+              {ROTULOS_TIPO_PLATAFORMA[plataforma.tipo]}
             </span>
-          )}
+            {!plataforma.ativo && (
+              <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                Inativa
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Métricas: só as que fazem sentido para este tipo */}
-      {metricas.length > 0 && (
-        <div
-          className={`grid gap-2 ${
-            metricas.length === 1 ? "grid-cols-1" : "grid-cols-2"
-          }`}
-        >
-          {metricas.map((m) => (
-            <BlocoMetrica key={m} valor={totais[m]} rotulo={ROTULOS_METRICA[m]} />
-          ))}
-        </div>
-      )}
-
-      {/* Rodapé: só "Ver". Editar e eliminar ficam na página de detalhes. */}
-      <div
-        className="flex items-center justify-end pt-2 border-t border-slate-100"
-        onClick={impedirPropagacao}
-      >
-        <AcoesItem
-          tituloVer="Ver detalhes da plataforma"
-          onVer={abrirDetalhes}
-        />
+      <div className="mt-auto flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
+        <span className="flex items-center gap-2 text-xs text-slate-500">
+          <Icone className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-base font-extrabold text-slate-800">{total}</span>
+          {rotulo}
+        </span>
+        <span className="flex items-center gap-1 text-xs font-semibold text-blue-900">
+          Ver detalhes
+          <IconSetaDireita className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+        </span>
       </div>
     </div>
   );
@@ -177,11 +132,11 @@ export default function AbaPlataformas({
   aoAbrirDetalhes,
 }: AbaPlataformasProps) {
   if (plataformas.length === 0) {
-    return <EstadoVazio mensagem="Nenhuma plataforma cadastrada." />;
+    return <EstadoVazio mensagem="Nenhuma plataforma registada." />;
   }
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] gap-4 sm:gap-5">
       {plataformas.map((plataforma) => {
         const totais: Record<Metrica, number> = {
           servidores:
@@ -193,13 +148,16 @@ export default function AbaPlataformas({
           imagens:
             plataforma.totais?.imagens ??
             imagens.filter((i) => i.plataformaId === plataforma.id).length,
+          sistemas: plataforma.totais?.sistemas ?? 0,
         };
+        const metrica = metricaDe(plataforma, totais);
 
         return (
           <CartaoPlataforma
             key={plataforma.id}
             plataforma={plataforma}
-            totais={totais}
+            metrica={metrica}
+            total={totais[metrica]}
             aoAbrirDetalhes={aoAbrirDetalhes}
           />
         );

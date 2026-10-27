@@ -1,4 +1,21 @@
 {
+  "notificacoes": {
+    "titulo": "Notificações",
+    "abrir": "Abrir notificações",
+    "porLer_one": "{{count}} notificação por ler",
+    "porLer_other": "{{count}} notificações por ler",
+    "marcarTodas": "Marcar todas como lidas",
+    "vazio": "Não tem notificações.",
+    "erro": "Não foi possível carregar as notificações.",
+    "motivo": "Motivo",
+    "tipos": {
+      "DOCUMENTO_SUBMETIDO": "Novo documento para aprovar: «{{referencia}}»",
+      "DOCUMENTO_APROVADO": "O seu documento «{{referencia}}» foi aprovado.",
+      "DOCUMENTO_REJEITADO": "O seu documento «{{referencia}}» foi rejeitado.",
+      "DOMINIO_A_EXPIRAR": "O domínio {{referencia}} expira a {{data}}. Renove-o a tempo.",
+      "DOMINIO_EXPIRADO": "O domínio {{referencia}} expirou a {{data}}."
+    }
+  },
   "configuracoes": {
     "titulo": "Configurações do Sistema",
     "subtitulo": "Gerencie as preferências de interface e notificações da sua conta.",
@@ -210,6 +227,7 @@
   "entrar": "Entrar",
   "erroPadrao": "Ocorreu um erro ao tentar entrar.",
   "erroCredenciais": "E-mail ou senha incorretos",
+  "sessaoExpirada": "A sua sessão expirou. Entre novamente para continuar.",
   "direitosReservados": "© {{ano}} Netline.Serv,Lda. Todos os direitos reservados."
    },
    "sidebar": {

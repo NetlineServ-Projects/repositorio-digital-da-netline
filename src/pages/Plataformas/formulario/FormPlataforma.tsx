@@ -1,19 +1,25 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type {
+  CatalogoFornecedores,
+  DadosPlataforma,
   Plataforma,
   TipoPlataforma,
-  FornecedorContainer,
-  DadosPlataforma,
 } from "../../../types/plataforma";
-import { ROTULOS_FORNECEDOR_CONTAINER } from "../../../types/plataformaConstantes";
+import { API_URL } from "../../../utils/api";
+import SegredoRevelavel from "../../../components/segredoRevelavel";
+import {
+  listarFornecedores,
+  revelarTokenPlataforma,
+} from "../../../hooks/usePlataformasData";
 import { IconOlhoAberto, IconOlhoFechado } from "../../../components/icons";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 interface FormPlataformaProps {
   plataformaExistente?: Plataforma | null;
   salvando: boolean;
   onCancelar: () => void;
-  onSubmit: (dados: DadosPlataforma) => Promise<void>;
+  onSubmit: (dados: DadosPlataforma, logotipo: File | null) => Promise<void>;
 }
 
 const OPCOES_TIPO: { valor: TipoPlataforma; rotulo: string; descricao: string }[] = [
@@ -34,12 +40,9 @@ const OPCOES_TIPO: { valor: TipoPlataforma; rotulo: string; descricao: string }[
   },
 ];
 
-// Endereço de registry sugerido quando o campo ainda está vazio
-const REGISTRY_POR_FORNECEDOR: Partial<Record<FornecedorContainer, string>> = {
-  DOCKER_HUB: "docker.io",
-  GITHUB_CONTAINER_REGISTRY: "ghcr.io",
-  GITLAB_REGISTRY: "registry.gitlab.com",
-};
+const FORNECEDOR_OUTRO = "OUTRO";
+const FORMATOS_LOGOTIPO = ["image/png", "image/jpeg", "image/webp"];
+const TAMANHO_MAXIMO_LOGOTIPO = 2 * 1024 * 1024; // 2 MB
 
 const CLASSE_CAMPO =
   "w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all text-slate-800";
@@ -52,58 +55,112 @@ export default function FormPlataforma({
   onCancelar,
   onSubmit,
 }: FormPlataformaProps) {
-  const [nome, setNome] = useState(plataformaExistente?.nome ?? "");
+  // Lista de fornecedores de cada tipo (vem do backend)
+  const [catalogo, setCatalogo] = useState<CatalogoFornecedores | null>(null);
+
   const [tipo, setTipo] = useState<TipoPlataforma>(
-    plataformaExistente?.tipo ?? "CONTAINERIZACAO"
+    plataformaExistente?.tipo ?? "CONTAINERIZACAO",
   );
-  const [urlPainel, setUrlPainel] = useState(
-    plataformaExistente?.urlPainel ?? ""
+  const [fornecedor, setFornecedor] = useState(plataformaExistente?.fornecedor ?? "");
+  // O nome só se escreve quando o fornecedor é "Outro"; nos restantes vem do fornecedor
+  const [nome, setNome] = useState(
+    plataformaExistente?.fornecedor === FORNECEDOR_OUTRO ? plataformaExistente.nome : "",
   );
+  const [urlPainel, setUrlPainel] = useState(plataformaExistente?.urlPainel ?? "");
   const [ativo, setAtivo] = useState(plataformaExistente?.ativo ?? true);
 
-  // Registry (só para containerização)
-  const [fornecedor, setFornecedor] = useState<FornecedorContainer | "">(
-    plataformaExistente?.fornecedorContainer ?? ""
-  );
-  const [registryUrl, setRegistryUrl] = useState(
-    plataformaExistente?.registryUrl ?? ""
-  );
-  const [namespace, setNamespace] = useState(
-    plataformaExistente?.namespace ?? ""
-  );
-  const [registryUtilizador, setRegistryUtilizador] = useState(
-    plataformaExistente?.registryUtilizador ?? ""
-  );
-  const [registryToken, setRegistryToken] = useState("");
+  // Credenciais de acesso (todos os tipos)
+  const [utilizador, setUtilizador] = useState(plataformaExistente?.utilizador ?? "");
+  const [token, setToken] = useState("");
   const [mostrarToken, setMostrarToken] = useState(false);
 
-  const ehContainerizacao = tipo === "CONTAINERIZACAO";
+  // Registry (só containerização)
+  const [registryUrl, setRegistryUrl] = useState(plataformaExistente?.registryUrl ?? "");
+  const [namespace, setNamespace] = useState(plataformaExistente?.namespace ?? "");
+
+  // Logótipo
+  const [logotipo, setLogotipo] = useState<File | null>(null);
+  const [previewLogotipo, setPreviewLogotipo] = useState<string | null>(null);
 
   useEffect(() => {
-    if (plataformaExistente) {
-      setNome(plataformaExistente.nome);
-      setTipo(plataformaExistente.tipo);
-      setUrlPainel(plataformaExistente.urlPainel ?? "");
-      setAtivo(plataformaExistente.ativo);
-      setFornecedor(plataformaExistente.fornecedorContainer ?? "");
-      setRegistryUrl(plataformaExistente.registryUrl ?? "");
-      setNamespace(plataformaExistente.namespace ?? "");
-      setRegistryUtilizador(plataformaExistente.registryUtilizador ?? "");
-    }
-  }, [plataformaExistente]);
+    let cancelado = false;
+    listarFornecedores()
+      .then((dados) => {
+        if (!cancelado) setCatalogo(dados);
+      })
+      .catch(() => toast.error("Não foi possível carregar a lista de fornecedores."));
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
-  const handleFornecedor = (valor: FornecedorContainer | "") => {
-    setFornecedor(valor);
-    const sugestao = valor ? REGISTRY_POR_FORNECEDOR[valor] : undefined;
-    if (sugestao && !registryUrl.trim()) {
-      setRegistryUrl(sugestao);
+  useEffect(() => {
+    if (!logotipo) {
+      setPreviewLogotipo(null);
+      return;
     }
+    const url = URL.createObjectURL(logotipo);
+    setPreviewLogotipo(url);
+    return () => URL.revokeObjectURL(url);
+  }, [logotipo]);
+
+  const ehContainerizacao = tipo === "CONTAINERIZACAO";
+  const ehOutro = fornecedor === FORNECEDOR_OUTRO;
+  const opcoes = catalogo?.[tipo] ?? [];
+  const fornecedorEscolhido = opcoes.find((o) => o.valor === fornecedor);
+
+  const logotipoMostrado =
+    previewLogotipo ??
+    (plataformaExistente?.logotipo ? `${API_URL}${plataformaExistente.logotipo}` : null);
+
+  const escolherTipo = (novo: TipoPlataforma) => {
+    setTipo(novo);
+    // O fornecedor escolhido tem de pertencer ao novo tipo
+    if (fornecedor && !catalogo?.[novo]?.some((o) => o.valor === fornecedor)) {
+      setFornecedor("");
+    }
+  };
+
+  // O fornecedor preenche o URL do painel e o do registry, sem apagar o que a pessoa escreveu
+  const escolherFornecedor = (valor: string) => {
+    const anterior = opcoes.find((o) => o.valor === fornecedor);
+    const novo = opcoes.find((o) => o.valor === valor);
+
+    setFornecedor(valor);
+
+    if (!urlPainel.trim() || urlPainel === anterior?.urlPainel) {
+      setUrlPainel(novo?.urlPainel ?? "");
+    }
+    if (ehContainerizacao && (!registryUrl.trim() || registryUrl === anterior?.registryUrl)) {
+      setRegistryUrl(novo?.registryUrl ?? "");
+    }
+  };
+
+  const escolherLogotipo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const ficheiro = e.target.files?.[0] ?? null;
+    e.target.value = "";
+    if (!ficheiro) return;
+
+    if (!FORMATOS_LOGOTIPO.includes(ficheiro.type)) {
+      toast.error("O logótipo deve ser PNG, JPEG ou WebP.");
+      return;
+    }
+    if (ficheiro.size > TAMANHO_MAXIMO_LOGOTIPO) {
+      toast.error("O logótipo não pode ter mais de 2 MB.");
+      return;
+    }
+    setLogotipo(ficheiro);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim()) {
-      toast.error("O nome da plataforma é obrigatório.");
+
+    if (!fornecedor) {
+      toast.error("Escolha o fornecedor.");
+      return;
+    }
+    if (ehOutro && nome.trim().length < 2) {
+      toast.error('Indique o nome da plataforma (o fornecedor é "Outro").');
       return;
     }
 
@@ -120,30 +177,30 @@ export default function FormPlataforma({
     }
 
     const dados: DadosPlataforma = {
-      nome: nome.trim(),
       tipo,
-      urlPainel: urlPainel.trim() ? urlPainel.trim() : null,
+      fornecedor,
+      urlPainel: urlPainel.trim() || null,
       ativo,
+      utilizador: utilizador.trim() || null,
     };
 
-    // Noutros tipos os campos de registry nem são enviados (o backend recusa-os)
+    if (ehOutro) dados.nome = nome.trim();
+
+    // Em branco = manter o token atual
+    if (token) dados.token = token;
+
+    // Nos outros tipos estes campos nem são enviados (o backend recusa-os)
     if (ehContainerizacao) {
-      dados.fornecedorContainer = fornecedor || null;
       dados.registryUrl = registryUrl.trim() || null;
       dados.namespace = namespace.trim() || null;
-      dados.registryUtilizador = registryUtilizador.trim() || null;
-      // Em branco = manter o token atual
-      if (registryToken) {
-        dados.registryToken = registryToken;
-      }
     }
 
-    await onSubmit(dados);
+    await onSubmit(dados, logotipo);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
             {plataformaExistente ? "Editar Plataforma" : "Nova Plataforma"}
@@ -151,19 +208,6 @@ export default function FormPlataforma({
           <p className="text-xs text-slate-500 mt-0.5">
             Cadastre os provedores de infraestrutura, servidores ou gestores de domínio da Netline
           </p>
-        </div>
-
-        {/* Nome */}
-        <div>
-          <label className={CLASSE_ROTULO}>Nome da Plataforma *</label>
-          <input
-            type="text"
-            required
-            placeholder="Ex: Hetzner Cloud, Cloudflare, DigitalOcean"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            className={CLASSE_CAMPO}
-          />
         </div>
 
         {/* Tipo da Plataforma */}
@@ -185,26 +229,52 @@ export default function FormPlataforma({
                     name="tipoPlataforma"
                     value={op.valor}
                     checked={tipo === op.valor}
-                    onChange={() => setTipo(op.valor)}
+                    onChange={() => escolherTipo(op.valor)}
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-bold text-slate-800">
-                    {op.rotulo}
-                  </span>
+                  <span className="text-sm font-bold text-slate-800">{op.rotulo}</span>
                 </div>
-                <p className="text-xs text-slate-500 pl-5 leading-relaxed">
-                  {op.descricao}
-                </p>
+                <p className="text-xs text-slate-500 pl-5 leading-relaxed">{op.descricao}</p>
               </label>
             ))}
           </div>
         </div>
 
+        {/* Fornecedor (dele sai o nome) */}
+        <div>
+          <label htmlFor="plataforma-fornecedor" className={CLASSE_ROTULO}>Fornecedor *</label>
+          <SelectPesquisavel
+            id="plataforma-fornecedor"
+            valor={fornecedor}
+            onChange={escolherFornecedor}
+            disabled={!catalogo}
+            placeholder={catalogo ? "Selecione o fornecedor..." : "A carregar..."}
+            opcoes={opcoes.map((o) => ({ valor: o.valor, label: o.rotulo }))}
+          />
+          {fornecedorEscolhido && !ehOutro && (
+            <p className="text-xs text-slate-500 mt-1.5">
+              Nome da plataforma: <strong>{fornecedorEscolhido.rotulo}</strong>
+            </p>
+          )}
+        </div>
+
+        {/* Nome (só quando o fornecedor é "Outro") */}
+        {ehOutro && (
+          <div>
+            <label className={CLASSE_ROTULO}>Nome da Plataforma *</label>
+            <input
+              type="text"
+              placeholder="Ex: Servidores da Netline"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              className={CLASSE_CAMPO}
+            />
+          </div>
+        )}
+
         {/* URL Painel */}
         <div>
-          <label className={CLASSE_ROTULO}>
-            URL do Painel de Acesso (Opcional)
-          </label>
+          <label className={CLASSE_ROTULO}>URL do Painel de Acesso (Opcional)</label>
           <input
             type="url"
             placeholder="https://dash.cloudflare.com ou https://console.hetzner.cloud"
@@ -212,6 +282,68 @@ export default function FormPlataforma({
             onChange={(e) => setUrlPainel(e.target.value)}
             className={CLASSE_CAMPO}
           />
+        </div>
+
+        {/* Credenciais de acesso (todos os tipos) */}
+        <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-4">
+          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+            Credenciais de Acesso
+          </span>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Utilizador
+              </label>
+              <input
+                type="text"
+                placeholder="Utilizador da conta"
+                value={utilizador}
+                onChange={(e) => setUtilizador(e.target.value)}
+                autoComplete="off"
+                className={`${CLASSE_CAMPO} bg-white`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                Token ou senha
+              </label>
+              <div className="relative">
+                <input
+                  type={mostrarToken ? "text" : "password"}
+                  placeholder={
+                    plataformaExistente?.temToken
+                      ? "Deixe em branco para manter"
+                      : "Token ou senha de acesso"
+                  }
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  autoComplete="new-password"
+                  className={`${CLASSE_CAMPO} bg-white pr-10`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarToken(!mostrarToken)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  {mostrarToken ? <IconOlhoFechado /> : <IconOlhoAberto />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {plataformaExistente?.temToken && (
+            <div className="space-y-1 bg-white border border-slate-200 rounded-lg p-2.5">
+              <p className="text-[11px] font-semibold text-slate-500">Token guardado</p>
+              <SegredoRevelavel
+                descricao={`token da plataforma ${plataformaExistente.nome}`}
+                obter={(tokenElevado) =>
+                  revelarTokenPlataforma(plataformaExistente.id, tokenElevado)
+                }
+              />
+            </div>
+          )}
         </div>
 
         {/* Registry (só containerização) */}
@@ -224,27 +356,6 @@ export default function FormPlataforma({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  Fornecedor
-                </label>
-                <select
-                  value={fornecedor}
-                  onChange={(e) =>
-                    handleFornecedor(e.target.value as FornecedorContainer | "")
-                  }
-                  className={`${CLASSE_CAMPO} bg-white`}
-                >
-                  <option value="">Selecione o fornecedor...</option>
-                  {(
-                    Object.keys(ROTULOS_FORNECEDOR_CONTAINER) as FornecedorContainer[]
-                  ).map((valor) => (
-                    <option key={valor} value={valor}>
-                      {ROTULOS_FORNECEDOR_CONTAINER[valor]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   URL do Registry
                 </label>
                 <input
@@ -254,13 +365,8 @@ export default function FormPlataforma({
                   onChange={(e) => setRegistryUrl(e.target.value)}
                   className={`${CLASSE_CAMPO} bg-white`}
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Sem http:// nem https://.
-                </p>
+                <p className="text-[11px] text-slate-400 mt-1">Sem http:// nem https://.</p>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Namespace
@@ -273,47 +379,36 @@ export default function FormPlataforma({
                   className={`${CLASSE_CAMPO} bg-white`}
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  Utilizador
-                </label>
-                <input
-                  type="text"
-                  placeholder="Utilizador do registry"
-                  value={registryUtilizador}
-                  onChange={(e) => setRegistryUtilizador(e.target.value)}
-                  className={`${CLASSE_CAMPO} bg-white`}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  Token
-                </label>
-                <div className="relative">
-                  <input
-                    type={mostrarToken ? "text" : "password"}
-                    placeholder={
-                      plataformaExistente?.temTokenRegistry
-                        ? "Deixe em branco para manter"
-                        : "Token de acesso"
-                    }
-                    value={registryToken}
-                    onChange={(e) => setRegistryToken(e.target.value)}
-                    autoComplete="new-password"
-                    className={`${CLASSE_CAMPO} bg-white pr-10`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setMostrarToken(!mostrarToken)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                  >
-                    {mostrarToken ? <IconOlhoFechado /> : <IconOlhoAberto />}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         )}
+
+        {/* Logótipo */}
+        <div>
+          <label className={CLASSE_ROTULO}>Logótipo (Opcional)</label>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
+              {logotipoMostrado ? (
+                <img
+                  src={logotipoMostrado}
+                  alt="Logótipo da plataforma"
+                  className="w-full h-full object-contain p-1"
+                />
+              ) : (
+                <span className="text-[11px] text-slate-400">Sem logo</span>
+              )}
+            </div>
+            <div className="space-y-1 min-w-0">
+              <input
+                type="file"
+                accept={FORMATOS_LOGOTIPO.join(",")}
+                onChange={escolherLogotipo}
+                className="w-full text-xs text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:font-semibold hover:file:bg-slate-200 file:cursor-pointer"
+              />
+              <p className="text-[11px] text-slate-400">PNG, JPEG ou WebP, até 2 MB.</p>
+            </div>
+          </div>
+        </div>
 
         {/* Ativo */}
         <div className="flex items-center gap-3 pt-2">
@@ -331,7 +426,7 @@ export default function FormPlataforma({
       </div>
 
       {/* Botões de Ação */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
         <button
           type="button"
           onClick={onCancelar}

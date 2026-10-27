@@ -8,6 +8,7 @@ import DocumentoRow from "../../components/documentoRow";
 import DocumentoCard from "../../components/documentoCard";
 import ModalConfirmacao from "../../components/modalConfirmacaoprops";
 import FilterSelect from "../../components/filterSelect";
+import PainelFiltros from "../../components/painelFiltros";
 import { IconVer } from "../../components/icons";
 import { classificarTipo, OPCOES_TIPO } from "../../utils/tipoDocumento";
 import { toast } from "sonner";
@@ -101,6 +102,10 @@ export default function DocumentosPage() {
     setAnoFiltro([]);
   };
 
+  const totalFiltrosSelecionados = [categoriaFiltro, autorFiltro, tipoFiltro, mesFiltro, anoFiltro].filter(
+    (f) => f.length > 0
+  ).length;
+
   const filtrosAtivos =
     busca !== "" ||
     categoriaFiltro.length > 0 ||
@@ -134,72 +139,76 @@ export default function DocumentosPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-[#18357a] text-white p-6 md:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">{t("documentos.repositorio")}</p>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">{t("documentos.titulo")}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">{t("documentos.titulo")}</h1>
           <p className="text-sm text-blue-100/80 mt-1">{t("documentos.subtitulo")}</p>
         </div>
 
         <Link
           to="/dashboard/documentos/new"
-          className="px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors self-start md:self-auto"
+          className="w-full sm:w-auto text-center px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors sm:self-start md:self-auto"
         >
           {t("documentos.botaoNovo")}
         </Link>
       </div>
 
       {/* Painel de Busca e Filtros Customizados */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="w-full md:w-80 relative">
             <SearchInput value={busca} onChange={setBusca} placeholder={t("documentos.pesquisarPlaceholder")} />
           </div>
-          <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          <div className="hidden xl:block">
+            <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          </div>
         </div>
 
-        {/* Grid dos Custom Selects */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end pt-2">
-          <FilterSelect
-            label={t("documentos.categoria")}
-            placeholder={t("documentos.todasCategorias")}
-            opcoes={categorias.map((c) => ({ valor: c.nome, label: c.nome }))}
-            selecionados={categoriaFiltro}
-            onChange={setCategoriaFiltro}
-          />
+        {/* Grid dos Custom Selects (recolhidos atrás de "Filtros" no telemóvel) */}
+        <PainelFiltros ativos={totalFiltrosSelecionados}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 items-end md:pt-2">
+            <FilterSelect
+              label={t("documentos.categoria")}
+              placeholder={t("documentos.todasCategorias")}
+              opcoes={categorias.map((c) => ({ valor: c.nome, label: c.nome }))}
+              selecionados={categoriaFiltro}
+              onChange={setCategoriaFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.autor")}
-            placeholder={t("comum.todosAutores")}
-            opcoes={autoresUnicos.map((a) => ({ valor: a, label: a }))}
-            selecionados={autorFiltro}
-            onChange={setAutorFiltro}
-          />
+            <FilterSelect
+              label={t("comum.autor")}
+              placeholder={t("comum.todosAutores")}
+              opcoes={autoresUnicos.map((a) => ({ valor: a, label: a }))}
+              selecionados={autorFiltro}
+              onChange={setAutorFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.tipoFicheiro")}
-            placeholder={t("comum.todosTipos")}
-            opcoes={OPCOES_TIPO.filter((tipo) => tipo.valor !== "TODOS").map((tipo) => ({ valor: tipo.valor, label: tipo.label }))}
-            selecionados={tipoFiltro}
-            onChange={setTipoFiltro}
-          />
+            <FilterSelect
+              label={t("comum.tipoFicheiro")}
+              placeholder={t("comum.todosTipos")}
+              opcoes={OPCOES_TIPO.filter((tipo) => tipo.valor !== "TODOS").map((tipo) => ({ valor: tipo.valor, label: tipo.label }))}
+              selecionados={tipoFiltro}
+              onChange={setTipoFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.mes")}
-            placeholder={t("comum.todosMeses")}
-            opcoes={MESES}
-            selecionados={mesFiltro}
-            onChange={setMesFiltro}
-          />
+            <FilterSelect
+              label={t("comum.mes")}
+              placeholder={t("comum.todosMeses")}
+              opcoes={MESES}
+              selecionados={mesFiltro}
+              onChange={setMesFiltro}
+            />
 
-          <FilterSelect
-            label={t("comum.ano")}
-            placeholder={t("comum.todosAnos")}
-            opcoes={anosUnicos.map((ano) => ({ valor: ano, label: ano }))}
-            selecionados={anoFiltro}
-            onChange={setAnoFiltro}
-          />
-        </div>
+            <FilterSelect
+              label={t("comum.ano")}
+              placeholder={t("comum.todosAnos")}
+              opcoes={anosUnicos.map((ano) => ({ valor: ano, label: ano }))}
+              selecionados={anoFiltro}
+              onChange={setAnoFiltro}
+            />
+          </div>
+        </PainelFiltros>
 
         {filtrosAtivos && (
           <div className="flex justify-end pt-1">
@@ -214,8 +223,9 @@ export default function DocumentosPage() {
       </div>
 
       {/* Exibição em Tabela ou Grid de Cards */}
-      {modoExibicao === "tabela" ? (
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      {/* A tabela só aparece a partir de xl (com a barra lateral não cabe antes); no telemóvel usam-se sempre os cartões */}
+      {modoExibicao === "tabela" && (
+        <div className="hidden xl:block bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-400 uppercase text-xs border-b border-slate-100">
@@ -237,7 +247,7 @@ export default function DocumentosPage() {
                         <>
                           <Link
                             to={`/dashboard/documentos/${doc.id}`}
-                            className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+                            className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
                             title={t("comum.verDocumento")}
                           >
                             <IconVer />
@@ -273,49 +283,48 @@ export default function DocumentosPage() {
             </table>
           </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {documentosFiltrados.length > 0 ? (
-            documentosFiltrados.map((doc) => (
-              <DocumentoCard
-                key={doc.id}
-                doc={doc}
-                acoes={
-                  <>
-                    <Link
-                      to={`/dashboard/documentos/${doc.id}`}
-                      className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                      title={t("comum.ver")}
-                    >
-                      <IconVer />
-                    </Link>
-                    {ehAdmin && (
-                      <>
-                        <Link
-                          to={`/dashboard/documentos/${doc.id}/editar`}
-                          className="px-2.5 py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
-                        >
-                          {t("comum.editar")}
-                        </Link>
-                        <button
-                          onClick={() => setDocumentoParaApagar(doc.id)}
-                          className="px-2.5 py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60"
-                        >
-                          {t("comum.apagar")}
-                        </button>
-                      </>
-                    )}
-                  </>
-                }
-              />
-            ))
-          ) : (
-            <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-              {t("documentos.nenhumDocumento")}
-            </div>
-          )}
-        </div>
       )}
+      <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 ${modoExibicao === "tabela" ? "xl:hidden" : ""}`}>
+        {documentosFiltrados.length > 0 ? (
+          documentosFiltrados.map((doc) => (
+            <DocumentoCard
+              key={doc.id}
+              doc={doc}
+              acoes={
+                <>
+                  <Link
+                    to={`/dashboard/documentos/${doc.id}`}
+                    className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+                    title={t("comum.ver")}
+                  >
+                    <IconVer />
+                  </Link>
+                  {ehAdmin && (
+                    <>
+                      <Link
+                        to={`/dashboard/documentos/${doc.id}/editar`}
+                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                      >
+                        {t("comum.editar")}
+                      </Link>
+                      <button
+                        onClick={() => setDocumentoParaApagar(doc.id)}
+                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 rounded-lg transition-colors border border-rose-200/60"
+                      >
+                        {t("comum.apagar")}
+                      </button>
+                    </>
+                  )}
+                </>
+              }
+            />
+          ))
+        ) : (
+          <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
+            {t("documentos.nenhumDocumento")}
+          </div>
+        )}
+      </div>
 
       {/* Modal de Confirmação para Remoção */}
       <ModalConfirmacao

@@ -22,9 +22,11 @@ import AprovacaoEditPage from "./pages/admin/aprovacoes/edit/page";
 import { UsuarioProvider, useUsuario } from "./components/usuarioContext";
 import SistemasPage from "./pages/sistemas/page";
 import PlataformasPage from "./pages/Plataformas/page";
+import ServidorDetalhePage from "./pages/Plataformas/servidor/page";
 import { Toaster } from "sonner";
 import NovoDocumentoPage from "./pages/documentos/new/page";
 import { AcessoInfraestruturaLayout } from "./pages/sistemas/infraestrutura/acessoInfraestrutura";
+import { AcessoElevadoLayout } from "./components/acessoElevado";
 
 import EditarDocumentoPage from "./pages/documentos/[id]/editar/page";
 import EditarSistemaPage from "./pages/sistemas/editar/page";
@@ -73,23 +75,26 @@ function App() {
             <Route path="categorias" element={<Categorias />} />
             <Route path="sistemas" element={<SistemasPage />} />
             <Route
-              path="admin"
               element={
                 <RotaAdmin>
                   <Outlet />
                 </RotaAdmin>
               }
-            ></Route>
-            <Route path="aprovacoes" element={<AprovacoesPage />} />
-            <Route
-              path="aprovacoes/details/:id"
-              element={<AprovacaoDetalhesPage />}
-            />
-            <Route path="aprovacoes/edit/:id" element={<AprovacaoEditPage />} />
-            <Route path="usuarios" element={<Usuarios />} />
-            <Route path="lixeira" element={<Lixeira />} />
+            >
+              <Route path="aprovacoes" element={<AprovacoesPage />} />
+              <Route
+                path="aprovacoes/details/:id"
+                element={<AprovacaoDetalhesPage />}
+              />
+              <Route
+                path="aprovacoes/edit/:id"
+                element={<AprovacaoEditPage />}
+              />
+              <Route path="usuarios" element={<Usuarios />} />
+              <Route path="lixeira" element={<Lixeira />} />
+            </Route>
             <Route path="perfil" element={<Perfil />} />
-                       <Route path="sistemas/:id" element={<AcessoInfraestruturaLayout />}>
+            <Route path="sistemas/:id" element={<AcessoInfraestruturaLayout />}>
               <Route index element={<SistemasPage />} />
               <Route path="editar" element={<EditarSistemaPage />} />
               <Route
@@ -105,7 +110,10 @@ function App() {
                 element={<CredencialPage />}
               />
             </Route>
-            <Route path="plataformas" element={<PlataformasPage />} />
+            <Route path="plataformas" element={<AcessoElevadoLayout />}>
+              <Route index element={<PlataformasPage />} />
+              <Route path="servidores/:id" element={<ServidorDetalhePage />} />
+            </Route>
 
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>

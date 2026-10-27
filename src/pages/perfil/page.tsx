@@ -156,7 +156,7 @@ export default function PerfilPage() {
           <button
             type="button"
             onClick={() => inputFotoRef.current?.click()}
-            className="absolute -bottom-10 left-8 bg-slate-100 border-4 border-white p-0 rounded-full shadow-sm text-slate-600 flex items-center justify-center w-24 h-24 overflow-hidden cursor-pointer group"
+            className="absolute -bottom-10 left-5 sm:left-8 bg-slate-100 border-4 border-white p-0 rounded-full shadow-sm text-slate-600 flex items-center justify-center w-24 h-24 overflow-hidden cursor-pointer group"
             title="Alterar fotografia"
           >
             {usuario.fotografia ? (
@@ -177,7 +177,7 @@ export default function PerfilPage() {
           />
         </div>
 
-        <form onSubmit={salvarAlteracoes} className="pt-14 p-8">
+        <form onSubmit={salvarAlteracoes} className="pt-14 px-5 pb-5 sm:px-8 sm:pb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-6">
             <div>
               <h2 className="text-2xl font-bold text-slate-800">{usuario.nome || "Utilizador"}</h2>
@@ -236,7 +236,7 @@ export default function PerfilPage() {
                     required={campo === "nome" || campo === "email"}
                   />
                 ) : (
-                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
+                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm font-medium break-all">
                     {usuario[campo as keyof UsuarioData] || "N/A"}
                   </div>
                 )}

@@ -10,6 +10,7 @@ import {
   ROTULOS_VISIBILIDADE_IMAGEM,
   ROTULOS_ORIGEM_IMAGEM,
 } from "../../../types/plataformaConstantes";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 interface FormImagemProps {
   imagemExistente?: ImagemContainer | null;
@@ -97,7 +98,7 @@ export default function FormImagem({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
             {imagemExistente ? "Editar Imagem" : "Nova Imagem"}
@@ -109,23 +110,19 @@ export default function FormImagem({
 
         {/* Plataforma */}
         <div>
-          <label className={CLASSE_ROTULO}>Plataforma Associada *</label>
-          <select
-            value={plataformaId}
-            onChange={(e) => setPlataformaId(e.target.value)}
+          <label htmlFor="imagem-plataforma" className={CLASSE_ROTULO}>Plataforma Associada *</label>
+          <SelectPesquisavel
+            id="imagem-plataforma"
+            valor={String(plataformaId)}
+            onChange={setPlataformaId}
             disabled={Boolean(imagemExistente)}
             required
-            className={`${CLASSE_CAMPO} disabled:opacity-60 disabled:cursor-not-allowed`}
-          >
-            <option value="" disabled>
-              Selecione a plataforma...
-            </option>
-            {plataformasContainerizacao.map((plat) => (
-              <option key={plat.id} value={plat.id}>
-                {plat.nome}
-              </option>
-            ))}
-          </select>
+            placeholder="Selecione a plataforma..."
+            opcoes={plataformasContainerizacao.map((plat) => ({
+              valor: String(plat.id),
+              label: plat.nome,
+            }))}
+          />
           {plataformasContainerizacao.length === 0 && (
             <p className="text-xs text-amber-600 mt-1.5">
               Ainda não existe nenhuma plataforma de containerização. Crie uma primeiro.
@@ -164,34 +161,27 @@ export default function FormImagem({
         {/* Classificação */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className={CLASSE_ROTULO}>Origem</label>
-            <select
-              value={origem}
-              onChange={(e) => setOrigem(e.target.value as OrigemImagem)}
-              className={CLASSE_CAMPO}
-            >
-              {(Object.keys(ROTULOS_ORIGEM_IMAGEM) as OrigemImagem[]).map((valor) => (
-                <option key={valor} value={valor}>
-                  {ROTULOS_ORIGEM_IMAGEM[valor]}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="imagem-origem" className={CLASSE_ROTULO}>Origem</label>
+            <SelectPesquisavel
+              id="imagem-origem"
+              valor={origem}
+              onChange={(v) => setOrigem(v as OrigemImagem)}
+              opcoes={(Object.keys(ROTULOS_ORIGEM_IMAGEM) as OrigemImagem[]).map((valor) => ({
+                valor,
+                label: ROTULOS_ORIGEM_IMAGEM[valor],
+              }))}
+            />
           </div>
           <div>
-            <label className={CLASSE_ROTULO}>Visibilidade</label>
-            <select
-              value={visibilidade}
-              onChange={(e) => setVisibilidade(e.target.value as VisibilidadeImagem)}
-              className={CLASSE_CAMPO}
-            >
-              {(Object.keys(ROTULOS_VISIBILIDADE_IMAGEM) as VisibilidadeImagem[]).map(
-                (valor) => (
-                  <option key={valor} value={valor}>
-                    {ROTULOS_VISIBILIDADE_IMAGEM[valor]}
-                  </option>
-                )
+            <label htmlFor="imagem-visibilidade" className={CLASSE_ROTULO}>Visibilidade</label>
+            <SelectPesquisavel
+              id="imagem-visibilidade"
+              valor={visibilidade}
+              onChange={(v) => setVisibilidade(v as VisibilidadeImagem)}
+              opcoes={(Object.keys(ROTULOS_VISIBILIDADE_IMAGEM) as VisibilidadeImagem[]).map(
+                (valor) => ({ valor, label: ROTULOS_VISIBILIDADE_IMAGEM[valor] })
               )}
-            </select>
+            />
           </div>
           <div>
             <label className={CLASSE_ROTULO}>Porta Exposta</label>
@@ -249,7 +239,7 @@ export default function FormImagem({
       </div>
 
       {/* Botões de Ação */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
         <button
           type="button"
           onClick={onCancelar}

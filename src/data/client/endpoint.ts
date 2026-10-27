@@ -33,6 +33,11 @@ export const API_ENDPOINTS = {
   PLATAFORMA_ARVORE: "/plataformas/arvore",
   PLATAFORMA_BY_ID: (id: number | string) => `/plataformas/${id}`,
   PLATAFORMA_ARVORE_BY_ID: (id: number | string) => `/plataformas/${id}/arvore`,
+  PLATAFORMA_FORNECEDORES: "/plataformas/fornecedores",
+  PLATAFORMA_TOKEN: (id: number | string) => `/plataformas/${id}/token`,
+  PLATAFORMA_LOGOTIPO: (id: number | string) => `/plataformas/${id}/logotipo`,
+
+
 
   SERVIDORES: "/servidores",
   SERVIDOR_BY_ID: (id: number | string) => `/servidores/${id}`,
@@ -45,7 +50,11 @@ export const API_ENDPOINTS = {
   DOMINIO_BY_ID: (id: number | string) => `/dominios/${id}`,
 
   SUBDOMINIOS: "/subdominios",
-  SUBDOMINIO_BY_ID: (id: number | string) => `/subdominios/${id}`,
 
   ATIVIDADES_RECENTES: "/atividades/recentes",
+
+  NOTIFICACOES: "/notificacoes",
+  NOTIFICACOES_CONTAGEM: "/notificacoes/contagem",
+  NOTIFICACOES_LIDAS: "/notificacoes/lidas",
+  NOTIFICACAO_LIDA: (id: number | string) => `/notificacoes/${id}/lida`,
 };

@@ -28,24 +28,29 @@ export default function ReautenticacaoModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 sm:p-6 space-y-4 max-h-[90vh] overflow-y-auto">
         <div>
           <h2 className="text-sm font-semibold text-slate-800">
-            Confirme a sua password
+            Confirme a sua palavra-passe
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-           Por segurança, precisa de reautenticar-se para aceder aos dados de
-           infraestrutura deste sistema. Esta confirmação é válida por 3 minutos.
+            Por segurança, confirme a sua palavra-passe para aceder a dados protegidos
+            (passwords, tokens e credenciais). A confirmação é válida por 3 minutos.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          <label htmlFor="senha-reautenticacao" className="sr-only">
+            Palavra-passe
+          </label>
           <input
+            id="senha-reautenticacao"
             type="password"
+            autoComplete="current-password"
             autoFocus
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            placeholder="A sua password"
+            placeholder="A sua palavra-passe"
             className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
           />
 
@@ -56,14 +61,14 @@ export default function ReautenticacaoModal({
               type="button"
               onClick={onCancelar}
               disabled={enviando}
-              className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              className="px-3 py-2 sm:py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={enviando || !senha}
-              className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3 py-2 sm:py-1.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
             >
               {enviando ? "A confirmar..." : "Confirmar"}
             </button>

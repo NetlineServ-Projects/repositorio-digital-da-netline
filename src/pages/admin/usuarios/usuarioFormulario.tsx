@@ -7,6 +7,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faSave } from "@fortawesome/free-solid-svg-icons";
 import type { UsuarioFormData } from "../../../hooks/useUsuariosData";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 interface UsuarioFormularioProps {
   editandoId: number | null;
@@ -30,9 +31,9 @@ export default function UsuarioFormulario({
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 max-w-3xl mx-auto space-y-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between pb-5 border-b border-slate-100">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
           <button
             type="button"
             onClick={onVoltar}
@@ -42,7 +43,7 @@ export default function UsuarioFormulario({
             <span>Voltar</span>
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
               {editandoId ? "Editar Usuário" : "Criar Novo Usuário"}
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">
@@ -179,37 +180,38 @@ export default function UsuarioFormulario({
             />
           </div>
           <div>
-            <label className="block font-semibold text-slate-700 mb-1.5">
+            <label htmlFor="usuario-perfil" className="block font-semibold text-slate-700 mb-1.5">
               Perfil / Permissão
             </label>
-            <select
-              value={formData.perfil}
-              onChange={(e) =>
+            <SelectPesquisavel
+              id="usuario-perfil"
+              valor={formData.perfil}
+              onChange={(v) =>
                 onFormDataChange({
                   ...formData,
-                  perfil: e.target.value as "ADMIN" | "FUNCIONARIO",
+                  perfil: v as "ADMIN" | "FUNCIONARIO",
                 })
               }
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900/10 text-sm text-slate-700"
-            >
-              <option value="FUNCIONARIO">Funcionário</option>
-              <option value="ADMIN">Administrador</option>
-            </select>
+              opcoes={[
+                { valor: "FUNCIONARIO", label: "Funcionário" },
+                { valor: "ADMIN", label: "Administrador" },
+              ]}
+            />
           </div>
         </div>
 
-        <div className="pt-5 border-t border-slate-100 flex justify-end gap-3">
+        <div className="pt-5 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
           <button
             type="button"
             onClick={onVoltar}
-            className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors"
+            className="w-full sm:w-auto px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={salvando}
-            className="flex items-center gap-2 px-6 py-3 bg-[#1B2A4A] text-white rounded-xl text-sm font-semibold hover:bg-[#14203A] transition-colors disabled:opacity-50 shadow-sm"
+            className="w-full sm:w-auto justify-center flex items-center gap-2 px-6 py-3 bg-[#1B2A4A] text-white rounded-xl text-sm font-semibold hover:bg-[#14203A] transition-colors disabled:opacity-50 shadow-sm"
           >
             {salvando ? (
               <>

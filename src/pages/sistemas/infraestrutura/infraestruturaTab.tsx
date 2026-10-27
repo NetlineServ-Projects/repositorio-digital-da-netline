@@ -9,11 +9,22 @@ import {
   type SistemaInfraestrutura,
   type TipoAmbiente,
 } from "../../../hooks/useSistemasData";
-import { AcessoCancelado, useAcessoInfraestrutura } from "./acessoInfraestrutura";
-import { AMBIENTES, caminhosInfraestrutura, rotuloAmbiente } from "./constantes";
+import {
+  AcessoCancelado,
+  useAcessoInfraestrutura,
+} from "./acessoInfraestrutura";
+import {
+  AMBIENTES,
+  caminhosInfraestrutura,
+  rotuloAmbiente,
+} from "./constantes";
 import CartaoBackend from "./cartaoBackend";
 import ListaCredenciais from "./listarCredenciais";
 import LinhaFrontend from "./linhaFrontend";
+import CartaoSubdominio from "./cartaoSubdominio";
+import CartaoInfra from "./cartaoInfra";
+import { Secao } from "../../../components/secaoDetalhe";
+import { IconCadeado, IconServer } from "../../../components/icons";
 
 type EstadoAba = "carregando" | "pronto" | "bloqueado" | "erro";
 
@@ -23,7 +34,10 @@ interface InfraestruturaTabProps {
 }
 
 // Aba só de leitura. Escrever (infraestrutura e credenciais) faz-se em páginas próprias.
-export default function InfraestruturaTab({ sistema, ehAdmin }: InfraestruturaTabProps) {
+export default function InfraestruturaTab({
+  sistema,
+  ehAdmin,
+}: InfraestruturaTabProps) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { comAcesso, temAcesso } = useAcessoInfraestrutura();
@@ -57,7 +71,9 @@ export default function InfraestruturaTab({ sistema, ehAdmin }: InfraestruturaTa
         return;
       }
       toast.error(
-        erro instanceof Error ? erro.message : "Erro ao carregar a infraestrutura.",
+        erro instanceof Error
+          ? erro.message
+          : "Erro ao carregar a infraestrutura.",
       );
       setEstado("erro");
     }
@@ -76,7 +92,10 @@ export default function InfraestruturaTab({ sistema, ehAdmin }: InfraestruturaTa
   }, [temAcesso, estado]);
 
   const mudarAmbiente = (novo: TipoAmbiente) =>
-    setSearchParams({ aba: "infraestrutura", ambiente: novo }, { replace: true });
+    setSearchParams(
+      { aba: "infraestrutura", ambiente: novo },
+      { replace: true },
+    );
 
   const handleApagarCredencial = (credencial: Credencial) => {
     toast(`Apagar a credencial "${credencial.label}"?`, {
@@ -93,7 +112,9 @@ export default function InfraestruturaTab({ sistema, ehAdmin }: InfraestruturaTa
           } catch (erro) {
             if (erro instanceof AcessoCancelado) return;
             toast.error(
-              erro instanceof Error ? erro.message : "Erro ao apagar a credencial.",
+              erro instanceof Error
+                ? erro.message
+                : "Erro ao apagar a credencial.",
             );
           }
         },
@@ -102,87 +123,144 @@ export default function InfraestruturaTab({ sistema, ehAdmin }: InfraestruturaTa
     });
   };
 
+  const subdominio = sistema.subdominios?.find((s) => s.ambiente === ambiente);
+  const credenciais = infraestrutura?.credenciais ?? [];
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div role="group" aria-label="Ambiente" className="flex flex-wrap gap-2">
-        {AMBIENTES.map((a) => {
-          const ativo = a.valor === ambiente;
-          return (
-            <button
-              key={a.valor}
-              type="button"
-              onClick={() => mudarAmbiente(a.valor)}
-              aria-pressed={ativo}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40 ${
-                ativo
-                  ? "bg-blue-900 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {a.label}
-            </button>
-          );
-        })}
+    <div className="space-y-8">
+      {/* ================= AMBIENTE ================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div
+          role="group"
+          aria-label="Ambiente"
+          className="inline-flex p-1 bg-slate-100 rounded-xl self-start"
+        >
+          {AMBIENTES.map((a) => {
+            const ativo = a.valor === ambiente;
+            return (
+              <button
+                key={a.valor}
+                type="button"
+                onClick={() => mudarAmbiente(a.valor)}
+                aria-pressed={ativo}
+                className={`px-4 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40 ${
+                  ativo ? "bg-white text-blue-900 shadow-xs" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {a.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="flex items-center gap-1.5 text-[11px] text-slate-400">
+          <IconCadeado className="w-3 h-3" />
+          Dados protegidos: o acesso pede a palavra-passe e expira passados 3 minutos.
+        </p>
       </div>
 
-      {estado === "carregando" && (
-        <p className="text-slate-500 text-xs animate-pulse">A carregar a infraestrutura...</p>
-      )}
+      {/* ================= ESTRUTURA ================= */}
+      <Secao titulo={`Estrutura — ${rotuloAmbiente(ambiente)}`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+          <CartaoSubdominio ambiente={ambiente} subdominio={subdominio} ehAdmin={ehAdmin} />
 
-      {estado === "bloqueado" && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-3">
-          <p className="text-xs text-slate-600">
-            O acesso à infraestrutura está bloqueado. Introduza a palavra-passe para ver os dados.
-          </p>
-          <button
-            type="button"
-            onClick={carregar}
-            className="px-4 py-2 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
-          >
-            Introduzir palavra-passe
-          </button>
-        </div>
-      )}
-
-      {estado === "erro" && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-3">
-          <p className="text-xs text-slate-600">Não foi possível carregar a infraestrutura.</p>
-          <button
-            type="button"
-            onClick={carregar}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
-          >
-            Tentar de novo
-          </button>
-        </div>
-      )}
-
-      {estado === "pronto" && (
-        <>
-          <CartaoBackend
-            titulo={`Backend — ${rotuloAmbiente(ambiente)}`}
-            infraestrutura={infraestrutura}
-            ehAdmin={ehAdmin}
-            onEditar={() => navigate(caminhos.editar)}
-          >
-            {infraestrutura ? (
-              <ListaCredenciais
-                credenciais={infraestrutura.credenciais}
-                ehAdmin={ehAdmin}
-                onAdicionar={() => navigate(caminhos.novaCredencial)}
-                onEditar={(c) => navigate(caminhos.editarCredencial(c.id))}
-                onApagar={handleApagarCredencial}
-              />
-            ) : (
-              <p className="text-xs text-slate-400 italic">
-                Registe primeiro a infraestrutura para poder adicionar credenciais.
-              </p>
-            )}
-          </CartaoBackend>
+          {estado === "pronto" ? (
+            <CartaoBackend
+              subtitulo={rotuloAmbiente(ambiente)}
+              infraestrutura={infraestrutura}
+              ehAdmin={ehAdmin}
+              onEditar={() => navigate(caminhos.editar)}
+            />
+          ) : (
+            <CartaoInfra titulo="Backend" subtitulo={rotuloAmbiente(ambiente)} Icone={IconServer}>
+              {estado === "carregando" ? (
+                <div className="space-y-2.5 animate-pulse" aria-label="A carregar a infraestrutura">
+                  <div className="h-3 bg-slate-100 rounded w-3/4" />
+                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  <div className="h-3 bg-slate-100 rounded w-2/3" />
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">
+                  {estado === "bloqueado" ? "Protegido. Desbloqueie para ver." : "Não foi possível carregar."}
+                </p>
+              )}
+            </CartaoInfra>
+          )}
 
           <LinhaFrontend plataforma={sistema.plataformaFrontend} ehAdmin={ehAdmin} />
-        </>
-      )}
+        </div>
+      </Secao>
+
+      {/* ================= CREDENCIAIS ================= */}
+      <Secao
+        titulo={`Credenciais do backend${estado === "pronto" && infraestrutura ? ` (${credenciais.length})` : ""}`}
+        acao={
+          estado === "pronto" &&
+          infraestrutura &&
+          ehAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate(caminhos.novaCredencial)}
+              className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
+            >
+              + Adicionar credencial
+            </button>
+          )
+        }
+      >
+        {estado === "carregando" && (
+          <div className="h-24 bg-white rounded-2xl border border-slate-200/70 animate-pulse" />
+        )}
+
+        {estado === "bloqueado" && (
+          <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs p-8 flex flex-col items-center text-center gap-3">
+            <span className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-900 flex items-center justify-center">
+              <IconCadeado className="w-5 h-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Acesso protegido</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Introduza a sua palavra-passe para ver o backend e as credenciais deste ambiente.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={carregar}
+              className="px-4 py-2 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
+            >
+              Desbloquear
+            </button>
+          </div>
+        )}
+
+        {estado === "erro" && (
+          <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p className="text-xs text-slate-600">Não foi possível carregar a infraestrutura.</p>
+            <button
+              type="button"
+              onClick={carregar}
+              className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+            >
+              Tentar de novo
+            </button>
+          </div>
+        )}
+
+        {estado === "pronto" &&
+          (infraestrutura ? (
+            <ListaCredenciais
+              credenciais={credenciais}
+              ehAdmin={ehAdmin}
+              onEditar={(c) => navigate(caminhos.editarCredencial(c.id))}
+              onApagar={handleApagarCredencial}
+            />
+          ) : (
+            <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-200">
+              <p className="text-xs text-slate-400 italic">
+                Registe primeiro a infraestrutura do backend para poder adicionar credenciais.
+              </p>
+            </div>
+          ))}
+      </Secao>
     </div>
   );
 }

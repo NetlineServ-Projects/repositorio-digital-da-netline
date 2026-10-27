@@ -70,9 +70,9 @@ export default function FilterSelect({
         <span className={`truncate ${selecionados.length === 0 ? "text-slate-400" : "font-medium text-slate-700"}`}>
           {textoExibicao}
         </span>
-        {/* Ícone de Dupla Seta */}
-        <svg className="w-4 h-4 text-slate-400 shrink-0 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+        {/* Mesma seta dos restantes dropdowns (SelectPesquisavel) */}
+        <svg className={`w-4 h-4 text-slate-400 shrink-0 ml-2 transition-transform ${aberto ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
@@ -90,7 +90,7 @@ export default function FilterSelect({
                 placeholder="Pesquisar..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-700 focus:outline-none focus:bg-white focus:border-slate-300"
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-slate-300"
               />
             </div>
           )}

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useDocumentosData } from "../../../../hooks/useDocumentosData";
 import { useDocumentoDetalhe } from "../../../../hooks/useDocumentoDetalhe";
 import { toast } from "sonner";
+import SelectPesquisavel from "../../../../components/selectPesquisavel";
 
 export default function EditarDocumentoPage() {
   const { t } = useTranslation();
@@ -70,7 +71,7 @@ export default function EditarDocumentoPage() {
         ← {t("documentos.detalhes.voltar")}
       </Link>
 
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-5">
         <h1 className="font-bold text-slate-800 text-lg">{t("documentos.editar.titulo")}</h1>
 
         <div className="space-y-1.5">
@@ -94,18 +95,17 @@ export default function EditarDocumentoPage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-slate-500 uppercase">{t("documentos.editar.categoriaLabel")}</label>
-          <select
-            value={categoriaId}
-            onChange={(e) => setCategoriaId(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
-          >
-            <option value="">{t("documentos.form.semCategoria")}</option>
-            {categorias.map((cat) => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}
-          </select>
+          <label htmlFor="documento-categoria" className="text-xs font-semibold text-slate-500 uppercase">{t("documentos.editar.categoriaLabel")}</label>
+          <SelectPesquisavel
+            id="documento-categoria"
+            valor={categoriaId}
+            onChange={setCategoriaId}
+            opcaoVazia={t("documentos.form.semCategoria")}
+            opcoes={categorias.map((cat) => ({ valor: String(cat.id), label: cat.nome }))}
+          />
         </div>
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
           <Link to={voltar} className="flex-1 text-center py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold rounded-lg transition-colors">
             {t("documentos.form.cancelar")}
           </Link>

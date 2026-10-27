@@ -16,6 +16,7 @@ const FORM_VAZIO: UsuarioFormData = {
   senha: "",
   numero: "",
   cargo: "",
+  departamento: "",
   perfil: "FUNCIONARIO",
 };
 
@@ -63,6 +64,7 @@ export default function UsuariosPage() {
       senha: "",
       numero: usuario.numero || "",
       cargo: usuario.cargo || "",
+      departamento: usuario.departamento || "",
       perfil: usuario.perfil,
     });
 

@@ -7,6 +7,7 @@ export interface Documento {
   tipoArquivo: string;
   tamanho: string | number;
   estado: "PENDENTE" | "APROVADO" | "REJEITADO";
+  motivoRejeicao?: string | null;
   dataSubmissao?: string;
   usuario?: { nome: string };
   categoria?: { id: number; nome: string };

@@ -43,9 +43,10 @@ export default function AcoesItem({
   onEliminar,
 }: AcoesItemProps) {
   // Modo compacto (linhas de tabela densas): sem borda. Restantes: botões com borda.
+  // No telemóvel os botões são maiores (~36px), para se acertarem com o dedo.
   const classeBase = compacto
-    ? "p-1 text-slate-500"
-    : "p-1.5 rounded-lg  bg-white text-slate-500";
+    ? "p-2.5 sm:p-1 rounded-lg text-slate-500"
+    : "p-2.5 sm:p-1.5 rounded-lg bg-white text-slate-500";
   const classeIcone = compacto ? "w-3.5 h-3.5" : "w-4 h-4";
 
   return (

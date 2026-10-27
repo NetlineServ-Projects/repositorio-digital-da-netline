@@ -9,7 +9,6 @@ import {
 import { toast } from "sonner";
 import {
   buscarInfraestrutura,
-  listarDominios,
   listarImagens,
   listarPlataformas,
   listarServidores,
@@ -17,19 +16,15 @@ import {
   type ImagemOpcao,
   type OpcaoHospedagem,
   type TipoAmbiente,
-  type TipoDns,
 } from "../../../../hooks/useSistemasData";
 import { AcessoCancelado, useAcessoInfraestrutura } from "../acessoInfraestrutura";
-import BlocoSubdominio from "../blocoSubdominio";
 import {
   CLASSE_CAMPO,
   CLASSE_ROTULO,
-  TIPO_DNS_PADRAO,
-  TIPOS_DNS_COM_SERVIDOR,
   caminhosInfraestrutura,
-  registoUsaServidor,
   rotuloAmbiente,
 } from "../constantes";
+import SelectPesquisavel from "../../../../components/selectPesquisavel";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
@@ -50,58 +45,53 @@ export default function EditarInfraestruturaPage() {
   const [plataformas, setPlataformas] = useState<OpcaoHospedagem[]>([]);
   const [servidores, setServidores] = useState<OpcaoHospedagem[]>([]);
   const [imagens, setImagens] = useState<ImagemOpcao[]>([]);
-  const [dominios, setDominios] = useState<OpcaoHospedagem[]>([]);
+  // Nome de cada registo (containerização), para mostrar de onde vem cada imagem
+  const [nomesRegistos, setNomesRegistos] = useState<Record<number, string>>({});
 
   // Campos do formulário
   const [plataformaId, setPlataformaId] = useState("");
   const [servidorId, setServidorId] = useState("");
   const [imagemId, setImagemId] = useState("");
   const [url, setUrl] = useState("");
-  const [temSubdominio, setTemSubdominio] = useState(false);
-  const [dominioId, setDominioId] = useState("");
-  const [nomeSubdominio, setNomeSubdominio] = useState("");
-  const [tipoDns, setTipoDns] = useState<TipoDns>(TIPO_DNS_PADRAO);
-  const [destino, setDestino] = useState("");
-  const [existiaSubdominio, setExistiaSubdominio] = useState(false);
 
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  // Se o carregamento falhar, o formulário não aparece: vazio, guardá-lo apagaria a infraestrutura atual
+  const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
     if (!ehAdmin) return;
     let cancelado = false;
 
     async function carregar() {
+      setCarregando(true);
+      setErroCarregamento(null);
       try {
-        const [plt, srv, img, dom] = await Promise.all([
+        const [plt, srv, img] = await Promise.all([
           listarPlataformas(),
           listarServidores(),
           listarImagens().catch(() => []), // sem imagens a página continua a funcionar
-          listarDominios(),
         ]);
         const dados = await comAcesso((token) =>
           buscarInfraestrutura(sistemaId, ambiente, token),
         );
         if (cancelado) return;
 
-        setPlataformas(plt.filter((p) => p.tipo !== "GESTAO_DOMINIO"));
+        // O backend corre numa Cloud; a imagem pode vir de qualquer registo
+        const plataformasCloud = plt.filter((p) => p.tipo === "CLOUD_BASE_DADOS");
+        setPlataformas(plataformasCloud);
+        setNomesRegistos(Object.fromEntries(plt.map((p) => [p.id, p.nome])));
         setServidores(srv);
         setImagens(img);
-        setDominios(dom);
 
         if (dados) {
-          setPlataformaId(dados.plataformaId != null ? String(dados.plataformaId) : "");
+          // Um registo antigo noutra plataforma (ex: um registo de imagens) obriga a escolher a Cloud certa
+          const plataformaValida = plataformasCloud.some((p) => p.id === dados.plataformaId);
+          setPlataformaId(plataformaValida ? String(dados.plataformaId) : "");
           setServidorId(dados.servidorId != null ? String(dados.servidorId) : "");
           setImagemId(dados.imagemId != null ? String(dados.imagemId) : "");
           setUrl(dados.url ?? "");
-
-          const sub = dados.subdominio ?? null;
-          setExistiaSubdominio(sub !== null);
-          setTemSubdominio(sub !== null);
-          setDominioId(sub ? String(sub.dominio?.id ?? sub.dominioId ?? "") : "");
-          setNomeSubdominio(sub?.nome ?? "");
-          setTipoDns(sub?.tipoDns ?? TIPO_DNS_PADRAO);
-          setDestino(sub?.destino ?? "");
         }
       } catch (erro) {
         if (cancelado) return;
@@ -109,7 +99,7 @@ export default function EditarInfraestruturaPage() {
           navigate(caminhosInfraestrutura(sistemaId, ambiente).sistema, { replace: true });
           return;
         }
-        toast.error(erro instanceof Error ? erro.message : "Erro ao carregar a infraestrutura.");
+        setErroCarregamento(erro instanceof Error ? erro.message : "Erro ao carregar a infraestrutura.");
       } finally {
         if (!cancelado) setCarregando(false);
       }
@@ -119,37 +109,18 @@ export default function EditarInfraestruturaPage() {
     return () => {
       cancelado = true;
     };
-  }, [ehAdmin, sistemaId, ambiente, comAcesso, navigate]);
+  }, [ehAdmin, sistemaId, ambiente, comAcesso, navigate, tentativa]);
 
   if (!ehAdmin) return <Navigate to={caminhos.sistema} replace />;
 
-  // Valores derivados da plataforma escolhida
-  const plataforma = plataformas.find((p) => String(p.id) === plataformaId);
   const servidoresDaPlataforma = servidores.filter(
-    (s) => String(s.plataforma) === plataformaId,
+    (s) => String(s.plataformaId) === plataformaId,
   );
-  const eContainerizacao = plataforma?.tipo === "CONTAINERIZACAO";
-  const imagensDaPlataforma = imagens.filter(
-    (i) => String(i.plataformaId ?? i.plataforma?.id) === plataformaId,
-  );
-  const temServidor = servidorId !== "";
 
-  // Ao mudar de plataforma, o servidor e a imagem anteriores deixam de servir
+  // Ao mudar de plataforma, o servidor anterior deixa de servir (a imagem não depende dela)
   const escolherPlataforma = (valor: string) => {
     setPlataformaId(valor);
     setServidorId("");
-    setImagemId("");
-    if (TIPOS_DNS_COM_SERVIDOR.includes(tipoDns)) setTipoDns(TIPO_DNS_PADRAO);
-  };
-
-  const escolherServidor = (valor: string) => {
-    setServidorId(valor);
-    if (valor === "" && TIPOS_DNS_COM_SERVIDOR.includes(tipoDns)) setTipoDns(TIPO_DNS_PADRAO);
-  };
-
-  const alternarSubdominio = (ligado: boolean) => {
-    setTemSubdominio(ligado);
-    if (ligado && !existiaSubdominio) setTipoDns(temServidor ? "A" : TIPO_DNS_PADRAO);
   };
 
   const handleSalvar = async (e: React.FormEvent) => {
@@ -159,40 +130,12 @@ export default function EditarInfraestruturaPage() {
       return;
     }
 
-    if (temSubdominio) {
-      if (!dominioId) {
-        toast.error("Escolha o domínio do subdomínio.");
-        return;
-      }
-      if (!nomeSubdominio.trim()) {
-        toast.error('Indique o nome do subdomínio (ou "@" para a raiz do domínio).');
-        return;
-      }
-      if (!registoUsaServidor(tipoDns, temServidor) && !destino.trim()) {
-        toast.error("Indique o destino do registo.");
-        return;
-      }
-    }
-
-    const dados: Record<string, unknown> = {
+    const dados = {
       plataformaId: Number(plataformaId),
-      servidorId: temServidor ? Number(servidorId) : null,
-      imagemId: eContainerizacao && imagemId ? Number(imagemId) : null,
-      // Com subdomínio, o endereço calcula-se sozinho: o URL à parte não é usado
-      url: temSubdominio ? null : url.trim() || null,
+      servidorId: servidorId ? Number(servidorId) : null,
+      imagemId: imagemId ? Number(imagemId) : null,
+      url: url.trim() || null,
     };
-
-    // omitido = não mexer | null = remover | objeto = criar ou atualizar
-    if (temSubdominio) {
-      dados.subdominio = {
-        dominioId: Number(dominioId),
-        nome: nomeSubdominio.trim().toLowerCase(),
-        tipoDns,
-        destino: registoUsaServidor(tipoDns, temServidor) ? null : destino.trim(),
-      };
-    } else if (existiaSubdominio) {
-      dados.subdominio = null;
-    }
 
     setSalvando(true);
     try {
@@ -215,6 +158,25 @@ export default function EditarInfraestruturaPage() {
     );
   }
 
+  if (erroCarregamento) {
+    return (
+      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3 max-w-2xl">
+        <p className="text-red-600 text-sm font-medium">{erroCarregamento}</p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => setTentativa((n) => n + 1)}
+            className="text-sm text-[#18357a] font-semibold hover:underline cursor-pointer"
+          >
+            Tentar novamente
+          </button>
+          <Link to={caminhos.sistema} className="text-sm text-slate-500 font-semibold hover:underline">
+            Voltar ao sistema
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <Link
@@ -226,101 +188,74 @@ export default function EditarInfraestruturaPage() {
 
       <form
         onSubmit={handleSalvar}
-        className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5"
+        className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-5"
       >
         <h1 className="font-bold text-slate-800 text-lg">
           Infraestrutura do Backend — {rotuloAmbiente(ambiente)}
         </h1>
 
         <div className="space-y-1.5">
-          <label className={CLASSE_ROTULO}>Plataforma</label>
-          <select
-            value={plataformaId}
-            onChange={(e) => escolherPlataforma(e.target.value)}
-            className={CLASSE_CAMPO}
-          >
-            <option value="">Selecionar...</option>
-            {plataformas.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nome}
-              </option>
-            ))}
-          </select>
+          <label htmlFor="infra-plataforma" className={CLASSE_ROTULO}>Onde corre (plataforma Cloud)</label>
+          <SelectPesquisavel
+            id="infra-plataforma"
+            valor={plataformaId}
+            onChange={escolherPlataforma}
+            opcaoVazia="Selecionar..."
+            opcoes={plataformas.map((p) => ({ valor: String(p.id), label: p.nome }))}
+          />
         </div>
 
         {plataformaId &&
           (servidoresDaPlataforma.length > 0 ? (
             <div className="space-y-1.5">
-              <label className={CLASSE_ROTULO}>Servidor (opcional)</label>
-              <select
-                value={servidorId}
-                onChange={(e) => escolherServidor(e.target.value)}
-                className={CLASSE_CAMPO}
-              >
-                <option value="">Sem servidor</option>
-                {servidoresDaPlataforma.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.nome}
-                  </option>
-                ))}
-              </select>
+              <label htmlFor="infra-servidor" className={CLASSE_ROTULO}>Servidor (opcional)</label>
+              <SelectPesquisavel
+                id="infra-servidor"
+                valor={servidorId}
+                onChange={setServidorId}
+                opcaoVazia="Sem servidor"
+                opcoes={servidoresDaPlataforma.map((s) => ({ valor: String(s.id), label: s.nome }))}
+              />
             </div>
           ) : (
             <p className="text-xs text-slate-400">
-              Esta plataforma não tem servidores registados: o backend fica ligado diretamente a ela.
+              Esta plataforma não tem servidores registados: o backend corre diretamente nela.
             </p>
           ))}
 
-        {eContainerizacao &&
-          (imagensDaPlataforma.length > 0 ? (
-            <div className="space-y-1.5">
-              <label className={CLASSE_ROTULO}>Imagem (opcional)</label>
-              <select
-                value={imagemId}
-                onChange={(e) => setImagemId(e.target.value)}
-                className={CLASSE_CAMPO}
-              >
-                <option value="">Sem imagem</option>
-                {imagensDaPlataforma.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nome}:{i.tag}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <p className="text-xs text-slate-400">
-              Esta plataforma ainda não tem imagens registadas.
-            </p>
-          ))}
-
-        {!temSubdominio && (
-          <div className="space-y-1.5">
-            <label className={CLASSE_ROTULO}>Endereço do backend (opcional)</label>
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://..."
-              className={CLASSE_CAMPO}
+        {/* A imagem é independente da plataforma: vem de um registo (Docker Hub, GHCR...) */}
+        <div className="space-y-1.5">
+          <label htmlFor="infra-imagem" className={CLASSE_ROTULO}>Imagem de container (opcional)</label>
+          {imagens.length > 0 ? (
+            <SelectPesquisavel
+              id="infra-imagem"
+              valor={imagemId}
+              onChange={setImagemId}
+              opcaoVazia="Sem imagem"
+              opcoes={imagens.map((i) => {
+                const registoId = i.plataformaId ?? i.plataforma?.id;
+                return {
+                  valor: String(i.id),
+                  label: `${i.nome}:${i.tag}`,
+                  descricao: registoId != null ? nomesRegistos[registoId] : undefined,
+                };
+              })}
             />
-          </div>
-        )}
+          ) : (
+            <p className="text-xs text-slate-400">Ainda não há imagens registadas nos registos de containers.</p>
+          )}
+        </div>
 
-        <BlocoSubdominio
-          ligado={temSubdominio}
-          onAlternar={alternarSubdominio}
-          dominios={dominios}
-          dominioId={dominioId}
-          onDominioId={setDominioId}
-          nome={nomeSubdominio}
-          onNome={setNomeSubdominio}
-          tipoDns={tipoDns}
-          onTipoDns={setTipoDns}
-          destino={destino}
-          onDestino={setDestino}
-          temServidor={temServidor}
-        />
+        <div className="space-y-1.5">
+          <label className={CLASSE_ROTULO}>Endereço do backend (opcional)</label>
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://..."
+            className={CLASSE_CAMPO}
+          />
+        </div>
 
         <div className="flex gap-3 pt-2">
           <Link

@@ -2,6 +2,8 @@ import { useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { IconPasta, IconDownload, IconVer } from "../../components/icons";
 import FilterSelect from "../../components/filterSelect";
+import PainelFiltros from "../../components/painelFiltros";
+import StatusBadge from "../../components/statusBadge";
 import type { Documento } from "../../hooks/useSistemasData";
 import type { Categoria } from "../../types/documento";
 import { formatarTamanho, obterUrlFicheiro } from "../../utils/documentos";
@@ -15,6 +17,61 @@ interface DocumentosDoSistemaTabelaProps {
   onBuscaChange: (v: string) => void;
   onEditar: (doc: Documento) => void;
   onApagar: (id: number) => void;
+  // Só ADMIN pode apagar documentos (DELETE /documentos/:id exige o perfil)
+  ehAdmin: boolean;
+}
+
+// Ações de cada documento: as mesmas na tabela (lg+) e nos cartões (ecrãs menores)
+function AcoesDocumento({
+  doc,
+  onEditar,
+  onApagar,
+  ehAdmin,
+}: {
+  doc: Documento;
+  onEditar: (doc: Documento) => void;
+  onApagar: (id: number) => void;
+  ehAdmin: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-2">
+      <Link
+        to={`/dashboard/documentos/${doc.id}`}
+        className="p-2 lg:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
+        title="Ver documento"
+        aria-label="Ver documento"
+      >
+        <IconVer />
+      </Link>
+      <a
+        href={obterUrlFicheiro(doc.caminho, API_URL)}
+        download={doc.nomeArquivo}
+        className="p-2 lg:p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 rounded-lg transition-colors border border-blue-100"
+        title="Descarregar ficheiro"
+        aria-label="Descarregar ficheiro"
+      >
+        <IconDownload />
+      </a>
+      <button
+        onClick={() => onEditar(doc)}
+        className="px-3 py-2 lg:py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-semibold rounded-lg transition-colors border border-blue-100"
+      >
+        Editar
+      </button>
+      {ehAdmin && (
+        <button
+          onClick={() => onApagar(doc.id)}
+          className="px-3 py-2 lg:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
+        >
+          Apagar
+        </button>
+      )}
+    </div>
+  );
+}
+
+function dataDoc(doc: Documento) {
+  return doc.dataSubmissao ? new Date(doc.dataSubmissao).toLocaleDateString("pt-PT") : "-";
 }
 
 export default function DocumentosDoSistemaTabela({
@@ -24,6 +81,7 @@ export default function DocumentosDoSistemaTabela({
   onBuscaChange,
   onEditar,
   onApagar,
+  ehAdmin,
 }: DocumentosDoSistemaTabelaProps) {
   const [categoriaFiltro, setCategoriaFiltro] = useState<string[]>([]);
   const [autorFiltro, setAutorFiltro] = useState<string[]>([]);
@@ -101,8 +159,9 @@ export default function DocumentosDoSistemaTabela({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 pt-1">
-          <div className="w-48">
+        <PainelFiltros ativos={categoriaFiltro.length + autorFiltro.length + tipoFiltro.length}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:flex lg:flex-wrap lg:items-center gap-3 pt-1">
+          <div className="lg:w-48">
             <FilterSelect
               label="Categoria"
               placeholder="Todas as Categorias"
@@ -112,7 +171,7 @@ export default function DocumentosDoSistemaTabela({
             />
           </div>
 
-          <div className="w-48">
+          <div className="lg:w-48">
             <FilterSelect
               label="Autor"
               placeholder="Todos os Autores"
@@ -122,7 +181,7 @@ export default function DocumentosDoSistemaTabela({
             />
           </div>
 
-          <div className="w-48">
+          <div className="lg:w-48">
             <FilterSelect
               label="Tipo"
               placeholder="Todos os Tipos"
@@ -141,14 +200,48 @@ export default function DocumentosDoSistemaTabela({
             </button>
           )}
         </div>
+        </PainelFiltros>
       </div>
 
+      {/* Ecrãs menores: um cartão por documento, com as mesmas ações da tabela */}
+      <ul className="lg:hidden divide-y divide-slate-100">
+        {documentosFiltrados.length > 0 ? (
+          documentosFiltrados.map((doc) => (
+            <li key={doc.id} className="p-4 space-y-2.5">
+              <div className="flex items-start gap-2.5 min-w-0">
+                <IconPasta className="text-blue-900 shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm text-slate-800 break-all">
+                    {doc.titulo || doc.nomeArquivo || "Ficheiro sem nome"}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    {doc.usuario?.nome || "Sistema"} · {formatarTamanho(doc.tamanho)} · {dataDoc(doc)}
+                  </p>
+                </div>
+              </div>
+              {doc.estado === "REJEITADO" && doc.motivoRejeicao && (
+                <p className="text-[11px] text-rose-600">{doc.motivoRejeicao}</p>
+              )}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <StatusBadge estado={doc.estado} />
+                <AcoesDocumento doc={doc} onEditar={onEditar} onApagar={onApagar} ehAdmin={ehAdmin} />
+              </div>
+            </li>
+          ))
+        ) : (
+          <li className="text-center py-10 px-4 text-slate-400 text-xs">
+            Nenhum documento encontrado para este sistema com os critérios selecionados.
+          </li>
+        )}
+      </ul>
+
       {/* Tabela de Listagem de Documentos */}
-      <div className="overflow-x-auto">
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-400 uppercase text-[11px] border-b border-slate-100 tracking-wider">
             <tr>
               <th className="py-3 px-4 font-semibold">Documento</th>
+              <th className="py-3 px-4 font-semibold">Estado</th>
               <th className="py-3 px-4 font-semibold">Autor</th>
               <th className="py-3 px-4 font-semibold">Tamanho</th>
               <th className="py-3 px-4 font-semibold">Data</th>
@@ -168,6 +261,14 @@ export default function DocumentosDoSistemaTabela({
                       {doc.titulo || doc.nomeArquivo || "Ficheiro sem nome"}
                     </span>
                   </td>
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <StatusBadge estado={doc.estado} />
+                    {doc.estado === "REJEITADO" && doc.motivoRejeicao && (
+                      <p className="text-[11px] text-rose-600 mt-1 max-w-56 whitespace-normal" title={doc.motivoRejeicao}>
+                        {doc.motivoRejeicao}
+                      </p>
+                    )}
+                  </td>
                   <td className="py-3.5 px-4 text-xs text-slate-600">
                     {doc.usuario?.nome || "Sistema"}
                   </td>
@@ -175,49 +276,17 @@ export default function DocumentosDoSistemaTabela({
                     {formatarTamanho(doc.tamanho)}
                   </td>
                   <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
-                    {doc.dataSubmissao
-                      ? new Date(doc.dataSubmissao).toLocaleDateString("pt-PT")
-                      : "-"}
+                    {dataDoc(doc)}
                   </td>
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        to={`/dashboard/documentos/${doc.id}`}
-                        className="p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                        title="Ver documento"
-                        aria-label="Ver documento"
-                      >
-                        <IconVer />
-                      </Link>
-                      <a
-                        href={obterUrlFicheiro(doc.caminho, API_URL)}
-                        download={doc.nomeArquivo}
-                        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 rounded-lg transition-colors border border-blue-100"
-                        title="Descarregar ficheiro"
-                        aria-label="Descarregar ficheiro"
-                      >
-                        <IconDownload />
-                      </a>
-                      <button
-                        onClick={() => onEditar(doc)}
-                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-semibold rounded-lg transition-colors border border-blue-100"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => onApagar(doc.id)}
-                        className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
-                      >
-                        Apagar
-                      </button>
-                    </div>
+                    <AcoesDocumento doc={doc} onEditar={onEditar} onApagar={onApagar} ehAdmin={ehAdmin} />
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-10 text-slate-400 text-xs"
                 >
                   Nenhum documento encontrado para este sistema com os critérios

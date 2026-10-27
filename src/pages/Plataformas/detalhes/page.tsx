@@ -1,16 +1,25 @@
-import AbaServidores from "../abas/abaServidores";
+import { Secao, Campo } from "../../../components/secaoDetalhe";
+import CartaoIndicador, { type CartaoIndicadorProps } from "../../../components/plataformas/cartaoIndicador";
+import BotaoIconeCabecalho from "../../../components/plataformas/botaoIconeCabecalho";
 import AbaDominios from "../abas/abaDominios";
 import AbaImagens from "../abas/abaImagens";
-
+import SegredoRevelavel from "../../../components/segredoRevelavel";
+import LogotipoPlataforma from "../../../components/plataformas/logotipoPlataforma";
+import CartaoServidor from "../../../components/plataformas/cartaoServidor";
+import CartaoSistemaHospedado from "../../../components/plataformas/cartaoSistemaHospedado";
+import { revelarTokenPlataforma } from "../../../hooks/usePlataformasData";
 import {
   IconLinkExterno,
   IconCaneta,
   IconLixeira,
+  IconServer,
+  IconImagem,
+  IconDominio,
+  IconRede,
+  IconSistemas,
+  IconEstado,
 } from "../../../components/icons";
-import {
-  ROTULOS_TIPO_PLATAFORMA,
-  ROTULOS_FORNECEDOR_CONTAINER,
-} from "../../../types/plataformaConstantes";
+import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
 import type {
   AoEditarItem,
   AoEliminarItem,
@@ -25,7 +34,6 @@ import type {
 
 interface DetalhesPlataformaProps {
   plataforma: Plataforma;
-  plataformas: Plataforma[];
   servidores: Servidor[];
   dominios: Dominio[];
   subdominios: Subdominio[];
@@ -36,90 +44,13 @@ interface DetalhesPlataformaProps {
   aoEliminar: AoEliminarItem;
 }
 
-const BASE_CARTAO =
-  "bg-white/90 backdrop-blur-md rounded-2xl shadow-xs hover:shadow-md transition-all duration-300 p-5 border border-blue-100/80 relative overflow-hidden min-w-0 group";
+/* -------------------------------------------------------------------------- */
+/*  Subcomponentes                                                            */
+/* -------------------------------------------------------------------------- */
 
-function CartaoIndicador({
-  valor,
-  rotulo,
-}: {
-  valor: number | string;
-  rotulo: string;
-}) {
-  return (
-    <div className={BASE_CARTAO}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-900 rounded-r" />
-      <div className="pl-2">
-        <p className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-none">
-          {valor}
-        </p>
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-2">
-          {rotulo}
-        </p>
-      </div>
-    </div>
-  );
-}
-function CartaoEstado({ ativo }: { ativo: boolean }) {
-  return (
-    <div className={`${BASE_CARTAO} flex items-center`}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-900 rounded-r" />
-      <p
-        className={`pl-2 text-xl font-bold ${
-          ativo ? "text-slate-800" : "text-slate-500"
-        }`}
-      >
-        {ativo ? "Plataforma ativa" : "Plataforma desativada"}
-      </p>
-    </div>
-  );
-}
-function CartaoPainel({ url }: { url?: string | null }) {
-  return (
-    <div className={`${BASE_CARTAO} flex items-center justify-between gap-4`}>
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-900 rounded-r" />
-      <div className="min-w-0 flex-1 pl-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-          Painel de Controlo
-        </p>
-        <p
-          className="text-sm font-semibold text-slate-700 truncate mt-1"
-          title={url ?? undefined}
-        >
-          {url ?? "Sem URL de painel"}
-        </p>
-      </div>
 
-      {url && (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Abrir painel da plataforma"
-          title="Abrir painel"
-          className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-200 shadow-xs"
-        >
-          <IconLinkExterno className="w-4 h-4" />
-        </a>
-      )}
-    </div>
-  );
-}
-
-function CampoRegistry({ rotulo, valor }: { rotulo: string; valor: string }) {
-  return (
-    <div className="bg-slate-50/70 hover:bg-slate-50 p-3.5 rounded-xl border border-slate-100 min-w-0 transition-colors">
-      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-        {rotulo}
-      </p>
-      <p
-        className="text-sm font-semibold text-slate-800 mt-1 truncate"
-        title={valor}
-      >
-        {valor}
-      </p>
-    </div>
-  );
+function formatarData(iso?: string) {
+  return iso ? new Date(iso).toLocaleDateString("pt-PT") : "-";
 }
 
 /* -------------------------------------------------------------------------- */
@@ -128,7 +59,6 @@ function CampoRegistry({ rotulo, valor }: { rotulo: string; valor: string }) {
 
 export default function DetalhesPlataforma({
   plataforma,
-  plataformas,
   servidores,
   dominios,
   subdominios,
@@ -139,159 +69,207 @@ export default function DetalhesPlataforma({
   aoEliminar,
 }: DetalhesPlataformaProps) {
   const ehContainerizacao = plataforma.tipo === "CONTAINERIZACAO";
-  const ehCloud = plataforma.tipo === "CLOUD_BASE_DADOS";
   const ehGestaoDominio = plataforma.tipo === "GESTAO_DOMINIO";
 
-  const servidoresDaPlataforma = servidores.filter(
-    (s) => s.plataformaId === plataforma.id,
-  );
-  const dominiosDaPlataforma = dominios.filter(
-    (d) => d.plataformaId === plataforma.id,
-  );
-  const imagensDaPlataforma = imagens.filter(
-    (i) => i.plataformaId === plataforma.id,
-  );
+  const servidoresDaPlataforma = servidores.filter((s) => s.plataformaId === plataforma.id);
+  const dominiosDaPlataforma = dominios.filter((d) => d.plataformaId === plataforma.id);
+  const imagensDaPlataforma = imagens.filter((i) => i.plataformaId === plataforma.id);
+  const idsDominios = new Set(dominiosDaPlataforma.map((d) => d.id));
+  const totalRegistosDns = subdominios.filter((s) => idsDominios.has(s.dominioId)).length;
 
-  const idsDominiosDaPlataforma = new Set(
-    dominiosDaPlataforma.map((d) => d.id),
-  );
-  const totalRegistosDns = subdominios.filter((s) =>
-    idsDominiosDaPlataforma.has(s.dominioId),
-  ).length;
+  // Servidores: só a Cloud os aloja, e só se mostram se existirem. Uma cloud sem servidores
+  // (ex: Vercel) é ela própria o alojamento; o que interessa são os sistemas lá hospedados.
+  const mostraServidores = plataforma.tipo === "CLOUD_BASE_DADOS" && servidoresDaPlataforma.length > 0;
+  // Registos antigos: servidores criados em containerização antes da regra existir
+  const servidoresForaDoLugar = ehContainerizacao ? servidoresDaPlataforma : [];
+  const sistemasHospedados = plataforma.sistemasHospedados ?? [];
 
-  const indicadores: { valor: number | string; rotulo: string }[] = [];
-
-  if (ehContainerizacao) {
-    indicadores.push(
-      { valor: imagensDaPlataforma.length, rotulo: "Imagens registradas" },
-      {
-        valor: imagensDaPlataforma.filter((i) => i.ativo).length,
-        rotulo: "Imagens ativas",
-      },
-    );
-  }
-  if (ehCloud) {
-    indicadores.push({
-      valor: servidoresDaPlataforma.length,
-      rotulo: "Servidores",
-    });
-  }
-  if (ehGestaoDominio) {
-    indicadores.push(
-      { valor: dominiosDaPlataforma.length, rotulo: "Domínios" },
-      { valor: totalRegistosDns, rotulo: "Registos DNS" },
-    );
-  }
+  const indicadores: CartaoIndicadorProps[] = [
+    ...(ehGestaoDominio
+      ? [
+          { valor: dominiosDaPlataforma.length, rotulo: "Domínios", Icone: IconDominio },
+          { valor: totalRegistosDns, rotulo: "Registos DNS", Icone: IconRede },
+        ]
+      : [
+          ...(ehContainerizacao
+            ? [{ valor: imagensDaPlataforma.length, rotulo: "Imagens", Icone: IconImagem }]
+            : []),
+          ...(mostraServidores
+            ? [{ valor: servidoresDaPlataforma.length, rotulo: "Servidores", Icone: IconServer }]
+            : []),
+          { valor: plataforma.totais?.sistemas ?? sistemasHospedados.length, rotulo: "Sistemas", Icone: IconSistemas },
+        ]),
+    // O estado fica num cartão, junto dos números, e não no cabeçalho
+    {
+      valor: plataforma.ativo ? "Ativa" : "Desativada",
+      rotulo: "Estado",
+      Icone: IconEstado,
+      classeIcone: plataforma.ativo ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500",
+    },
+  ];
+  // Número ímpar de cartões: abaixo de lg o último ocupa a linha toda, para não ficar sozinho a meio
+  const ultimoIndicadorInteiro =
+    indicadores.length % 2 === 1 ? "[&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1" : "";
+  const colunasIndicadores: Record<number, string> = {
+    2: "lg:grid-cols-2",
+    3: "lg:grid-cols-3",
+    4: "xl:grid-cols-4", // a 1024px (com o menu lateral) 4 cartões ficam apertados
+  };
 
   return (
     <div className="space-y-8 pb-12">
-      {/* ================= HEADER ================= */}
-      <div className="bg-[#18357a] text-white p-6 sm:p-8 rounded-2xl shadow-sm space-y-5">
-        <button
-          onClick={aoVoltar}
-          className="text-xs font-semibold text-blue-100/80 hover:text-white transition-colors cursor-pointer"
-        >
-          ← Voltar às plataformas
-        </button>
+      {/* ================= CABEÇALHO ================= */}
+      <div className="bg-[#18357a] text-white rounded-2xl shadow-sm">
+        <div className="p-5 sm:p-8 space-y-5">
+          <button
+            onClick={aoVoltar}
+            className="text-xs font-semibold text-blue-100/80 hover:text-white transition-colors cursor-pointer"
+          >
+            ← Voltar às plataformas
+          </button>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <span className="text-xs uppercase font-semibold text-blue-200/80 tracking-widest block mb-1">
-              {ROTULOS_TIPO_PLATAFORMA[plataforma.tipo]}
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold">
-              {plataforma.nome}
-            </h2>
-          </div>
-
-          {ehAdmin && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => aoEditar("plataforma", plataforma)}
-                aria-label="Editar plataforma"
-                title="Editar plataforma"
-                className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
-              >
-                <IconCaneta className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() =>
-                  aoEliminar("plataforma", plataforma.id, plataforma.nome)
-                }
-                aria-label="Eliminar plataforma"
-                title="Eliminar plataforma"
-                className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 text-white hover:bg-red-500 transition-colors cursor-pointer"
-              >
-                <IconLixeira className="w-4 h-4" />
-              </button>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
+            <div className="flex items-center gap-4 min-w-0 max-w-full">
+              <LogotipoPlataforma nome={plataforma.nome} logotipo={plataforma.logotipo} tamanho="lg" />
+              <div className="min-w-0">
+                <span className="text-xs uppercase font-semibold text-blue-200/80 tracking-widest block mb-1">
+                  {ROTULOS_TIPO_PLATAFORMA[plataforma.tipo]}
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-bold break-words lg:truncate">{plataforma.nome}</h2>
+              </div>
             </div>
-          )}
+
+            <div className="flex items-center gap-2">
+              {plataforma.urlPainel && (
+                <BotaoIconeCabecalho rotulo="Abrir painel" Icone={IconLinkExterno} href={plataforma.urlPainel} />
+              )}
+              {ehAdmin && (
+                <>
+                  <BotaoIconeCabecalho
+                    rotulo="Editar plataforma"
+                    Icone={IconCaneta}
+                    onClick={() => aoEditar("plataforma", plataforma)}
+                  />
+                  <BotaoIconeCabecalho
+                    rotulo="Eliminar plataforma"
+                    Icone={IconLixeira}
+                    perigoso
+                    onClick={() => aoEliminar("plataforma", plataforma.id, plataforma.nome)}
+                  />
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ================= INDICADORES ================= */}
-      {(() => {
-        const totalCartoes = indicadores.length + 2; // + Estado + Painel
-        const grelha =
-          totalCartoes >= 4
-            ? "sm:grid-cols-2 lg:grid-cols-4 max-w-7xl"
-            : totalCartoes === 3
-              ? "sm:grid-cols-3 max-w-5xl"
-              : "sm:grid-cols-2 max-w-3xl";
+      <div className={`grid grid-cols-2 gap-3 sm:gap-4 ${ultimoIndicadorInteiro} ${colunasIndicadores[indicadores.length] ?? "lg:grid-cols-3"}`}>
+        {indicadores.map((indicador) => (
+          <CartaoIndicador key={indicador.rotulo} {...indicador} />
+        ))}
+      </div>
 
-        return (
-          <div className={`grid grid-cols-1 gap-4 mx-auto w-full ${grelha}`}>
-            <CartaoEstado ativo={plataforma.ativo} />
-            {indicadores.map((indicador) => (
-              <CartaoIndicador key={indicador.rotulo} {...indicador} />
+      {/* ================= ACESSO E CONFIGURAÇÃO ================= */}
+      <Secao titulo="Acesso e configuração">
+        <dl className="bg-white rounded-2xl border border-slate-200/70 shadow-xs p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <Campo rotulo="Painel de controlo">
+            {plataforma.urlPainel ? (
+              <a
+                href={plataforma.urlPainel}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-900 hover:underline break-all"
+              >
+                {plataforma.urlPainel}
+              </a>
+            ) : (
+              <span className="text-slate-400 font-normal">Sem URL de painel</span>
+            )}
+          </Campo>
+          <Campo rotulo="Utilizador">
+            {plataforma.utilizador ? (
+              <span className="font-mono">{plataforma.utilizador}</span>
+            ) : (
+              <span className="text-slate-400 font-normal">Não definido</span>
+            )}
+          </Campo>
+          <Campo rotulo="Token">
+            {plataforma.temToken ? (
+              <SegredoRevelavel
+                descricao={`token da plataforma ${plataforma.nome}`}
+                obter={(tokenElevado) => revelarTokenPlataforma(plataforma.id, tokenElevado)}
+              />
+            ) : (
+              <span className="text-slate-400 font-normal">Não definido</span>
+            )}
+          </Campo>
+          {ehContainerizacao && (
+            <>
+              <Campo rotulo="URL do registry">
+                <span className="font-mono break-all">{plataforma.registryUrl ?? "-"}</span>
+              </Campo>
+              <Campo rotulo="Namespace">
+                <span className="font-mono">{plataforma.namespace ?? "-"}</span>
+              </Campo>
+            </>
+          )}
+          <Campo rotulo="Registada em">{formatarData(plataforma.criadoEm)}</Campo>
+        </dl>
+      </Secao>
+
+      {/* ================= SERVIDORES (só se existirem) ================= */}
+      {mostraServidores && (
+        <Secao titulo={`Servidores (${servidoresDaPlataforma.length})`}>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-4">
+            {servidoresDaPlataforma.map((servidor) => (
+              <CartaoServidor key={servidor.id} servidor={servidor} />
             ))}
-            <CartaoPainel url={plataforma.urlPainel} />
           </div>
-        );
-      })()}
+        </Secao>
+      )}
 
-      {/* ================= REGISTRY (só containerização) ================= */}
-      {ehContainerizacao && (
-        <section className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
-            Registry
-          </h3>
-          <div className="bg-white p-5 rounded-2xl border border-blue-100/80 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <CampoRegistry
-              rotulo="Fornecedor"
-              valor={
-                plataforma.fornecedorContainer
-                  ? ROTULOS_FORNECEDOR_CONTAINER[plataforma.fornecedorContainer]
-                  : "-"
-              }
-            />
-            <CampoRegistry
-              rotulo="URL do registry"
-              valor={plataforma.registryUrl ?? "-"}
-            />
-            <CampoRegistry
-              rotulo="Namespace"
-              valor={plataforma.namespace ?? "-"}
-            />
-            <CampoRegistry
-              rotulo="Utilizador"
-              valor={plataforma.registryUtilizador ?? "-"}
-            />
-            <CampoRegistry
-              rotulo="Token"
-              valor={plataforma.temTokenRegistry ? "Definido" : "Não definido"}
-            />
+      {servidoresForaDoLugar.length > 0 && (
+        <Secao titulo={`Servidores a mover (${servidoresForaDoLugar.length})`}>
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">
+            Plataformas de containerização são registos de imagens e não alojam servidores. Edite estes
+            servidores e associe-os à plataforma Cloud onde realmente correm.
           </div>
-        </section>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-4">
+            {servidoresForaDoLugar.map((servidor) => (
+              <CartaoServidor key={servidor.id} servidor={servidor} />
+            ))}
+          </div>
+        </Secao>
+      )}
+
+      {/* ======== SISTEMAS HOSPEDADOS (num registo: containerizados, correm das suas imagens) ======== */}
+      {!ehGestaoDominio && (
+        <Secao
+          titulo={`${ehContainerizacao ? "Sistemas containerizados" : "Sistemas hospedados"} (${sistemasHospedados.length})`}
+        >
+          {sistemasHospedados.length === 0 ? (
+            <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-200">
+              <p className="text-xs text-slate-400 italic">
+                {ehContainerizacao
+                  ? "Nenhum sistema usa imagens deste registo. Escolha a imagem na infraestrutura do backend do sistema."
+                  : "Nenhum sistema usa esta plataforma. Associe-a no formulário do sistema (frontend) ou na infraestrutura do backend."}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-4">
+              {sistemasHospedados.map((sistema) => (
+                <CartaoSistemaHospedado key={sistema.id} sistema={sistema} />
+              ))}
+            </div>
+          )}
+        </Secao>
       )}
 
       {/* ================= IMAGENS (só containerização) ================= */}
       {ehContainerizacao && (
-        <section className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
-            Imagens
-          </h3>
-          <div className="bg-white p-6 rounded-2xl border border-blue-100/80 shadow-xs">
+        <Secao titulo={`Imagens (${imagensDaPlataforma.length})`}>
+          <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/70 shadow-xs">
             <AbaImagens
               imagens={imagensDaPlataforma}
               ehAdmin={ehAdmin}
@@ -299,44 +277,21 @@ export default function DetalhesPlataforma({
               aoEliminar={aoEliminar}
             />
           </div>
-        </section>
-      )}
-
-      {/* ================= SERVIDORES (só cloud) ================= */}
-      {ehCloud && (
-        <section className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
-            Servidores
-          </h3>
-          <div className="bg-white p-6 rounded-2xl border border-blue-100/80 shadow-xs">
-            <AbaServidores
-              servidores={servidoresDaPlataforma}
-              plataformas={plataformas}
-              ehAdmin={ehAdmin}
-              aoEditar={aoEditar}
-              aoEliminar={aoEliminar}
-            />
-          </div>
-        </section>
+        </Secao>
       )}
 
       {/* ================= DOMÍNIOS (só gestão de domínio) ================= */}
       {ehGestaoDominio && (
-        <section className="space-y-3">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">
-            Domínios & DNS
-          </h3>
-          <div className="bg-white p-6 rounded-2xl border border-blue-100/80 shadow-xs">
-            <AbaDominios
-              dominios={dominiosDaPlataforma}
-              subdominios={subdominios}
-              servidores={servidores}
-              ehAdmin={ehAdmin}
-              aoEditar={aoEditar}
-              aoEliminar={aoEliminar}
-            />
-          </div>
-        </section>
+        <Secao titulo="Domínios & DNS">
+          <AbaDominios
+            dominios={dominiosDaPlataforma}
+            subdominios={subdominios}
+            servidores={servidores}
+            ehAdmin={ehAdmin}
+            aoEditar={aoEditar}
+            aoEliminar={aoEliminar}
+          />
+        </Secao>
       )}
     </div>
   );

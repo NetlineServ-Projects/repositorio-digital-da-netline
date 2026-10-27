@@ -1,7 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconVoltar } from "../../../components/icons";
 import { toast } from "sonner";
-import type { Sistema } from "../../../hooks/useSistemasData";
+import {
+  listarDominios,
+  listarPlataformas,
+  listarServidores,
+  type OpcaoHospedagem,
+  type Sistema,
+} from "../../../hooks/useSistemasData";
+import EnderecoAmbiente from "./enderecoAmbiente";
+import {
+  estadoInicialEndereco,
+  montarSubdominio,
+  tinhaSubdominio,
+  validarEndereco,
+  type EstadoEndereco,
+} from "./enderecos";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 interface SistemaFormularioProps {
   sistemaExistente?: Sistema | null; // presente = modo edição
@@ -47,12 +62,12 @@ function ListaEditavel({
           onKeyDown={(e) =>
             e.key === "Enter" && (e.preventDefault(), adicionar())
           }
-          className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
+          className="flex-1 min-w-0 px-3 py-2 sm:py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
         />
         <button
           type="button"
           onClick={adicionar}
-          className="px-3 py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-900"
+          className="shrink-0 px-3 py-2 sm:py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-900"
         >
           + Add
         </button>
@@ -120,15 +135,54 @@ export default function SistemaFormulario({
   const [repositorioUrl, setRepositorioUrl] = useState(
     sistemaExistente?.repositorioUrl ?? "",
   );
-  const [urlProducao, setUrlProducao] = useState(
-    sistemaExistente?.urlProducao ?? "",
-  );
   const [responsavelTecnico, setResponsavelTecnico] = useState(
     sistemaExistente?.responsavelTecnico ?? "",
   );
   const [versaoAtual, setVersaoAtual] = useState(
     sistemaExistente?.versaoAtual ?? "",
   );
+
+  // Onde está o frontend e o endereço de cada ambiente
+  const [plataformaFrontendId, setPlataformaFrontendId] = useState(
+    sistemaExistente?.plataformaFrontendId != null
+      ? String(sistemaExistente.plataformaFrontendId)
+      : "",
+  );
+  const [producao, setProducao] = useState<EstadoEndereco>(() =>
+    estadoInicialEndereco(sistemaExistente, "PRODUCAO"),
+  );
+  const [testes, setTestes] = useState<EstadoEndereco>(() =>
+    estadoInicialEndereco(sistemaExistente, "TESTES"),
+  );
+  const alterarProducao = (alteracoes: Partial<EstadoEndereco>) =>
+    setProducao((atual) => ({ ...atual, ...alteracoes }));
+  const alterarTestes = (alteracoes: Partial<EstadoEndereco>) =>
+    setTestes((atual) => ({ ...atual, ...alteracoes }));
+
+  // Listas dos dropdowns
+  const [plataformas, setPlataformas] = useState<OpcaoHospedagem[]>([]);
+  const [dominios, setDominios] = useState<OpcaoHospedagem[]>([]);
+  const [servidores, setServidores] = useState<OpcaoHospedagem[]>([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    Promise.all([listarPlataformas(), listarDominios(), listarServidores()])
+      .then(([plt, dom, srv]) => {
+        if (cancelado) return;
+        // O frontend só pode estar alojado numa Cloud (ex: Vercel), não num registo de imagens
+        setPlataformas(plt.filter((p) => p.tipo === "CLOUD_BASE_DADOS"));
+        setDominios(dom);
+        setServidores(srv);
+      })
+      .catch(() => {
+        if (!cancelado) {
+          toast.error("Não foi possível carregar as plataformas, os domínios e os servidores.");
+        }
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const [devs, setDevs] = useState<string[]>(
     sistemaExistente?.desenvolvedores ?? [],
@@ -156,6 +210,10 @@ export default function SistemaFormulario({
       );
     }
 
+    const erroEndereco =
+      validarEndereco("Produção", producao) ?? validarEndereco("Testes", testes);
+    if (erroEndereco) return toast.error(erroEndereco);
+
     await onSubmit({
       nome,
       descricaoCurta: descCurta,
@@ -169,7 +227,14 @@ export default function SistemaFormulario({
       tecnologiasBackend: techsBackend,
       tecnologiasInfraestrutura: techsInfra,
       repositorioUrl: repositorioUrl || undefined,
-      urlProducao: urlProducao || undefined,
+      // Com subdomínio, o endereço calcula-se sozinho: o URL à parte não é usado
+      urlProducao: producao.temSubdominio ? undefined : producao.url.trim() || undefined,
+      urlTestes: testes.temSubdominio ? null : testes.url.trim() || null,
+      plataformaFrontendId: plataformaFrontendId ? Number(plataformaFrontendId) : null,
+      subdominios: {
+        PRODUCAO: montarSubdominio(producao, tinhaSubdominio(sistemaExistente, "PRODUCAO")),
+        TESTES: montarSubdominio(testes, tinhaSubdominio(sistemaExistente, "TESTES")),
+      },
       responsavelTecnico: responsavelTecnico || undefined,
       versaoAtual: versaoAtual || undefined,
     });
@@ -178,17 +243,17 @@ export default function SistemaFormulario({
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 min-w-0">
           <button
             type="button"
             onClick={onCancelar}
-            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
           >
             <IconVoltar />
             <span>Cancelar</span>
           </button>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-800 break-words">
               {emEdicao
                 ? `Editar ${sistemaExistente!.nome}`
                 : "Registar Novo Sistema"}
@@ -204,7 +269,7 @@ export default function SistemaFormulario({
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm space-y-6"
+        className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100 shadow-sm space-y-6"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
@@ -222,18 +287,19 @@ export default function SistemaFormulario({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+            <label htmlFor="sistema-status" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Status do Projeto
             </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
-            >
-              <option value="Em Desenvolvimento">Em Desenvolvimento</option>
-              <option value="Em Produção">Em Produção</option>
-              <option value="Manutenção">Manutenção</option>
-            </select>
+            <SelectPesquisavel
+              id="sistema-status"
+              valor={status}
+              onChange={setStatus}
+              opcoes={[
+                { valor: "Em Desenvolvimento", label: "Em Desenvolvimento" },
+                { valor: "Em Produção", label: "Em Produção" },
+                { valor: "Manutenção", label: "Manutenção" },
+              ]}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -302,16 +368,19 @@ export default function SistemaFormulario({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              URL de Produção
+            <label htmlFor="sistema-plataforma-frontend" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+              Plataforma do Frontend
             </label>
-            <input
-              type="url"
-              placeholder="https://sistema.empresa.com"
-              value={urlProducao}
-              onChange={(e) => setUrlProducao(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
+            <SelectPesquisavel
+              id="sistema-plataforma-frontend"
+              valor={plataformaFrontendId}
+              onChange={setPlataformaFrontendId}
+              opcaoVazia="Sem plataforma"
+              opcoes={plataformas.map((p) => ({ valor: String(p.id), label: p.nome }))}
             />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Onde o frontend está hospedado (por exemplo, a Vercel).
+            </p>
           </div>
 
           <div>
@@ -339,6 +408,23 @@ export default function SistemaFormulario({
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
             />
           </div>
+
+          <EnderecoAmbiente
+            titulo="Produção"
+            estado={producao}
+            onChange={alterarProducao}
+            dominios={dominios}
+            servidores={servidores}
+            tinhaSubdominio={tinhaSubdominio(sistemaExistente, "PRODUCAO")}
+          />
+          <EnderecoAmbiente
+            titulo="Testes"
+            estado={testes}
+            onChange={alterarTestes}
+            dominios={dominios}
+            servidores={servidores}
+            tinhaSubdominio={tinhaSubdominio(sistemaExistente, "TESTES")}
+          />
 
           <ListaEditavel
             label="Equipa de Desenvolvedores"
@@ -393,18 +479,18 @@ export default function SistemaFormulario({
           </div>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+        <div className="pt-4 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
           <button
             type="button"
             onClick={onCancelar}
-            className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-200 transition-colors"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-200 transition-colors"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={salvando}
-            className="px-5 py-2 bg-blue-900 hover:bg-blue-950 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-900 hover:bg-blue-950 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
           >
             {salvando
               ? "A Guardar..."

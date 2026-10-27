@@ -1,81 +1,54 @@
+import { Link } from "react-router-dom";
 import logoNetline from "../../assets/netline.jpg";
 
 const Footer = () => {
   return (
-    <footer className="bg-blue-950 text-slate-200 pt-12 pb-6 px-8 rounded-t-2xl">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-blue-800/60">
-        
-        {/* Coluna 1: Logo e Descrição da Netline */}
-        <div className="space-y-4">
+    <footer className="relative bg-[#081633] text-slate-300 pt-16 pb-8 px-6 overflow-hidden">
+      {/* Linha nas duas cores do logótipo */}
+      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#22628a] via-[#e3c234] to-[#22628a]" aria-hidden="true" />
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 pb-10 border-b border-white/10">
+        <div className="md:col-span-5 space-y-4">
           <div className="flex items-center gap-3">
-            <img
-              src={logoNetline}
-              alt="Logotipo Netline"
-              className="w-auto h-10 rounded-lg object-contain bg-white p-1"
-            />
-            <span className="text-xl font-bold tracking-wide text-white uppercase">
-              Netline
+            <span className="w-14 h-14 rounded-2xl bg-[#f7f7f7] flex items-center justify-center ring-1 ring-white/10 overflow-hidden">
+              <img src={logoNetline} alt="Logótipo Netline" className="w-12 h-12 object-contain" />
             </span>
+            <div>
+              <p className="font-['Poppins'] text-lg font-bold text-white">Netline Serv, Lda</p>
+              <p className="text-xs text-slate-400">Repositório Digital Interno</p>
+            </div>
           </div>
           <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
-            Repositório Digital Interno — Preservando o conhecimento, aplicações e a memória institucional da empresa.
+            Preservando o conhecimento, as aplicações e a memória institucional da empresa num único lugar.
           </p>
         </div>
 
-        {/* Coluna 2: Navegação Rápida */}
-        <div>
-          <h3 className="text-white font-semibold text-base mb-4 tracking-wider uppercase">
-            Navegação
-          </h3>
-          <ul className="space-y-2 text-sm text-slate-300">
-            <li>
-              <a href="#inicio" className="hover:text-amber-400 transition-colors">
-                Início
-              </a>
-            </li>
-            <li>
-              <a href="#sobrenos" className="hover:text-amber-400 transition-colors">
-                Sobre a Plataforma
-              </a>
-            </li>
-            <li>
-              <a href="#suporte" className="hover:text-amber-400 transition-colors">
-                Suporte Técnico
-              </a>
-            </li>
-            <li>
-              <a href="/login" className="hover:text-amber-400 transition-colors">
-                Acesso ao Sistema
-              </a>
-            </li>
+        <nav className="md:col-span-3" aria-label="Navegação do rodapé">
+          <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Navegação</h3>
+          <ul className="space-y-2.5 text-sm">
+            <li><a href="#inicio" className="hover:text-[#e3c234] transition-colors">Início</a></li>
+            <li><a href="#sobrenos" className="hover:text-[#e3c234] transition-colors">A plataforma</a></li>
+            <li><a href="#como-funciona" className="hover:text-[#e3c234] transition-colors">Como funciona</a></li>
+            <li><a href="#suporte" className="hover:text-[#e3c234] transition-colors">Suporte técnico</a></li>
+            <li><Link to="/autenticacao" className="hover:text-[#e3c234] transition-colors">Acesso ao sistema</Link></li>
           </ul>
-        </div>
+        </nav>
 
-        {/* Coluna 3: Contacto / Informação Institucional */}
-        <div>
-          <h3 className="text-white font-semibold text-base mb-4 tracking-wider uppercase">
-            Suporte Interno
-          </h3>
-          <p className="text-sm text-slate-300 mb-2">
-            Precisa de ajuda ou de registar novos ficheiros?
-          </p>
-          <p className="text-sm text-amber-400 font-medium">
+        <div className="md:col-span-4">
+          <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Suporte interno</h3>
+          <p className="text-sm text-slate-400">Precisa de ajuda ou de registar novos ficheiros?</p>
+          <a href="mailto:suporte@netline.co.mz" className="inline-block mt-2 text-sm font-semibold text-[#e3c234] hover:underline">
             suporte@netline.co.mz
-          </p>
-          <p className="text-xs text-slate-400 mt-2">
-            Maputo, Moçambique
-          </p>
+          </a>
+          <p className="text-xs text-slate-500 mt-2">Maputo, Moçambique</p>
         </div>
-
       </div>
 
-      {/* Direitos de Autor e Rodapé Inferior */}
-      <div className="max-w-7xl mx-auto pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-400 gap-4">
-        <p>
-          © {new Date().getFullYear()} Netline. Todos os direitos reservados.
-        </p>
-        <p className="text-slate-500">
-          Uso Exclusivo Interno
+      <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <p>© {new Date().getFullYear()} Netline Serv, Lda. Todos os direitos reservados.</p>
+        <p className="inline-flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#e3c234]" aria-hidden="true" />
+          Uso exclusivo interno
         </p>
       </div>
     </footer>

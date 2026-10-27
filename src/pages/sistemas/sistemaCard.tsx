@@ -27,7 +27,7 @@ export default function SistemaCard({ sistema, documentos, onVerDetalhes }: Sist
   ];
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+    <div className="bg-white p-5 rounded-xl border-2 border-[#d99b26]/25 border-t-[5px] border-t-[#d99b26] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="p-2.5 bg-blue-50 text-blue-900 rounded-lg"><IconSistema className="w-5 h-5 text-blue-900" /></div>

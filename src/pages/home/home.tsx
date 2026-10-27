@@ -1,159 +1,312 @@
+import type { ComponentType } from "react";
+import { Link } from "react-router-dom";
 import Header from "./header";
 import Card from "./card";
-import { CabinetDocsIcon, CameraIcon, FileIcon } from "../../components/icons";
-import Principal from "../../assets/principal.png";
-import Fundo1 from "../../assets/fundo.jpg";
 import Suporte from "./suporte";
 import Footer from "./footer";
-import { toast } from "sonner";
+import logoNetline from "../../assets/netline.jpg";
+import Principal from "../../assets/principal.png";
+import {
+  CabinetDocsIcon,
+  CameraIcon,
+  FileIcon,
+  IconDocumento,
+  IconSistemas,
+  IconPlataforma,
+  IconAprovado,
+  IconUpload,
+  IconPesquisa,
+  IconEscudo,
+  IconCadeado,
+  IconRelogio,
+} from "../../components/icons";
+
+type Icone = ComponentType<{ className?: string }>;
+
+const PILARES: { Icone: Icone; titulo: string; texto: string }[] = [
+  { Icone: IconDocumento, titulo: "Centralizado", texto: "Tudo num só lugar" },
+  { Icone: IconCadeado, titulo: "Seguro", texto: "Acesso interno e auditado" },
+  { Icone: IconRelogio, titulo: "Sempre à mão", texto: "Consulta a qualquer hora" },
+];
+
+const MODULOS: { Icone: Icone; titulo: string; texto: string }[] = [
+  {
+    Icone: IconDocumento,
+    titulo: "Documentos",
+    texto: "Manuais, contratos e especificações organizados por categoria, com pesquisa e pré-visualização.",
+  },
+  {
+    Icone: IconSistemas,
+    titulo: "Sistemas desenvolvidos",
+    texto: "Ficha técnica de cada solução: equipa, tecnologias, ambientes e documentação associada.",
+  },
+  {
+    Icone: IconPlataforma,
+    titulo: "Plataformas & servidores",
+    texto: "Onde cada sistema corre: clouds, servidores, imagens de containers e domínios.",
+  },
+  {
+    Icone: IconAprovado,
+    titulo: "Aprovações",
+    texto: "Cada documento submetido é revisto antes de ficar visível para toda a equipa.",
+  },
+];
+
+const PASSOS: { Icone: Icone; titulo: string; texto: string }[] = [
+  { Icone: IconUpload, titulo: "Submeter", texto: "O colaborador envia o documento e escolhe a categoria." },
+  { Icone: IconEscudo, titulo: "Rever", texto: "Um administrador aprova ou rejeita, com o motivo da decisão." },
+  { Icone: IconPesquisa, titulo: "Consultar", texto: "Depois de aprovado, fica disponível para toda a equipa." },
+];
+
+function TituloSecao({ etiqueta, titulo, texto, claro = false }: { etiqueta: string; titulo: string; texto?: string; claro?: boolean }) {
+  return (
+    <div className="max-w-2xl mx-auto text-center space-y-3">
+      <span
+        className={`inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] ${claro ? "text-[#e3c234]" : "text-[#22628a]"}`}
+      >
+        <span className="w-6 h-px bg-current" aria-hidden="true" />
+        {etiqueta}
+        <span className="w-6 h-px bg-current" aria-hidden="true" />
+      </span>
+      <h2 className={`font-['Poppins'] text-3xl md:text-4xl font-bold tracking-tight ${claro ? "text-white" : "text-slate-900"}`}>
+        {titulo}
+      </h2>
+      {texto && <p className={`text-base md:text-lg leading-relaxed ${claro ? "text-blue-100/70" : "text-slate-600"}`}>{texto}</p>}
+    </div>
+  );
+}
+
+// Pequeno cartão de vidro que flutua à volta do logótipo no hero
+function Etiqueta({ Icone, texto, className }: { Icone: Icone; texto: string; className: string }) {
+  return (
+    <div
+      className={`absolute flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0b1f4d]/85 backdrop-blur-md border border-white/15 shadow-xl text-white text-xs font-semibold ${className}`}
+    >
+      <span className="w-7 h-7 rounded-lg bg-[#e3c234] text-[#0b1f4d] flex items-center justify-center">
+        <Icone className="w-3.5 h-3.5" />
+      </span>
+      {texto}
+    </div>
+  );
+}
 
 export default function Home() {
-  const lidarComAdesao = () => {
-    toast.info("Redirecionando para o formulário de adesão...");
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 antialiased">
-      <Header onPlanosClick={lidarComAdesao} />
+    <div className="min-h-screen bg-white text-slate-800 antialiased">
+      <Header />
 
-      {/* ================= HERO SECTION OTIMIZADO ================= */}
-      <section
-        id="inicio"
-        className="relative w-full flex items-center justify-center bg-cover bg-center px-6 py-16 md:py-24 pt-28 md:pt-36"
-        style={{ backgroundImage: `url(${Fundo1})` }}
-      >
-        {/* Overlay com gradiente suave */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/70 to-slate-950/85 backdrop-blur-[2px]" />
+      {/* ================= HERO ================= */}
+      <section id="inicio" className="relative overflow-hidden bg-[#0b1f4d] pt-32 pb-20 md:pt-40 md:pb-28 px-6">
+        {/* Fundo: grelha subtil e brilhos nas cores do logótipo */}
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+          aria-hidden="true"
+        />
+        <div className="absolute -top-40 -left-40 w-[32rem] h-[32rem] rounded-full bg-[#22628a]/50 blur-3xl" aria-hidden="true" />
+        <div className="absolute top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full bg-[#e3c234]/20 blur-3xl" aria-hidden="true" />
+        <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-b from-transparent to-[#0b1f4d]" aria-hidden="true" />
 
-        <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          
-          {/* Lado Esquerdo - Conteúdo Principal */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-300 text-xs font-semibold tracking-wider uppercase border border-amber-400/20">
-              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-              Repositório Interno
+        <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-10 items-center">
+          <div className="lg:col-span-7 text-center lg:text-left space-y-7">
+            <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/15 text-xs font-semibold text-blue-100 tracking-wide">
+              <span className="h-2 w-2 rounded-full bg-[#e3c234] motion-safe:animate-pulse" />
+              Repositório interno da Netline Serv
             </span>
 
-            <h1 className="text-amber-50 font-extrabold text-3xl sm:text-4xl lg:text-5xl leading-tight tracking-tight">
-              Repositório Digital da <span className="text-amber-400">Netline</span>
+            <h1 className="font-['Poppins'] text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] tracking-tight text-white">
+              O conhecimento da{" "}
+              <span className="bg-gradient-to-r from-[#f3d65a] via-[#e3c234] to-[#c9a51b] bg-clip-text text-transparent">Netline</span>
+              , organizado e seguro.
             </h1>
 
-            <p className="text-white font-medium text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Conectando ideias, estruturando o futuro.
+            <p className="text-base sm:text-lg text-blue-100/80 leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Documentação, sistemas desenvolvidos e infraestrutura da empresa reunidos numa plataforma única, para consultar,
+              preservar e partilhar com a equipa.
             </p>
 
-            <p className="text-sm sm:text-base text-slate-300 font-normal max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Plataforma centralizada para consulta, preservação e gestão do conhecimento institucional, documentações e aplicações corporativas.
-            </p>
-
-            {/* Ações / Botões */}
-            <div className="pt-2 flex flex-wrap gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <Link
+                to="/autenticacao"
+                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-[#e3c234] hover:bg-[#d4b225] text-[#0b1f4d] text-sm font-bold shadow-lg shadow-[#e3c234]/25 transition-all hover:-translate-y-0.5"
+              >
+                Entrar no repositório <span aria-hidden="true">→</span>
+              </Link>
               <a
                 href="#sobrenos"
-                className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-sm font-bold shadow-lg shadow-amber-400/20 transition-all hover:scale-[1.02] cursor-pointer"
+                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-white text-sm font-semibold transition-colors"
               >
-                Explorar Plataforma
-              </a>
-              <a
-                href="#suporte"
-                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition-all cursor-pointer backdrop-blur-xs"
-              >
-                Suporte Técnico
+                Conhecer a plataforma
               </a>
             </div>
 
-            {/* Métrica / Atalho rápido */}
-            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-white/10 max-w-lg mx-auto lg:mx-0">
-              <div>
-                <span className="block text-xl font-bold text-amber-400">100%</span>
-                <span className="text-xs text-slate-400">Centralizado</span>
-              </div>
-              <div>
-                <span className="block text-xl font-bold text-amber-400">Seguro</span>
-                <span className="text-xs text-slate-400">Acesso Interno</span>
-              </div>
-              <div>
-                <span className="block text-xl font-bold text-amber-400">Online</span>
-                <span className="text-xs text-slate-400">Disponibilidade</span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 max-w-xl mx-auto lg:mx-0">
+              {PILARES.map(({ Icone, titulo, texto }) => (
+                <div key={titulo} className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-left">
+                  <span className="w-9 h-9 rounded-xl bg-[#22628a]/60 text-[#e3c234] flex items-center justify-center shrink-0">
+                    <Icone className="w-4 h-4" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-bold text-white">{titulo}</span>
+                    <span className="block text-[11px] text-blue-100/60">{texto}</span>
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Lado Direito - Imagem Ilustrativa */}
-          <div className="lg:col-span-5 flex justify-center items-center">
-            <div className="relative group w-full max-w-md lg:max-w-none">
-              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/30 to-blue-600/30 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition duration-300" />
-              <img
-                src={Principal}
-                className="relative w-full h-auto object-cover rounded-2xl shadow-2xl border border-white/15 transition-transform duration-300 group-hover:scale-[1.01]"
-                alt="Plataforma Netline"
+          {/* Montra do logótipo: anéis nas cores da marca à volta do símbolo */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-72 h-72 sm:w-96 sm:h-96">
+              <div className="absolute inset-0 rounded-full bg-[#e3c234]/10 blur-2xl" aria-hidden="true" />
+              <div
+                className="absolute inset-0 rounded-full border-2 border-dashed border-[#e3c234]/40 motion-safe:animate-[spin_50s_linear_infinite]"
+                aria-hidden="true"
               />
+              <div className="absolute inset-6 sm:inset-8 rounded-full border border-[#22628a]/70" aria-hidden="true" />
+              <div className="absolute inset-12 sm:inset-16 rounded-full bg-[#f7f7f7] shadow-2xl shadow-black/40 ring-8 ring-white/5 flex items-center justify-center overflow-hidden">
+                <img src={logoNetline} alt="Logótipo da Netline Serv, Lda" className="w-[88%] h-[88%] object-contain" />
+              </div>
+
+              <Etiqueta Icone={IconDocumento} texto="Documentos" className="top-6 -left-4 sm:left-0 animate-flutuar" />
+              <Etiqueta Icone={IconSistemas} texto="Sistemas" className="top-1/2 -right-6 sm:-right-8 animate-flutuar-lento" />
+              <Etiqueta Icone={IconPlataforma} texto="Plataformas" className="bottom-4 left-2 sm:left-6 animate-flutuar-lento" />
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* ================= SOBRE NÓS ================= */}
-      <section id="sobrenos" className="py-20 px-6 bg-slate-100/60">
-        <div className="max-w-6xl mx-auto text-center space-y-14">
-          <div className="max-w-3xl mx-auto space-y-3">
-            <span className="text-blue-700 font-semibold text-xs uppercase tracking-widest block">
-              Plataforma Institucional
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-              Sobre o Repositório
-            </h2>
-            <p className="text-slate-600 text-base md:text-lg leading-relaxed">
-              O Repositório Digital da Netline é o espaço central para consulta e preservação da informação corporativa. Reúne aplicações desenvolvidas, documentações técnicas, manuais de utilização e registos de eventos, garantindo acessibilidade e organização contínua.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+      {/* ================= A PLATAFORMA ================= */}
+      <section id="sobrenos" className="py-20 md:py-28 px-6 bg-slate-50">
+        <div className="max-w-6xl mx-auto space-y-14">
+          <TituloSecao
+            etiqueta="A plataforma"
+            titulo="Um só lugar para a memória da empresa"
+            texto="Aplicações desenvolvidas, documentação técnica, manuais e registos de eventos, sempre acessíveis e organizados."
+          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card
-              title="Aplicações e Documentação"
-              description="Consulte o catálogo de soluções desenvolvidas pela Netline, bem como manuais e especificações técnicas."
-              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow space-y-3"
-              icon={<FileIcon />}
+              numero="01"
+              title="Aplicações e documentação"
+              description="Consulte o catálogo de soluções desenvolvidas pela Netline, com os seus manuais e especificações técnicas."
+              icon={<FileIcon className="w-7 h-7" />}
             />
-
             <Card
-              title="Conhecimento Centralizado"
-              description="Reúna num único local aplicações, procedimentos operacionais e documentos essenciais para a organização."
-              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow space-y-3"
-              icon={<CabinetDocsIcon />}
+              numero="02"
+              title="Conhecimento centralizado"
+              description="Aplicações, procedimentos operacionais e documentos essenciais reunidos num único local."
+              icon={<CabinetDocsIcon className="w-7 h-7" />}
             />
-
             <Card
-              title="Memória Institucional"
-              description="Preserve o histórico da empresa através de marcos importantes, conquistas e eventos corporativos."
-              className="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow space-y-3"
-              icon={<CameraIcon />}
+              numero="03"
+              title="Memória institucional"
+              description="O histórico da empresa preservado: marcos importantes, conquistas e eventos corporativos."
+              icon={<CameraIcon className="w-7 h-7" />}
             />
           </div>
+        </div>
+      </section>
+
+      {/* ================= MÓDULOS ================= */}
+      <section className="py-20 md:py-28 px-6 bg-white">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="relative order-2 lg:order-1">
+            <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-[#22628a]/20 via-transparent to-[#e3c234]/25 blur-2xl" aria-hidden="true" />
+            <img
+              src={Principal}
+              alt="Ilustração de documentos organizados numa pasta partilhada pela equipa"
+              className="relative w-full rounded-[2rem] shadow-2xl shadow-[#18357a]/20 border border-slate-200/70"
+            />
+          </div>
+
+          <div className="order-1 lg:order-2 space-y-8">
+            <div className="space-y-3 text-center lg:text-left">
+              <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#22628a]">
+                <span className="w-6 h-px bg-current" aria-hidden="true" />
+                Módulos
+              </span>
+              <h2 className="font-['Poppins'] text-3xl md:text-4xl font-bold tracking-tight text-slate-900">
+                Tudo o que a equipa precisa, ligado entre si
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {MODULOS.map(({ Icone, titulo, texto }) => (
+                <div
+                  key={titulo}
+                  className="group p-5 rounded-2xl border border-slate-200/80 hover:border-[#e3c234]/60 hover:bg-[#e3c234]/5 transition-colors"
+                >
+                  <span className="w-10 h-10 rounded-xl bg-[#18357a]/5 text-[#18357a] group-hover:bg-[#18357a] group-hover:text-[#e3c234] flex items-center justify-center transition-colors">
+                    <Icone className="w-4 h-4" />
+                  </span>
+                  <h3 className="mt-4 text-sm font-bold text-slate-900">{titulo}</h3>
+                  <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">{texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= COMO FUNCIONA ================= */}
+      <section id="como-funciona" className="relative py-20 md:py-28 px-6 bg-[#0b1f4d] overflow-hidden">
+        <div className="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[40rem] h-[20rem] rounded-full bg-[#22628a]/40 blur-3xl" aria-hidden="true" />
+        <div className="relative max-w-6xl mx-auto space-y-14">
+          <TituloSecao
+            claro
+            etiqueta="Como funciona"
+            titulo="Do envio à consulta, com revisão pelo meio"
+            texto="Nada é publicado sem passar por um administrador, para que a informação partilhada seja sempre fiável."
+          />
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {PASSOS.map(({ Icone, titulo, texto }, i) => (
+              <li key={titulo} className="relative p-7 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                <div className="flex items-center gap-4">
+                  <span className="w-12 h-12 rounded-2xl bg-[#e3c234] text-[#0b1f4d] flex items-center justify-center shadow-lg shadow-[#e3c234]/20">
+                    <Icone className="w-5 h-5" />
+                  </span>
+                  <span className="font-['Poppins'] text-sm font-bold text-[#e3c234]">Passo {i + 1}</span>
+                </div>
+                <h3 className="font-['Poppins'] mt-5 text-xl font-bold text-white">{titulo}</h3>
+                <p className="mt-2 text-sm text-blue-100/70 leading-relaxed">{texto}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
       {/* ================= SUPORTE ================= */}
-      <section id="suporte" className="py-20 px-6 bg-slate-200/50">
-        <div className="max-w-5xl mx-auto space-y-10">
-          <div className="max-w-2xl mx-auto text-center space-y-3">
-            <span className="text-blue-700 font-semibold text-xs uppercase tracking-widest block">
-              Canais de Ajuda
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
-              Suporte Técnico
-            </h2>
-            <p className="text-slate-600 text-base md:text-lg leading-relaxed">
-              Dúvidas sobre o envio de manuais ou utilização do sistema? Entre em contacto com a equipa de suporte para assistência direta.
-            </p>
-          </div>
-
+      <section id="suporte" className="py-20 md:py-28 px-6 bg-slate-50">
+        <div className="max-w-6xl mx-auto space-y-12">
+          <TituloSecao
+            etiqueta="Canais de ajuda"
+            titulo="Suporte técnico"
+            texto="Dúvidas sobre o envio de manuais ou a utilização do sistema? A equipa de suporte ajuda diretamente."
+          />
           <Suporte />
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
+      {/* ================= CHAMADA FINAL ================= */}
+      <section className="px-6 pb-20 md:pb-28 bg-slate-50">
+        <div className="max-w-6xl mx-auto relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-[#e3c234] to-[#f0d354] p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full border-[18px] border-white/25" aria-hidden="true" />
+          <div className="relative">
+            <h2 className="font-['Poppins'] text-2xl sm:text-3xl font-bold text-[#0b1f4d]">Pronto para começar?</h2>
+            <p className="mt-1 text-sm sm:text-base text-[#0b1f4d]/75">Entre com a sua conta da Netline e aceda ao repositório.</p>
+          </div>
+          <Link
+            to="/autenticacao"
+            className="relative inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#0b1f4d] hover:bg-[#18357a] text-white text-sm font-bold shadow-xl transition-colors shrink-0"
+          >
+            Iniciar sessão <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

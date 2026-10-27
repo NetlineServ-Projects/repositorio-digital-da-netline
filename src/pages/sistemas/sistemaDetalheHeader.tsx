@@ -1,4 +1,5 @@
 import { IconVoltar, IconCaneta, IconLixeira } from "../../components/icons";
+import BotaoIconeCabecalho from "../../components/plataformas/botaoIconeCabecalho";
 import type { Sistema } from "../../hooks/useSistemasData";
 
 interface SistemaDetalheHeaderProps {
@@ -6,6 +7,8 @@ interface SistemaDetalheHeaderProps {
   onVoltar: () => void;
   onEditar: () => void;
   onApagar: () => void;
+  // Só quem criou o sistema (ou um ADMIN) o pode editar e eliminar
+  podeGerir: boolean;
 }
 
 export default function SistemaDetalheHeader({
@@ -13,15 +16,16 @@ export default function SistemaDetalheHeader({
   onVoltar,
   onEditar,
   onApagar,
+  podeGerir,
 }: SistemaDetalheHeaderProps) {
   return (
-    <div className="bg-[#18357a] text-white p-8 rounded-2xl shadow-md flex flex-col gap-3">
+    <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-md flex flex-col gap-3">
       {/* Botão Voltar + Categoria + Editar/Apagar no Topo */}
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={onVoltar}
-            className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors backdrop-blur-xs cursor-pointer"
+            className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors backdrop-blur-xs cursor-pointer shrink-0"
           >
             <IconVoltar />
             <span>Voltar</span>
@@ -32,29 +36,21 @@ export default function SistemaDetalheHeader({
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onEditar}
-            className="px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-xs font-semibold text-white transition-colors flex items-center gap-1.5 backdrop-blur-xs cursor-pointer"
-          >
-            <IconCaneta className="w-3.5 h-3.5" />
-            <span>Editar Sistema</span>
-          </button>
-
-          <button
-            onClick={onApagar}
-            className="px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-400/30 rounded-lg text-xs font-semibold text-red-200 transition-colors flex items-center gap-1.5 backdrop-blur-xs cursor-pointer"
-          >
-            <IconLixeira className="w-3.5 h-3.5" />
-            <span>Apagar</span>
-          </button>
-        </div>
+        {podeGerir && (
+          <div className="flex items-center gap-2 shrink-0">
+            <BotaoIconeCabecalho rotulo="Editar sistema" Icone={IconCaneta} onClick={onEditar} />
+            <BotaoIconeCabecalho rotulo="Apagar sistema" Icone={IconLixeira} perigoso onClick={onApagar} />
+          </div>
+        )}
       </div>
 
       {/* Nome do Sistema */}
-      <h2 className="text-3xl font-bold text-white tracking-tight mt-1">
+      <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1 break-words">
         {sistema.nome}
       </h2>
+      {sistema.criadoPor && (
+        <p className="text-xs text-blue-100/80">Criado por {sistema.criadoPor.nome}</p>
+      )}
     </div>
   );
 }

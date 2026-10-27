@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate, Link, useOutletContext } from "react-router-dom";
+import { useNavigate, Link, useOutletContext, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDocumentosData } from "../../../hooks/useDocumentosData";
 import { toast } from "sonner";
 import { IconUpload } from "../../../components/icons";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
@@ -18,7 +19,9 @@ export default function NovoDocumentoPage() {
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [categoriaId, setCategoriaId] = useState("");
+  // Vindo de Categorias, a categoria chega em ?categoria=ID e fica pré-selecionada
+  const [searchParams] = useSearchParams();
+  const [categoriaId, setCategoriaId] = useState(searchParams.get("categoria") ?? "");
   const [ficheiro, setFicheiro] = useState<File | null>(null);
   const [salvando, setSalvando] = useState(false);
 
@@ -67,7 +70,7 @@ export default function NovoDocumentoPage() {
         ← {t("documentos.form.voltar")}
       </Link>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-5">
         <h1 className="font-bold text-slate-800 text-lg">{t("documentos.novoDocumento")}</h1>
 
         {/* Título */}
@@ -106,17 +109,13 @@ export default function NovoDocumentoPage() {
           <label htmlFor="categoria" className="text-xs font-semibold text-slate-500 uppercase">
             {t("documentos.form.categoriaLabel")}
           </label>
-          <select
+          <SelectPesquisavel
             id="categoria"
-            value={categoriaId}
-            onChange={(e) => setCategoriaId(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] transition-all"
-          >
-            <option value="">{t("documentos.form.semCategoria")}</option>
-            {categorias.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.nome}</option>
-            ))}
-          </select>
+            valor={categoriaId}
+            onChange={setCategoriaId}
+            opcaoVazia={t("documentos.form.semCategoria")}
+            opcoes={categorias.map((cat) => ({ valor: String(cat.id), label: cat.nome }))}
+          />
         </div>
 
         {/* Área de Seleção de Ficheiro */}
@@ -135,7 +134,7 @@ export default function NovoDocumentoPage() {
               <IconUpload className="w-5 h-5 text-slate-400 mb-1" />
               <span className="text-xs text-slate-500 font-medium">
                 {ficheiro ? (
-                  <span className="text-[#18357a] font-semibold">{ficheiro.name}</span>
+                  <span className="text-[#18357a] font-semibold break-all">{ficheiro.name}</span>
                 ) : (
                   t("documentos.form.clicarOuArrastar")
                 )}
@@ -155,7 +154,7 @@ export default function NovoDocumentoPage() {
         )}
 
         {/* Ações */}
-        <div className="flex gap-3 pt-3">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-3">
           <Link
             to="/dashboard/documentos"
             className="flex-1 text-center py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold rounded-lg transition-colors"

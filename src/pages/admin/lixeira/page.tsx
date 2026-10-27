@@ -2,6 +2,21 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useLixeiraData } from "../../../hooks/useLixeiraData";
 
+// Dias até à exclusão definitiva (vermelho quando faltam 5 ou menos)
+function BadgeDiasRestantes({ dias }: { dias: number }) {
+  return (
+    <span
+      className={`inline-flex items-center shrink-0 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold ${
+        dias <= 5
+          ? "bg-red-50 text-red-600 border border-red-200"
+          : "bg-amber-50 text-amber-700 border border-amber-200"
+      }`}
+    >
+      {dias === 0 ? "Expira hoje" : `${dias} ${dias === 1 ? "dia" : "dias"}`}
+    </span>
+  );
+}
+
 export default function LixeiraPage() {
   const {
     documentos,
@@ -244,12 +259,12 @@ export default function LixeiraPage() {
     <div className="w-full space-y-6">
 
       {/* BANNER SUPERIOR */}
-      <div className="bg-[#18357a] text-white p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
         <div>
           <span className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
             REPOSITÓRIO
           </span>
-          <h1 className="text-3xl font-bold mt-1">Lixeira do Repositório</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mt-1">Lixeira do Repositório</h1>
           <p className="text-sm text-blue-100/90 mt-1">
             Os itens descartados são mantidos por até 30 dias antes de serem apagados definitivamente.
           </p>
@@ -259,7 +274,7 @@ export default function LixeiraPage() {
           <button
             type="button"
             onClick={handleEsvaziar}
-            className="px-4 py-2.5 bg-red-50/10 hover:bg-red-500/20 text-red-200 font-medium rounded-xl text-sm transition-colors border border-red-400/30 self-start sm:self-auto cursor-pointer whitespace-nowrap backdrop-blur-sm"
+            className="px-4 py-2.5 bg-red-50/10 hover:bg-red-500/20 text-red-200 font-medium rounded-xl text-sm transition-colors border border-red-400/30 w-full sm:w-auto sm:self-auto cursor-pointer whitespace-nowrap backdrop-blur-sm"
           >
             Esvaziar Lixeira
           </button>
@@ -293,9 +308,53 @@ export default function LixeiraPage() {
       </div>
 
       {/* CONTAINER DA TABELA */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
         {documentosFiltrados.length > 0 ? (
-          <div className="overflow-x-auto">
+          <>
+          {/* Telemóvel: um cartão por documento, com as mesmas ações da tabela */}
+          <ul className="xl:hidden divide-y divide-slate-100">
+            {documentosFiltrados.map((documento) => {
+              const titulo = documento.titulo || "Documento sem título";
+              const diasRestantes = calcularDiasRestantes(documento.apagadoEm);
+
+              return (
+                <li key={documento.id} className="py-4 first:pt-0 last:pb-0 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-slate-800 text-sm truncate" title={titulo}>
+                        {titulo}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5 truncate">
+                        Por: {documento.usuario?.nome || "Sistema"} · {formatarTamanho(documento.tamanho)}
+                      </p>
+                    </div>
+                    <BadgeDiasRestantes dias={diasRestantes} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs text-slate-600 font-medium mr-auto">
+                      {documento.categoria?.nome || "Geral"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRestaurar(documento.id, titulo)}
+                      className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer"
+                    >
+                      Restaurar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExcluirDefinitivo(documento.id, titulo)}
+                      className="px-3 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200 cursor-pointer"
+                    >
+                      Apagar
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden xl:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 text-xs uppercase font-semibold">
@@ -349,19 +408,7 @@ export default function LixeiraPage() {
                       </td>
 
                       <td className="py-4 px-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            diasRestantes <= 5
-                              ? "bg-red-50 text-red-600 border border-red-200"
-                              : "bg-amber-50 text-amber-700 border border-amber-200"
-                          }`}
-                        >
-                          {diasRestantes === 0
-                            ? "Expira hoje"
-                            : `${diasRestantes} ${
-                                diasRestantes === 1 ? "dia" : "dias"
-                              }`}
-                        </span>
+                        <BadgeDiasRestantes dias={diasRestantes} />
                       </td>
 
                       <td className="py-4 px-4 text-right whitespace-nowrap">
@@ -391,6 +438,7 @@ export default function LixeiraPage() {
               </tbody>
             </table>
           </div>
+          </>
         ) : (
           <div className="py-16 text-center">
             <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">

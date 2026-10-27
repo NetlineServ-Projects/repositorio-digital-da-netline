@@ -1,23 +1,52 @@
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { toast } from "sonner";
 import type { Credencial } from "../../../hooks/useSistemasData";
+import {
+  IconChave,
+  IconCopiar,
+  IconOlhoAberto,
+  IconOlhoFechado,
+  IconCaneta,
+  IconLixeira,
+  IconAprovado,
+} from "../../../components/icons";
 import { rotuloTipoCredencial } from "./constantes";
 
 interface ListaCredenciaisProps {
   credenciais: Credencial[];
   ehAdmin: boolean;
-  onAdicionar: () => void;
   onEditar: (credencial: Credencial) => void;
   onApagar: (credencial: Credencial) => void;
 }
 
-export default function ListaCredenciais({
-  credenciais,
-  ehAdmin,
-  onAdicionar,
-  onEditar,
-  onApagar,
-}: ListaCredenciaisProps) {
+function BotaoIcone({
+  rotulo,
+  Icone,
+  onClick,
+  perigoso = false,
+}: {
+  rotulo: string;
+  Icone: ComponentType<{ className?: string }>;
+  onClick: () => void;
+  perigoso?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={rotulo}
+      aria-label={rotulo}
+      className={`w-9 h-9 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${
+        perigoso ? "text-slate-400 hover:bg-rose-50 hover:text-rose-600" : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+      }`}
+    >
+      <Icone className="w-3.5 h-3.5" />
+    </button>
+  );
+}
+
+// A aba inteira só abre depois da reautenticação, por isso os valores já vêm no GET
+export default function ListaCredenciais({ credenciais, ehAdmin, onEditar, onApagar }: ListaCredenciaisProps) {
   const [revelados, setRevelados] = useState<Set<number>>(new Set());
   const [copiadoId, setCopiadoId] = useState<number | null>(null);
 
@@ -40,86 +69,62 @@ export default function ListaCredenciais({
     }
   };
 
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <h4 className="text-xs font-semibold text-slate-700">Credenciais do Backend</h4>
-        {ehAdmin && (
-          <button
-            type="button"
-            onClick={onAdicionar}
-            className="text-xs font-semibold text-blue-900 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer text-left sm:text-right"
-          >
-            + Adicionar credencial
-          </button>
-        )}
+  if (credenciais.length === 0) {
+    return (
+      <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-200">
+        <p className="text-xs text-slate-400 italic">Sem credenciais registadas neste ambiente.</p>
       </div>
+    );
+  }
 
-      {credenciais.length === 0 && (
-        <p className="text-xs text-slate-400 italic">Sem credenciais registadas.</p>
-      )}
-
+  return (
+    <ul className="bg-white rounded-2xl border border-slate-200/70 shadow-xs divide-y divide-slate-100">
       {credenciais.map((credencial) => {
         const revelado = revelados.has(credencial.id);
         const copiado = copiadoId === credencial.id;
         return (
-          <div
-            key={credencial.id}
-            className="border border-slate-100 rounded-lg p-3 space-y-2 hover:border-slate-200 transition-all"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-2">
+          <li key={credencial.id} className="p-4 sm:px-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-lg bg-[#d99b26]/10 text-[#b07a14] flex items-center justify-center shrink-0">
+                <IconChave className="w-3.5 h-3.5" />
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-800 truncate">{credencial.label}</p>
-                <p className="text-[11px] text-slate-400 truncate">
-                  {rotuloTipoCredencial(credencial.tipo)}
-                </p>
+                <p className="text-sm font-semibold text-slate-800 truncate">{credencial.label}</p>
+                <p className="text-[11px] text-slate-400 truncate">{rotuloTipoCredencial(credencial.tipo)}</p>
               </div>
-              {ehAdmin && (
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => onEditar(credencial)}
-                    className="text-[11px] text-slate-500 hover:bg-slate-100 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onApagar(credencial)}
-                    className="text-[11px] text-rose-600 hover:bg-rose-50 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                  >
-                    Apagar
-                  </button>
-                </div>
-              )}
+              <div className="flex items-center shrink-0">
+                <BotaoIcone
+                  rotulo={revelado ? "Ocultar valor" : "Mostrar valor"}
+                  Icone={revelado ? IconOlhoFechado : IconOlhoAberto}
+                  onClick={() => alternarRevelado(credencial.id)}
+                />
+                <BotaoIcone
+                  rotulo={copiado ? "Copiado" : "Copiar valor"}
+                  Icone={copiado ? IconAprovado : IconCopiar}
+                  onClick={() => credencial.valor && copiarValor(credencial.id, credencial.valor)}
+                />
+                {ehAdmin && (
+                  <>
+                    <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true" />
+                    <BotaoIcone rotulo="Editar credencial" Icone={IconCaneta} onClick={() => onEditar(credencial)} />
+                    <BotaoIcone
+                      rotulo="Apagar credencial"
+                      Icone={IconLixeira}
+                      perigoso
+                      onClick={() => onApagar(credencial)}
+                    />
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="bg-slate-50 rounded-md p-2 flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-2 overflow-hidden">
-              <pre className="text-[11px] text-slate-700 whitespace-pre-wrap break-all font-mono max-w-full overflow-x-auto">
-                {revelado
-                  ? credencial.valor
-                  : "•".repeat(Math.min(credencial.valor?.length || 24, 30))}
-              </pre>
-              <div className="flex justify-end gap-1 shrink-0 pt-1 sm:pt-0 border-t sm:border-0 border-slate-200/60">
-                <button
-                  type="button"
-                  onClick={() => alternarRevelado(credencial.id)}
-                  className="text-[11px] text-slate-500 hover:bg-slate-200 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                >
-                  {revelado ? "Ocultar" : "Mostrar"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => credencial.valor && copiarValor(credencial.id, credencial.valor)}
-                  className="text-[11px] text-slate-500 hover:bg-slate-200 px-2 py-1 rounded-md transition-colors cursor-pointer"
-                >
-                  {copiado ? "Copiado!" : "Copiar"}
-                </button>
-              </div>
-            </div>
-          </div>
+            <pre className="bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-xs text-slate-700 font-mono whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+              {/* Máscara de comprimento fixo, para não revelar o tamanho do segredo */}
+              {revelado ? credencial.valor : "•".repeat(16)}
+            </pre>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }

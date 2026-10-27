@@ -1,9 +1,23 @@
 export type TipoPlataforma = "CLOUD_BASE_DADOS" | "CONTAINERIZACAO" | "GESTAO_DOMINIO";
 
+// Chave do fornecedor (ex: "DOCKER_HUB", "VERCEL", "OUTRO"). A lista vem do backend.
+export type FornecedorPlataforma = string;
+
+export interface FornecedorCatalogo {
+  valor: FornecedorPlataforma;
+  rotulo: string;
+  urlPainel?: string;
+  registryUrl?: string;
+}
+
+export type CatalogoFornecedores = Record<TipoPlataforma, FornecedorCatalogo[]>;
+
 export interface Plataforma {
   id: number;
   nome: string;
   tipo: TipoPlataforma;
+  fornecedor: FornecedorPlataforma;
+  logotipo: string | null;
   urlPainel?: string | null;
   ativo: boolean;
   criadoEm?: string;
@@ -14,11 +28,12 @@ export interface Plataforma {
     sistemas: number;
     imagens: number;
   };
-  fornecedorContainer: FornecedorContainer | null;
+  // Sistemas que usam a plataforma: frontend alojado nela e/ou backend nela ou num servidor dela
+  sistemasHospedados?: SistemaDaPlataforma[];
+  utilizador: string | null;
+  temToken: boolean;
   registryUrl: string | null;
   namespace: string | null;
-  registryUtilizador: string | null;
-  temTokenRegistry: boolean;
   dominios?: Dominio[];
   servidores?: Servidor[];
   imagens?: ImagemContainer[];
@@ -43,31 +58,27 @@ export interface Servidor {
   versaoSo?: string | null;
   cloud?: string | null;
   regiao?: string | null;
-  estado: "ATIVO" | "INATIVO"
+  estado: "ATIVO" | "INATIVO";
   plataformaId: number;
   plataforma?: {
     id: number;
     nome: string;
     tipo: TipoPlataforma;
   };
-  infraestruturas?: Array<{
-    id: number;
-    ambiente: string;
-    url?: string | null;
-    sistema?: {
-      id: number;
-      nome: string;
-      status: string;
-      versaoAtual?: string | null;
-      urlProducao?: string | null;
-    };
-    credenciais?: Array<{
-      id: number;
-      tipo: string;
-      label: string;
-      criadoEm?: string;
-    }>;
+  // Um registo por sistema, ambiente e origem: BACKEND = a infraestrutura do sistema usa
+  // este servidor; DNS = o endereço do sistema (registo A/AAAA) aponta para ele
+  sistemasHospedados?: Array<{
+    ambiente: "PRODUCAO" | "TESTES";
+    sistema: { id: number; nome: string; status: string };
+    origem: "BACKEND" | "DNS";
+    endereco?: string; // só quando origem = DNS
   }>;
+  totais?: {
+    subdominios: number;
+    sistemas: number; // sistemas distintos
+  };
+  criadoEm?: string;
+  atualizadoEm?: string;
 }
 
 export interface Dominio {
@@ -102,28 +113,21 @@ export type TipoDns =
   | "SSHFP"
   | "OUTRO";
 
+// Cada subdomínio é o endereço público de um sistema num ambiente (gerido no formulário do sistema)
 export interface Subdominio {
   id: number;
   dominioId: number;
   nome: string;
+  nomeCompleto?: string;
   tipoDns: TipoDns;
   servidorId?: number | null;
   destino?: string | null;
-  servidor?: Servidor | null;
-  dominio?: Dominio;
+  servidor?: Pick<Servidor, "id" | "nome" | "hostname"> | null;
+  dominio?: Pick<Dominio, "id" | "nome">;
+  sistemaId: number;
+  ambiente: "PRODUCAO" | "TESTES";
+  sistema?: { id: number; nome: string };
 }
-
-export type FornecedorContainer =
-  | "DOCKER_HUB"
-  | "GITHUB_CONTAINER_REGISTRY"
-  | "AWS_ECR"
-  | "GOOGLE_ARTIFACT_REGISTRY"
-  | "AZURE_CONTAINER_REGISTRY"
-  | "GITLAB_REGISTRY"
-  | "KUBERNETES"
-  | "DOCKER_SWARM"
-  | "PORTAINER"
-  | "OUTRO";
 
 export type VisibilidadeImagem = "PUBLICA" | "PRIVADA";
 export type OrigemImagem = "PROPRIA" | "TERCEIROS";
@@ -143,14 +147,23 @@ export interface ImagemContainer {
   criadoEm: string;
   atualizadoEm: string;
 }
+
 export interface DadosPlataforma {
-  nome: string;
+  nome?: string; // só quando o fornecedor é "OUTRO": nos outros vem do fornecedor
   tipo: TipoPlataforma;
+  fornecedor: FornecedorPlataforma;
   urlPainel?: string | null;
   ativo?: boolean;
-  fornecedorContainer?: FornecedorContainer | null;
+  utilizador?: string | null;
+  token?: string | null; // omitido = manter o token atual
   registryUrl?: string | null;
   namespace?: string | null;
-  registryUtilizador?: string | null;
-  registryToken?: string | null;
+} 
+export interface SistemaDaPlataforma {
+  id: number;
+  nome: string;
+  status: string;
+  frontend: boolean;
+  // viaImagem: o backend corre noutro lado a partir de uma imagem guardada nesta plataforma
+  backend: { ambiente: "PRODUCAO" | "TESTES"; servidor: string | null; imagem: string | null; viaImagem: boolean }[];
 }

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from "react";
+import { limparTema } from "../utils/tema";
 
 interface Usuario {
   name: string;
@@ -36,6 +37,7 @@ export function UsuarioProvider({ children }: { children: React.ReactNode }) {
   const fazerLogout = () => {
     localStorage.removeItem("token_sistema");
     localStorage.removeItem("usuario_logado");
+    limparTema();
     setUsuarioLogado(null);
     window.location.href = "/";
   };

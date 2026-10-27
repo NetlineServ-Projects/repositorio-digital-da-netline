@@ -1,86 +1,95 @@
-import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import type { SistemaInfraestrutura } from "../../../hooks/useSistemasData";
-
-function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4">
-      <span className="text-xs font-medium text-slate-500 sm:w-28 shrink-0">{rotulo}</span>
-      <span className="text-sm text-slate-800 break-all">{children}</span>
-    </div>
-  );
-}
+import { IconServer } from "../../../components/icons";
+import { caminhoDetalheServidor } from "../../../utils/servidor";
+import CartaoInfra, { BotaoAcaoInfra, LinhaInfra } from "./cartaoInfra";
 
 interface CartaoBackendProps {
-  titulo: string;
+  subtitulo: string;
   infraestrutura: SistemaInfraestrutura | null;
   ehAdmin: boolean;
   onEditar: () => void;
-  children?: ReactNode; // as credenciais
 }
 
-export default function CartaoBackend({
-  titulo,
-  infraestrutura,
-  ehAdmin,
-  onEditar,
-  children,
-}: CartaoBackendProps) {
-  const subdominio = infraestrutura?.subdominio ?? null;
-  const mostrarImagem =
-    infraestrutura?.plataforma?.tipo === "CONTAINERIZACAO" || Boolean(infraestrutura?.imagem);
+const CLASSE_LINK = "text-blue-900 hover:underline";
+
+export default function CartaoBackend({ subtitulo, infraestrutura, ehAdmin, onEditar }: CartaoBackendProps) {
+  // Registos antigos: o backend estava "na" plataforma de um registo de imagens, que não executa nada
+  const plataformaInvalida = Boolean(infraestrutura?.plataforma && infraestrutura.plataforma.tipo !== "CLOUD_BASE_DADOS");
 
   return (
-    <section className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-slate-800">{titulo}</h3>
-        {ehAdmin && (
-          <button
-            type="button"
-            onClick={onEditar}
-            className="text-xs font-semibold text-blue-900 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-          >
-            {infraestrutura ? "Editar infraestrutura" : "Registar infraestrutura"}
-          </button>
-        )}
-      </div>
-
+    <CartaoInfra
+      titulo="Backend"
+      subtitulo={subtitulo}
+      Icone={IconServer}
+      acao={
+        ehAdmin && (
+          <BotaoAcaoInfra onClick={onEditar}>{infraestrutura ? "Editar" : "Registar"}</BotaoAcaoInfra>
+        )
+      }
+    >
       {!infraestrutura ? (
-        <p className="text-xs text-slate-400 italic">
-          Ainda não há infraestrutura registada neste ambiente.
-        </p>
+        <p className="text-xs text-slate-400 italic">Ainda não há infraestrutura registada neste ambiente.</p>
       ) : (
-        <div className="space-y-2.5">
-          <Linha rotulo="Plataforma">{infraestrutura.plataforma?.nome ?? "—"}</Linha>
-          <Linha rotulo="Servidor">
-            {infraestrutura.servidor
-              ? `${infraestrutura.servidor.nome}${
-                  infraestrutura.servidor.hostname ? ` (${infraestrutura.servidor.hostname})` : ""
-                }`
-              : "—"}
-          </Linha>
-          {mostrarImagem && (
-            <Linha rotulo="Imagem">
-              {infraestrutura.imagem
-                ? `${infraestrutura.imagem.nome}:${infraestrutura.imagem.tag}`
-                : "—"}
-            </Linha>
+        <>
+        {plataformaInvalida && (
+          <p className="mb-3 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800">
+            {infraestrutura.plataforma?.nome} guarda imagens mas não executa sistemas.
+            {ehAdmin ? " Edite e indique a plataforma Cloud onde o backend corre." : ""}
+          </p>
+        )}
+        <dl className="divide-y divide-slate-100">
+          <LinhaInfra rotulo="Corre em">
+            {infraestrutura.plataforma ? (
+              <Link to={`/dashboard/plataformas?plataforma=${infraestrutura.plataforma.id}`} className={CLASSE_LINK}>
+                {infraestrutura.plataforma.nome}
+              </Link>
+            ) : (
+              "—"
+            )}
+          </LinhaInfra>
+          <LinhaInfra rotulo="Servidor">
+            {infraestrutura.servidor ? (
+              <Link to={caminhoDetalheServidor(infraestrutura.servidor.id)} className={CLASSE_LINK}>
+                {infraestrutura.servidor.nome}
+              </Link>
+            ) : (
+              "—"
+            )}
+          </LinhaInfra>
+          {infraestrutura.servidor?.hostname && (
+            <LinhaInfra rotulo="Hostname">
+              <span className="font-mono text-xs">{infraestrutura.servidor.hostname}</span>
+            </LinhaInfra>
           )}
-          <Linha rotulo={subdominio ? "Subdomínio" : "Endereço"}>
-            {subdominio ? (
+          <LinhaInfra rotulo="Imagem">
+            {infraestrutura.imagem ? (
               <>
-                <span className="font-mono">
-                  {subdominio.nomeCompleto ?? subdominio.nome}
-                </span>{" "}
-                <span className="text-xs text-slate-400">({subdominio.tipoDns})</span>
+                <span className="font-mono text-xs">
+                  {infraestrutura.imagem.nome}:{infraestrutura.imagem.tag}
+                </span>
+                {infraestrutura.imagem.plataforma && (
+                  <span className="block text-[11px] font-normal text-slate-400">
+                    do registo{" "}
+                    <Link
+                      to={`/dashboard/plataformas?plataforma=${infraestrutura.imagem.plataforma.id}`}
+                      className={CLASSE_LINK}
+                    >
+                      {infraestrutura.imagem.plataforma.nome}
+                    </Link>
+                  </span>
+                )}
               </>
             ) : (
-              (infraestrutura.url ?? "—")
+              "—"
             )}
-          </Linha>
-        </div>
+          </LinhaInfra>
+          <LinhaInfra rotulo="Endereço">
+            {infraestrutura.url ? <span className="font-mono text-xs">{infraestrutura.url}</span> : "—"}
+          </LinhaInfra>
+        </dl>
+        </>
       )}
-
-      <div className="border-t border-slate-100 pt-4">{children}</div>
-    </section>
+    </CartaoInfra>
   );
 }

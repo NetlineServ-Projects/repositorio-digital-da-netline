@@ -1,29 +1,42 @@
 import { Link } from "react-router-dom";
 import type { PlataformaResumo } from "../../../hooks/useSistemasData";
+import { IconPlataforma } from "../../../components/icons";
+import LogotipoPlataforma from "../../../components/plataformas/logotipoPlataforma";
+import CartaoInfra from "./cartaoInfra";
 
 interface LinhaFrontendProps {
   plataforma?: PlataformaResumo | null;
   ehAdmin: boolean;
 }
 
+// A plataforma do frontend é a mesma nos dois ambientes (define-se no formulário do sistema)
 export default function LinhaFrontend({ plataforma, ehAdmin }: LinhaFrontendProps) {
   return (
-    <p className="text-xs text-slate-600 px-1">
+    <CartaoInfra
+      titulo="Frontend"
+      subtitulo="Todos os ambientes"
+      Icone={IconPlataforma}
+      classeIcone="bg-[#d99b26]/10 text-[#b07a14]"
+    >
       {plataforma ? (
-        <>
-          O frontend deste sistema está hospedado em <strong>{plataforma.nome}</strong>.{" "}
-          <Link
-            to={`/dashboard/plataformas?plataforma=${plataforma.id}`}
-            className="font-semibold text-blue-900 hover:underline"
-          >
-            VER PLATAFORMA
-          </Link>
-        </>
-      ) : ehAdmin ? (
-        "O frontend deste sistema ainda não tem plataforma. Defina-a ao editar o sistema."
+        <Link
+          to={`/dashboard/plataformas?plataforma=${plataforma.id}`}
+          className="flex items-center gap-3 p-3 -m-1 rounded-xl hover:bg-slate-50 transition-colors group"
+        >
+          <LogotipoPlataforma nome={plataforma.nome} logotipo={plataforma.logotipo ?? null} />
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-slate-800 truncate group-hover:text-blue-900">
+              {plataforma.nome}
+            </span>
+            <span className="block text-[11px] text-slate-400">Ver plataforma →</span>
+          </span>
+        </Link>
       ) : (
-        "O frontend deste sistema ainda não tem plataforma definida."
+        <p className="text-xs text-slate-400 italic">
+          O frontend ainda não tem plataforma.
+          {ehAdmin ? " Defina-a ao editar o sistema." : ""}
+        </p>
       )}
-    </p>
+    </CartaoInfra>
   );
 }

@@ -35,8 +35,23 @@ import {
   faLayerGroup,
   faDatabase,
   faArrowUpRightFromSquare,
+  faBell,
+  faPowerOff,
+  faMicrochip,
+  faMemory,
+  faHardDrive,
+  faGaugeHigh,
+  faCalendarDays,
+  faTag,
+  faLock,
+  faKey,
+  faBuilding,
+  faCodeBranch,
+  faCopy,
+  faLocationDot,
+  faShieldHalved,
 } from "@fortawesome/free-solid-svg-icons";
-import { faDocker } from "@fortawesome/free-brands-svg-icons";
+import { faDocker, faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 
 // Interface unificada para aceitar qualquer evento nativo (ex: onClick, title, style, etc.)
 export interface IconProps extends React.SVGAttributes<SVGElement> {
@@ -57,6 +72,70 @@ export const IconOlhoFechado = ({ className = "w-4 h-4", onClick }: IconProps) =
 
 export const IconUsuario = ({ className = "w-4 h-4" }: IconProps) => (
   <FontAwesomeIcon icon={faUser} className={className} />
+);
+
+export const IconCpu = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faMicrochip} className={className} />
+);
+
+export const IconMemoria = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faMemory} className={className} />
+);
+
+export const IconDisco = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faHardDrive} className={className} />
+);
+
+export const IconVelocidade = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faGaugeHigh} className={className} />
+);
+
+export const IconEstado = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faPowerOff} className={className} />
+);
+
+export const IconCalendario = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faCalendarDays} className={className} />
+);
+
+export const IconVersao = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faTag} className={className} />
+);
+
+export const IconCadeado = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faLock} className={className} />
+);
+
+export const IconChave = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faKey} className={className} />
+);
+
+export const IconEmpresa = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faBuilding} className={className} />
+);
+
+export const IconRepositorio = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faCodeBranch} className={className} />
+);
+
+export const IconCopiar = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faCopy} className={className} />
+);
+
+export const IconWhatsapp = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faWhatsapp} className={className} />
+);
+
+export const IconLocalizacao = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faLocationDot} className={className} />
+);
+
+export const IconEscudo = ({ className = "w-4 h-4" }: IconProps) => (
+  <FontAwesomeIcon icon={faShieldHalved} className={className} />
+);
+
+export const IconSino = ({ className = "w-5 h-5" }: IconProps) => (
+  <FontAwesomeIcon icon={faBell} className={className} />
 );
 
 export const IconUsuarios = ({ className = "w-5 h-5" }: IconProps) => (

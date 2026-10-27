@@ -5,7 +5,6 @@ import {
   IconPlataforma,
   IconServer,
   IconDominio,
-  IconRede,
   IconImagem,
 } from "../../../components/icons";
 import { usePlataformasData } from "../../../hooks/usePlataformasData";
@@ -13,28 +12,27 @@ import type {
   Plataforma,
   Servidor,
   Dominio,
-  Subdominio,
   ImagemContainer,
   DadosPlataforma,
 } from "../../../types/plataforma";
 import FormPlataforma from "./FormPlataforma";
 import FormServidor from "./FormServidor";
 import FormDominio from "./FormDominio";
-import FormSubdominio from "./FormSubdominio";
 import FormImagem from "./FormImagem";
 
+// Os subdomínios (registos DNS) não têm formulário aqui: são o endereço de um
+// sistema num ambiente e geram-se no formulário do sistema
 export type TipoFormularioPlataforma =
   | "plataforma"
   | "servidor"
   | "dominio"
-  | "subdominio"
   | "imagem";
 
 interface PlataformaFormularioPageProps {
   tipoInicial?: TipoFormularioPlataforma;
   itemEdicao?: {
     tipo: TipoFormularioPlataforma;
-    dados: Plataforma | Servidor | Dominio | Subdominio | ImagemContainer;
+    dados: Plataforma | Servidor | Dominio | ImagemContainer;
   } | null;
   onVoltar: () => void;
   onSucesso?: () => void;
@@ -53,16 +51,13 @@ export default function PlataformaFormularioPage({
 
   const {
     plataformas,
-    servidores,
-    dominios,
     criarPlataforma,
     atualizarPlataforma,
+    enviarLogotipoPlataforma,
     criarServidor,
     atualizarServidor,
     criarDominio,
     atualizarDominio,
-    criarSubdominio,
-    atualizarSubdominio,
     criarImagem,
     atualizarImagem,
   } = usePlataformasData();
@@ -70,16 +65,34 @@ export default function PlataformaFormularioPage({
   const emEdicao = Boolean(itemEdicao);
 
   // Submissão: Plataforma
-  const handleSalvarPlataforma = async (dados: DadosPlataforma) => {
+   // Submissão: Plataforma (o logótipo segue num segundo pedido, depois de a plataforma existir)
+  const handleSalvarPlataforma = async (
+    dados: DadosPlataforma,
+    logotipo: File | null,
+  ) => {
     setSalvando(true);
     try {
+      let plataformaId: number;
+
       if (itemEdicao?.tipo === "plataforma") {
         await atualizarPlataforma(itemEdicao.dados.id, dados);
+        plataformaId = itemEdicao.dados.id;
         toast.success("Plataforma atualizada com sucesso!");
       } else {
-        await criarPlataforma(dados);
+        const criada = await criarPlataforma(dados);
+        plataformaId = criada.id;
         toast.success("Plataforma cadastrada com sucesso!");
       }
+
+      if (logotipo) {
+        try {
+          await enviarLogotipoPlataforma(plataformaId, logotipo);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : "erro desconhecido";
+          toast.error(`A plataforma foi guardada, mas o logótipo não foi enviado: ${msg}`);
+        }
+      }
+
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
@@ -139,33 +152,6 @@ export default function PlataformaFormularioPage({
     }
   };
 
-  // Submissão: Subdomínio
-  const handleSalvarSubdominio = async (dados: {
-    dominioId: number;
-    nome: string;
-    tipoDns: string;
-    servidorId?: number | null;
-    destino?: string | null;
-  }) => {
-    setSalvando(true);
-    try {
-      if (itemEdicao?.tipo === "subdominio") {
-        await atualizarSubdominio(itemEdicao.dados.id, dados);
-        toast.success("Registo DNS atualizado com sucesso!");
-      } else {
-        await criarSubdominio(dados);
-        toast.success("Registo DNS cadastrado com sucesso!");
-      }
-      onSucesso?.();
-      onVoltar();
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Erro ao salvar registo DNS.";
-      toast.error(msg);
-    } finally {
-      setSalvando(false);
-    }
-  };
   // Submissão: Imagem
   const handleSalvarImagem = async (dados: Record<string, unknown>) => {
     setSalvando(true);
@@ -207,12 +193,6 @@ export default function PlataformaFormularioPage({
       sublabel: "Zona DNS Principal",
     },
     {
-      tipo: "subdominio" as const,
-      label: "Subdomínio / DNS",
-      icon: <IconRede className="w-4 h-4" />,
-      sublabel: "Apontamento de Registo",
-    },
-    {
       tipo: "imagem" as const,
       label: "Imagem",
       icon: <IconImagem className="w-4 h-4" />,
@@ -241,7 +221,7 @@ export default function PlataformaFormularioPage({
 
       {/* Selector de Abas do Formulário (apenas em modo de criação) */}
       {!emEdicao ? (
-        <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-xs grid grid-cols-2 md:grid-cols-5 gap-2">
+        <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-xs grid grid-cols-2 md:grid-cols-4 gap-2">
           {tabsConfig.map((tab) => {
             const ativa = tipoAtivo === tab.tipo;
             return (
@@ -322,20 +302,6 @@ export default function PlataformaFormularioPage({
         />
       )}
 
-      {tipoAtivo === "subdominio" && (
-        <FormSubdominio
-          subdominioExistente={
-            itemEdicao?.tipo === "subdominio"
-              ? (itemEdicao.dados as Subdominio)
-              : null
-          }
-          dominios={dominios}
-          servidores={servidores}
-          salvando={salvando}
-          onCancelar={onVoltar}
-          onSubmit={handleSalvarSubdominio}
-        />
-      )}
       {tipoAtivo === "imagem" && (
         <FormImagem
           imagemExistente={

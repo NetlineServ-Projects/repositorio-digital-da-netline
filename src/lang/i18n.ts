@@ -20,7 +20,7 @@ i18n
     },
     detection: {
       order: ["localStorage", "navigator"],
-      lookupLocalStorageKey: "idioma", // mesma chave que já usas no http-client.ts
+      lookupLocalStorage: "idioma",
       caches: ["localStorage"],
     },
   });

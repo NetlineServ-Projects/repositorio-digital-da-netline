@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { Plataforma, Servidor } from "../../../types/plataforma";
 import { IconOlhoAberto, IconOlhoFechado } from "../../../components/icons";
+import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
+import SelectPesquisavel from "../../../components/selectPesquisavel";
 
 type EstadoServidor = "ATIVO" | "INATIVO";
 interface FormServidorProps {
@@ -12,6 +14,12 @@ interface FormServidorProps {
   onSubmit: (dados: Record<string, unknown>) => Promise<void>;
 }
 
+const OPCOES_UNIDADE_ARMAZENAMENTO = [
+  { valor: "MB", label: "MB" },
+  { valor: "GB", label: "GB" },
+  { valor: "TB", label: "TB" },
+];
+
 export default function FormServidor({
   servidorExistente,
   plataformas,
@@ -19,9 +27,15 @@ export default function FormServidor({
   onCancelar,
   onSubmit,
 }: FormServidorProps) {
-  const [plataformaId, setPlataformaId] = useState<number | string>(
-    servidorExistente?.plataformaId ?? (plataformas[0]?.id || ""),
-  );
+  // Só a Cloud/Base de dados aloja servidores (containerização é um registo de imagens)
+  const plataformasCloud = plataformas.filter((p) => p.tipo === "CLOUD_BASE_DADOS");
+  // Um servidor antigo numa plataforma que já não é válida obriga a escolher outra
+  const plataformaInicial = plataformasCloud.some((p) => p.id === servidorExistente?.plataformaId)
+    ? servidorExistente?.plataformaId
+    : servidorExistente
+      ? ""
+      : plataformasCloud[0]?.id;
+  const [plataformaId, setPlataformaId] = useState<number | string>(plataformaInicial ?? "");
   const [nome, setNome] = useState(servidorExistente?.nome ?? "");
   const [hostname, setHostname] = useState(servidorExistente?.hostname ?? "");
   const [ip, setIp] = useState(servidorExistente?.ip ?? "");
@@ -132,8 +146,9 @@ export default function FormServidor({
       estado: estado,
     };
 
+    // Envia a password tal como foi escrita: pode começar ou acabar com espaços
     if (password.trim()) {
-      payload.password = password.trim();
+      payload.password = password;
     }
 
     await onSubmit(payload);
@@ -141,7 +156,7 @@ export default function FormServidor({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
             {servidorExistente ? "Editar Servidor" : "Novo Servidor"}
@@ -154,38 +169,36 @@ export default function FormServidor({
 
         {/* Plataforma Pai */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+          <label htmlFor="servidor-plataforma" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
             Plataforma Associada *
           </label>
-          <select
-            value={plataformaId}
-            onChange={(e) => setPlataformaId(e.target.value)}
+          <SelectPesquisavel
+            id="servidor-plataforma"
+            valor={String(plataformaId)}
+            onChange={setPlataformaId}
             required
-            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 text-slate-800"
-          >
-            <option value="" disabled>
-              Selecione a plataforma...
-            </option>
-            {plataformas.map((plat) => (
-              <option key={plat.id} value={plat.id}>
-                {plat.nome} ({plat.tipo})
-              </option>
-            ))}
-          </select>
+            placeholder="Selecione a plataforma..."
+            opcoes={plataformasCloud.map((plat) => ({
+              valor: String(plat.id),
+              label: plat.nome,
+              descricao: ROTULOS_TIPO_PLATAFORMA[plat.tipo] ?? plat.tipo,
+            }))}
+          />
         </div>
         {/* Estado do Servidor */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+          <label htmlFor="servidor-estado" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
             Estado do Servidor *
           </label>
-          <select
-            value={estado}
-            onChange={(e) => setEstado(e.target.value as EstadoServidor)}
-            className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 text-slate-800"
-          >
-            <option value="INATIVO">Inativo</option>
-            <option value="ATIVO">Ativo</option>
-          </select>
+          <SelectPesquisavel
+            id="servidor-estado"
+            valor={estado}
+            onChange={(v) => setEstado(v as EstadoServidor)}
+            opcoes={[
+              { valor: "INATIVO", label: "Inativo" },
+              { valor: "ATIVO", label: "Ativo" },
+            ]}
+          />
         </div>
 
         {/* Dados Básicos */}
@@ -263,6 +276,8 @@ export default function FormServidor({
                     servidorExistente ? "••••••••••••" : "Palavra-passe segura"
                   }
                   value={password}
+                  // Impede o browser de preencher aqui a password de login da app
+                  autoComplete="new-password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 pr-10 text-slate-800"
                 />
@@ -311,19 +326,16 @@ export default function FormServidor({
                   required
                   value={memoriaRam}
                   onChange={(e) => setMemoriaRam(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
+                  className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
                 />
-                <select
-                  value={memoriaRamUnidade}
-                  onChange={(e) =>
-                    setMemoriaRamUnidade(e.target.value as "MB" | "GB" | "TB")
-                  }
-                  className="px-2.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-slate-700"
-                >
-                  <option value="MB">MB</option>
-                  <option value="GB">GB</option>
-                  <option value="TB">TB</option>
-                </select>
+                <SelectPesquisavel
+                  aria-label="Unidade da memória RAM"
+                  comBusca={false}
+                  className="w-24 shrink-0"
+                  valor={memoriaRamUnidade}
+                  onChange={(v) => setMemoriaRamUnidade(v as "MB" | "GB" | "TB")}
+                  opcoes={OPCOES_UNIDADE_ARMAZENAMENTO}
+                />
               </div>
             </div>
 
@@ -339,19 +351,16 @@ export default function FormServidor({
                   required
                   value={disco}
                   onChange={(e) => setDisco(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
+                  className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
                 />
-                <select
-                  value={discoUnidade}
-                  onChange={(e) =>
-                    setDiscoUnidade(e.target.value as "MB" | "GB" | "TB")
-                  }
-                  className="px-2.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-slate-700"
-                >
-                  <option value="MB">MB</option>
-                  <option value="GB">GB</option>
-                  <option value="TB">TB</option>
-                </select>
+                <SelectPesquisavel
+                  aria-label="Unidade do disco"
+                  comBusca={false}
+                  className="w-24 shrink-0"
+                  valor={discoUnidade}
+                  onChange={(v) => setDiscoUnidade(v as "MB" | "GB" | "TB")}
+                  opcoes={OPCOES_UNIDADE_ARMAZENAMENTO}
+                />
               </div>
             </div>
 
@@ -367,18 +376,19 @@ export default function FormServidor({
                   required
                   value={larguraBanda}
                   onChange={(e) => setLarguraBanda(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
+                  className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
                 />
-                <select
-                  value={larguraBandaUnidade}
-                  onChange={(e) =>
-                    setLarguraBandaUnidade(e.target.value as "MBPS" | "GBPS")
-                  }
-                  className="px-2.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none text-slate-700"
-                >
-                  <option value="MBPS">Mbps</option>
-                  <option value="GBPS">Gbps</option>
-                </select>
+                <SelectPesquisavel
+                  aria-label="Unidade da largura de banda"
+                  comBusca={false}
+                  className="w-24 shrink-0"
+                  valor={larguraBandaUnidade}
+                  onChange={(v) => setLarguraBandaUnidade(v as "MBPS" | "GBPS")}
+                  opcoes={[
+                    { valor: "MBPS", label: "Mbps" },
+                    { valor: "GBPS", label: "Gbps" },
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -439,7 +449,7 @@ export default function FormServidor({
       </div>
 
       {/* Botões de Ação */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
         <button
           type="button"
           onClick={onCancelar}
