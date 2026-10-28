@@ -9,7 +9,7 @@ import {
   IconOlhoFechado,
   IconEmail,
 } from "../../components/icons";
-import { API_BASE, TIMEOUT_PADRAO_MS, erroDeLigacao } from "../../utils/api";
+import { API_BASE, TIMEOUT_PADRAO_MS, erroDeLigacao, guardarUsuarioLocal } from "../../utils/api";
 import { aplicarTema } from "../../utils/tema";
 
 export default function Autenticacao() {
@@ -40,16 +40,17 @@ export default function Autenticacao() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
+        credentials: "include", // o backend responde com o cookie HttpOnly da sessão
         signal: AbortSignal.timeout(TIMEOUT_PADRAO_MS),
       });
 
       const corpo = await resposta.json();
       if (!resposta.ok) throw new Error(corpo?.mensagem || t("auth.erroCredenciais"));
 
-      const { token, user } = corpo.data;
+      const { user } = corpo.data;
 
-      localStorage.setItem("token_sistema", token);
-      localStorage.setItem("usuario_logado", JSON.stringify(user));
+      // O token fica no cookie; localmente só o que o ecrã precisa
+      guardarUsuarioLocal(user);
       aplicarTema(Boolean(user.temaEscuro));
       fazerLogin({ name: user.name || user.nome, perfil: user.perfil });
 

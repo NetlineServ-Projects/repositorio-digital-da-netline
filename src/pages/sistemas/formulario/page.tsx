@@ -17,6 +17,9 @@ import {
   type EstadoEndereco,
 } from "./enderecos";
 import SelectPesquisavel from "../../../components/selectPesquisavel";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../lang/i18n";
+import { rotuloAmbiente } from "../infraestrutura/constantes";
 
 interface SistemaFormularioProps {
   sistemaExistente?: Sistema | null; // presente = modo edição
@@ -40,6 +43,7 @@ function ListaEditavel({
   onRemover: (i: number) => void;
   corTag: string;
 }) {
+  const { t } = useTranslation();
   const [input, setInput] = useState("");
   const adicionar = () => {
     if (input.trim() && !itens.includes(input.trim())) {
@@ -69,7 +73,7 @@ function ListaEditavel({
           onClick={adicionar}
           className="shrink-0 px-3 py-2 sm:py-1.5 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-900"
         >
-          + Add
+          {t("sistemas.formulario.adicionar")}
         </button>
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -116,6 +120,7 @@ export default function SistemaFormulario({
   onSubmit,
 }: SistemaFormularioProps) {
   const emEdicao = Boolean(sistemaExistente);
+  const { t } = useTranslation();
 
   const [nome, setNome] = useState(sistemaExistente?.nome ?? "");
   const [descCurta, setDescCurta] = useState(
@@ -176,7 +181,7 @@ export default function SistemaFormulario({
       })
       .catch(() => {
         if (!cancelado) {
-          toast.error("Não foi possível carregar as plataformas, os domínios e os servidores.");
+          toast.error(i18n.t("sistemas.formulario.erroCarregarOpcoes"));
         }
       });
     return () => {
@@ -202,16 +207,16 @@ export default function SistemaFormulario({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim()) return toast.error("O nome do sistema é obrigatório!");
+    if (!nome.trim()) return toast.error(t("sistemas.formulario.erroNomeObrigatorio"));
 
     if (dataInicio && dataEntrega && dataEntrega < dataInicio) {
       return toast.error(
-        "A data de entrega não pode ser anterior à data de início.",
+        t("sistemas.formulario.erroDatas"),
       );
     }
 
     const erroEndereco =
-      validarEndereco("Produção", producao) ?? validarEndereco("Testes", testes);
+      validarEndereco(rotuloAmbiente("PRODUCAO"), producao) ?? validarEndereco(rotuloAmbiente("TESTES"), testes);
     if (erroEndereco) return toast.error(erroEndereco);
 
     await onSubmit({
@@ -250,18 +255,18 @@ export default function SistemaFormulario({
             className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
           >
             <IconVoltar />
-            <span>Cancelar</span>
+            <span>{t("sistemas.comum.cancelar")}</span>
           </button>
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-slate-800 break-words">
               {emEdicao
-                ? `Editar ${sistemaExistente!.nome}`
-                : "Registar Novo Sistema"}
+                ? t("sistemas.formulario.tituloEditar", { nome: sistemaExistente!.nome })
+                : t("sistemas.formulario.tituloNovo")}
             </h2>
             <p className="text-xs text-slate-500">
               {emEdicao
-                ? "Corrija ou complete a ficha técnica do sistema"
-                : "Preencha a ficha técnica do novo projeto"}
+                ? t("sistemas.formulario.subtituloEditar")
+                : t("sistemas.formulario.subtituloNovo")}
             </p>
           </div>
         </div>
@@ -274,12 +279,12 @@ export default function SistemaFormulario({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Nome do Sistema *
+              {t("sistemas.formulario.nome")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: Repositório Digital de Documentos"
+              placeholder={t("sistemas.formulario.nomePlaceholder")}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
@@ -288,16 +293,16 @@ export default function SistemaFormulario({
 
           <div>
             <label htmlFor="sistema-status" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Status do Projeto
+              {t("sistemas.formulario.estado")}
             </label>
             <SelectPesquisavel
               id="sistema-status"
               valor={status}
               onChange={setStatus}
               opcoes={[
-                { valor: "Em Desenvolvimento", label: "Em Desenvolvimento" },
-                { valor: "Em Produção", label: "Em Produção" },
-                { valor: "Manutenção", label: "Manutenção" },
+                { valor: "Em Desenvolvimento", label: t("sistemas.status.EM_DESENVOLVIMENTO") },
+                { valor: "Em Produção", label: t("sistemas.status.EM_PRODUCAO") },
+                { valor: "Manutenção", label: t("sistemas.status.MANUTENCAO") },
               ]}
             />
           </div>
@@ -305,7 +310,7 @@ export default function SistemaFormulario({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Data Início
+                {t("sistemas.formulario.dataInicio")}
               </label>
               <input
                 type="date"
@@ -316,7 +321,7 @@ export default function SistemaFormulario({
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Data Entrega
+                {t("sistemas.formulario.dataEntrega")}
               </label>
               <input
                 type="date"
@@ -329,12 +334,12 @@ export default function SistemaFormulario({
 
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Descrição Curta (Resumo)
+              {t("sistemas.formulario.descricaoCurta")}
             </label>
             <input
               type="text"
               maxLength={255}
-              placeholder="Resumo em uma frase para o cartão do sistema..."
+              placeholder={t("sistemas.formulario.descricaoCurtaPlaceholder")}
               value={descCurta}
               onChange={(e) => setDescCurta(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
@@ -343,11 +348,11 @@ export default function SistemaFormulario({
 
           <div className="md:col-span-2">
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Descrição Completa / Objetivo do Sistema
+              {t("sistemas.formulario.descricaoLonga")}
             </label>
             <textarea
               rows={3}
-              placeholder="Explique detalhadamente qual problema este sistema resolve..."
+              placeholder={t("sistemas.formulario.descricaoLongaPlaceholder")}
               value={descLonga}
               onChange={(e) => setDescLonga(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 resize-none"
@@ -356,7 +361,7 @@ export default function SistemaFormulario({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Link do Repositório
+              {t("sistemas.formulario.repositorio")}
             </label>
             <input
               type="url"
@@ -369,27 +374,27 @@ export default function SistemaFormulario({
 
           <div>
             <label htmlFor="sistema-plataforma-frontend" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Plataforma do Frontend
+              {t("sistemas.formulario.plataformaFrontend")}
             </label>
             <SelectPesquisavel
               id="sistema-plataforma-frontend"
               valor={plataformaFrontendId}
               onChange={setPlataformaFrontendId}
-              opcaoVazia="Sem plataforma"
+              opcaoVazia={t("sistemas.formulario.semPlataforma")}
               opcoes={plataformas.map((p) => ({ valor: String(p.id), label: p.nome }))}
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              Onde o frontend está hospedado (por exemplo, a Vercel).
+              {t("sistemas.formulario.plataformaFrontendAjuda")}
             </p>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Responsável Técnico
+              {t("sistemas.formulario.responsavel")}
             </label>
             <input
               type="text"
-              placeholder="Nome do responsável atual"
+              placeholder={t("sistemas.formulario.responsavelPlaceholder")}
               value={responsavelTecnico}
               onChange={(e) => setResponsavelTecnico(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
@@ -398,11 +403,11 @@ export default function SistemaFormulario({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Versão Atual
+              {t("sistemas.formulario.versao")}
             </label>
             <input
               type="text"
-              placeholder="Ex: v2.3.1"
+              placeholder={t("sistemas.formulario.versaoPlaceholder")}
               value={versaoAtual}
               onChange={(e) => setVersaoAtual(e.target.value)}
               className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20"
@@ -410,7 +415,7 @@ export default function SistemaFormulario({
           </div>
 
           <EnderecoAmbiente
-            titulo="Produção"
+            titulo={rotuloAmbiente("PRODUCAO")}
             estado={producao}
             onChange={alterarProducao}
             dominios={dominios}
@@ -418,7 +423,7 @@ export default function SistemaFormulario({
             tinhaSubdominio={tinhaSubdominio(sistemaExistente, "PRODUCAO")}
           />
           <EnderecoAmbiente
-            titulo="Testes"
+            titulo={rotuloAmbiente("TESTES")}
             estado={testes}
             onChange={alterarTestes}
             dominios={dominios}
@@ -427,16 +432,16 @@ export default function SistemaFormulario({
           />
 
           <ListaEditavel
-            label="Equipa de Desenvolvedores"
-            placeholder="Nome do dev..."
+            label={t("sistemas.formulario.equipa")}
+            placeholder={t("sistemas.formulario.equipaPlaceholder")}
             itens={devs}
             onAdicionar={(v) => setDevs([...devs, v])}
             onRemover={(i) => setDevs(devs.filter((_, idx) => idx !== i))}
             corTag="bg-blue-50 text-blue-900 border-blue-200"
           />
           <ListaEditavel
-            label="Empresas Clientes / Utilizadores"
-            placeholder="Nome da empresa..."
+            label={t("sistemas.formulario.clientes")}
+            placeholder={t("sistemas.formulario.clientesPlaceholder")}
             itens={clientes}
             onAdicionar={(v) => setClientes([...clientes, v])}
             onRemover={(i) =>
@@ -447,8 +452,8 @@ export default function SistemaFormulario({
 
           <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
             <ListaEditavel
-              label="Tecnologias Frontend"
-              placeholder="Ex: React, TypeScript..."
+              label={t("sistemas.formulario.tecnologiasFrontend")}
+              placeholder={t("sistemas.formulario.tecnologiasFrontendPlaceholder")}
               itens={techsFrontend}
               onAdicionar={(v) => setTechsFrontend([...techsFrontend, v])}
               onRemover={(i) =>
@@ -457,8 +462,8 @@ export default function SistemaFormulario({
               corTag="bg-slate-100 text-slate-700 border-slate-200"
             />
             <ListaEditavel
-              label="Tecnologias Backend"
-              placeholder="Ex: Node.js, Prisma..."
+              label={t("sistemas.formulario.tecnologiasBackend")}
+              placeholder={t("sistemas.formulario.tecnologiasBackendPlaceholder")}
               itens={techsBackend}
               onAdicionar={(v) => setTechsBackend([...techsBackend, v])}
               onRemover={(i) =>
@@ -467,8 +472,8 @@ export default function SistemaFormulario({
               corTag="bg-slate-100 text-slate-700 border-slate-200"
             />
             <ListaEditavel
-              label="Infraestrutura"
-              placeholder="Ex: MySQL, Docker..."
+              label={t("sistemas.formulario.infraestrutura")}
+              placeholder={t("sistemas.formulario.infraestruturaPlaceholder")}
               itens={techsInfra}
               onAdicionar={(v) => setTechsInfra([...techsInfra, v])}
               onRemover={(i) =>
@@ -485,7 +490,7 @@ export default function SistemaFormulario({
             onClick={onCancelar}
             className="w-full sm:w-auto px-4 py-2.5 sm:py-2 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-200 transition-colors"
           >
-            Cancelar
+            {t("sistemas.comum.cancelar")}
           </button>
           <button
             type="submit"
@@ -493,10 +498,10 @@ export default function SistemaFormulario({
             className="w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-900 hover:bg-blue-950 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
           >
             {salvando
-              ? "A Guardar..."
+              ? t("sistemas.comum.aGuardar")
               : emEdicao
-                ? "Guardar Alterações"
-                : "Guardar Sistema"}
+                ? t("sistemas.formulario.guardarAlteracoes")
+                : t("sistemas.formulario.guardarSistema")}
           </button>
         </div>
       </form>

@@ -50,6 +50,8 @@ export interface ImagemArvore {
   visibilidade: string;
   origem: string;
   ativo: boolean;
+  // Backends que correm a partir desta imagem (noutra plataforma)
+  infraestruturas?: InfraestruturaArvore[];
 }
 
 export interface PlataformaArvore {
@@ -62,4 +64,6 @@ export interface PlataformaArvore {
   servidores?: ServidorArvore[];
   infraestruturas?: InfraestruturaArvore[];
   imagens?: ImagemArvore[];
+  // Frontends alojados nesta plataforma (ex: Vercel)
+  sistemasFrontend?: SistemaArvore[];
 }

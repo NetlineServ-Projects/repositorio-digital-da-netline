@@ -1,3 +1,5 @@
+import i18n from "../lang/i18n";
+
 export function obterUrlFicheiro(caminho: string, apiUrl: string): string {
   if (!caminho) return "#";
   if (caminho.startsWith("http")) return caminho;
@@ -24,7 +26,7 @@ export function formatarExtensao(tipo?: string, nomeArquivo?: string): string {
 export function obterNomeExibicao(doc: { titulo?: string; nomeArquivo?: string }): string {
   if (doc.titulo && doc.titulo.trim() !== "") return doc.titulo;
   if (doc.nomeArquivo && doc.nomeArquivo.trim() !== "") return doc.nomeArquivo;
-  return "Documento sem título";
+  return i18n.t("comum.documentoSemTitulo");
 }
 
 export function formatarTamanho(bytes?: string | number): string {

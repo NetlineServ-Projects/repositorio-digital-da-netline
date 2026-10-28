@@ -3,7 +3,8 @@ import {
   IconOlhoAberto,
   IconOlhoFechado,
   IconVoltar,
-} from "../../../components/icons"; // Ajuste o caminho do arquivo de ícones se necessário
+} from "../../../components/icons";
+import { useTranslation } from "react-i18next";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faSave } from "@fortawesome/free-solid-svg-icons";
 import type { UsuarioFormData } from "../../../hooks/useUsuariosData";
@@ -28,6 +29,7 @@ export default function UsuarioFormulario({
   onVoltar,
   onSubmit,
 }: UsuarioFormularioProps) {
+  const { t } = useTranslation();
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   return (
@@ -40,16 +42,16 @@ export default function UsuarioFormulario({
             className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
           >
             <IconVoltar className="w-4 h-4" />
-            <span>Voltar</span>
+            <span>{t("admin.usuarios.form.voltar")}</span>
           </button>
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
-              {editandoId ? "Editar Usuário" : "Criar Novo Usuário"}
+              {editandoId ? t("admin.usuarios.form.tituloEditar") : t("admin.usuarios.form.tituloNovo")}
             </h2>
             <p className="text-sm text-slate-500 mt-0.5">
               {editandoId
-                ? "Atualize as credenciais e permissões do utilizador"
-                : "Preencha os dados abaixo para cadastrar um novo utilizador"}
+                ? t("admin.usuarios.form.subtituloEditar")
+                : t("admin.usuarios.form.subtituloNovo")}
             </p>
           </div>
         </div>
@@ -64,12 +66,12 @@ export default function UsuarioFormulario({
       <form onSubmit={onSubmit} className="space-y-5 text-sm">
         <div>
           <label className="block font-semibold text-slate-700 mb-1.5">
-            Nome Completo
+            {t("admin.usuarios.form.nome")}
           </label>
           <input
             type="text"
             required
-            placeholder="Ex: João Tembe"
+            placeholder={t("admin.usuarios.form.nomePlaceholder")}
             value={formData.nome}
             onChange={(e) =>
               onFormDataChange({ ...formData, nome: e.target.value })
@@ -81,12 +83,12 @@ export default function UsuarioFormulario({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block font-semibold text-slate-700 mb-1.5">
-              E-mail Institucional
+              {t("admin.usuarios.form.email")}
             </label>
             <input
               type="email"
               required
-              placeholder="usuario@netline.co.mz"
+              placeholder={t("admin.usuarios.form.emailPlaceholder")}
               value={formData.email}
               onChange={(e) =>
                 onFormDataChange({ ...formData, email: e.target.value })
@@ -96,7 +98,7 @@ export default function UsuarioFormulario({
           </div>
           <div>
             <label className="block font-semibold text-slate-700 mb-1.5">
-              {editandoId ? "Nova Senha (opcional)" : "Senha Inicial"}
+              {editandoId ? t("admin.usuarios.form.novaSenha") : t("admin.usuarios.form.senhaInicial")}
             </label>
             <div className="relative">
               <input
@@ -105,8 +107,8 @@ export default function UsuarioFormulario({
                 minLength={8}
                 placeholder={
                   editandoId
-                    ? "Deixe em branco para manter"
-                    : "Mínimo 8 caracteres"
+                    ? t("admin.usuarios.form.senhaManter")
+                    : t("admin.usuarios.form.senhaMinimo")
                 }
                 value={formData.senha}
                 onChange={(e) =>
@@ -118,7 +120,7 @@ export default function UsuarioFormulario({
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
-                aria-label={mostrarSenha ? "Ocultar senha" : "Exibir senha"}
+                aria-label={mostrarSenha ? t("admin.usuarios.form.ocultarSenha") : t("admin.usuarios.form.mostrarSenha")}
               >
                 {mostrarSenha ? (
                   <IconOlhoFechado className="w-4 h-4" />
@@ -133,12 +135,12 @@ export default function UsuarioFormulario({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block font-semibold text-slate-700 mb-1.5">
-              Número de Telefone
+              {t("admin.usuarios.form.telemovel")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: 841234567"
+              placeholder={t("admin.usuarios.form.telemovelPlaceholder")}
               value={formData.numero}
               onChange={(e) =>
                 onFormDataChange({ ...formData, numero: e.target.value })
@@ -148,12 +150,12 @@ export default function UsuarioFormulario({
           </div>
           <div>
             <label className="block font-semibold text-slate-700 mb-1.5">
-              Cargo
+              {t("admin.usuarios.form.cargo")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: Técnico de Redes"
+              placeholder={t("admin.usuarios.form.cargoPlaceholder")}
               value={formData.cargo}
               onChange={(e) =>
                 onFormDataChange({ ...formData, cargo: e.target.value })
@@ -166,12 +168,12 @@ export default function UsuarioFormulario({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block font-semibold text-slate-700 mb-1.5">
-              Departamento
+              {t("admin.usuarios.form.departamento")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: TI"
+              placeholder={t("admin.usuarios.form.departamentoPlaceholder")}
               value={formData.departamento}
               onChange={(e) =>
                 onFormDataChange({ ...formData, departamento: e.target.value })
@@ -181,7 +183,7 @@ export default function UsuarioFormulario({
           </div>
           <div>
             <label htmlFor="usuario-perfil" className="block font-semibold text-slate-700 mb-1.5">
-              Perfil / Permissão
+              {t("admin.usuarios.form.perfil")}
             </label>
             <SelectPesquisavel
               id="usuario-perfil"
@@ -193,8 +195,8 @@ export default function UsuarioFormulario({
                 })
               }
               opcoes={[
-                { valor: "FUNCIONARIO", label: "Funcionário" },
-                { valor: "ADMIN", label: "Administrador" },
+                { valor: "FUNCIONARIO", label: t("admin.usuarios.funcionario") },
+                { valor: "ADMIN", label: t("admin.usuarios.administrador") },
               ]}
             />
           </div>
@@ -206,7 +208,7 @@ export default function UsuarioFormulario({
             onClick={onVoltar}
             className="w-full sm:w-auto px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors"
           >
-            Cancelar
+            {t("componentes.confirmacao.cancelar")}
           </button>
           <button
             type="submit"
@@ -216,12 +218,12 @@ export default function UsuarioFormulario({
             {salvando ? (
               <>
                 <FontAwesomeIcon icon={faSpinner} spin className="w-4 h-4" />
-                <span>Guardando...</span>
+                <span>{t("documentos.aGuardar")}</span>
               </>
             ) : (
               <>
                 <FontAwesomeIcon icon={faSave} className="w-4 h-4" />
-                <span>{editandoId ? "Atualizar Conta" : "Criar Conta"}</span>
+                <span>{editandoId ? t("admin.usuarios.form.atualizarConta") : t("admin.usuarios.form.criarConta")}</span>
               </>
             )}
           </button>

@@ -1,29 +1,24 @@
 import { useState, useEffect } from "react";
 import { fetchComToken } from "../utils/api";
 import type { Documento, Categoria } from "../types/documento";
+import { useCarregamento } from "./useCarregamento";
+import i18n from "../lang/i18n";
 
 export function useDocumentosData() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+  const { carregando: loading, aAtualizar, erro, executar } = useCarregamento(
+    i18n.t("comum.erros.carregarDocumentos"),
+  );
 
-  const carregarDados = async () => {
-    setLoading(true);
-    setErro(null);
-    try {
-      const [docs, cats] = await Promise.all([
-        fetchComToken("/documentos"),
-        fetchComToken("/categorias"),
-      ]);
-      setDocumentos(docs.filter((d: Documento) => d.estado === "APROVADO"));
-      setCategorias(cats);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Não foi possível carregar os documentos.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const carregarDados = () =>
+    executar(
+      () => Promise.all([fetchComToken("/documentos"), fetchComToken("/categorias")]),
+      ([docs, cats]) => {
+        setDocumentos((Array.isArray(docs) ? docs : []).filter((d: Documento) => d.estado === "APROVADO"));
+        setCategorias(Array.isArray(cats) ? cats : []);
+      },
+    );
 
   useEffect(() => {
     carregarDados();
@@ -49,5 +44,5 @@ export function useDocumentosData() {
     await carregarDados();
   };
 
-  return { documentos, categorias, loading, erro, recarregar: carregarDados, criarDocumento, editarDocumento, aprovarDocumento, apagarDocumento };
+  return { documentos, categorias, loading, aAtualizar, erro, recarregar: carregarDados, criarDocumento, editarDocumento, aprovarDocumento, apagarDocumento };
 }

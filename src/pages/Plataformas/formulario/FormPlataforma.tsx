@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type {
   CatalogoFornecedores,
   DadosPlataforma,
@@ -14,6 +15,7 @@ import {
 } from "../../../hooks/usePlataformasData";
 import { IconOlhoAberto, IconOlhoFechado } from "../../../components/icons";
 import SelectPesquisavel from "../../../components/selectPesquisavel";
+import i18n from "../../../lang/i18n";
 
 interface FormPlataformaProps {
   plataformaExistente?: Plataforma | null;
@@ -22,23 +24,8 @@ interface FormPlataformaProps {
   onSubmit: (dados: DadosPlataforma, logotipo: File | null) => Promise<void>;
 }
 
-const OPCOES_TIPO: { valor: TipoPlataforma; rotulo: string; descricao: string }[] = [
-  {
-    valor: "CONTAINERIZACAO",
-    rotulo: "Containerização & Nuvem",
-    descricao: "Docker, Kubernetes, Portainer, VPS, Servidores dedicados",
-  },
-  {
-    valor: "CLOUD_BASE_DADOS",
-    rotulo: "Cloud Base de Dados",
-    descricao: "Clusters de banco de dados gerenciados, backups na nuvem",
-  },
-  {
-    valor: "GESTAO_DOMINIO",
-    rotulo: "Gestão de Domínio & DNS",
-    descricao: "Cloudflare, cPanel, Registradores de domínios e zonas DNS",
-  },
-];
+// Rótulo e descrição de cada tipo em plataformas.tipos.* e plataformas.form.plataforma.tipoDescricoes.*
+const OPCOES_TIPO: TipoPlataforma[] = ["CONTAINERIZACAO", "CLOUD_BASE_DADOS", "GESTAO_DOMINIO"];
 
 const FORNECEDOR_OUTRO = "OUTRO";
 const FORMATOS_LOGOTIPO = ["image/png", "image/jpeg", "image/webp"];
@@ -55,6 +42,7 @@ export default function FormPlataforma({
   onCancelar,
   onSubmit,
 }: FormPlataformaProps) {
+  const { t } = useTranslation();
   // Lista de fornecedores de cada tipo (vem do backend)
   const [catalogo, setCatalogo] = useState<CatalogoFornecedores | null>(null);
 
@@ -88,7 +76,8 @@ export default function FormPlataforma({
       .then((dados) => {
         if (!cancelado) setCatalogo(dados);
       })
-      .catch(() => toast.error("Não foi possível carregar a lista de fornecedores."));
+      // i18n.t (e não o t do hook) para o pedido não se repetir quando o idioma muda
+      .catch(() => toast.error(i18n.t("plataformas.form.plataforma.erroFornecedores")));
     return () => {
       cancelado = true;
     };
@@ -142,11 +131,11 @@ export default function FormPlataforma({
     if (!ficheiro) return;
 
     if (!FORMATOS_LOGOTIPO.includes(ficheiro.type)) {
-      toast.error("O logótipo deve ser PNG, JPEG ou WebP.");
+      toast.error(t("plataformas.form.plataforma.logotipoFormato"));
       return;
     }
     if (ficheiro.size > TAMANHO_MAXIMO_LOGOTIPO) {
-      toast.error("O logótipo não pode ter mais de 2 MB.");
+      toast.error(t("plataformas.form.plataforma.logotipoTamanho"));
       return;
     }
     setLogotipo(ficheiro);
@@ -156,11 +145,11 @@ export default function FormPlataforma({
     e.preventDefault();
 
     if (!fornecedor) {
-      toast.error("Escolha o fornecedor.");
+      toast.error(t("plataformas.form.plataforma.escolhaFornecedor"));
       return;
     }
     if (ehOutro && nome.trim().length < 2) {
-      toast.error('Indique o nome da plataforma (o fornecedor é "Outro").');
+      toast.error(t("plataformas.form.plataforma.indiqueNome"));
       return;
     }
 
@@ -171,7 +160,7 @@ export default function FormPlataforma({
           throw new Error();
         }
       } catch {
-        toast.error("O URL do painel deve ser válido (ex: https://painel.netline.co.mz).");
+        toast.error(t("plataformas.form.plataforma.urlInvalido"));
         return;
       }
     }
@@ -203,22 +192,22 @@ export default function FormPlataforma({
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
-            {plataformaExistente ? "Editar Plataforma" : "Nova Plataforma"}
+            {plataformaExistente ? t("plataformas.form.plataforma.tituloEditar") : t("plataformas.form.plataforma.tituloNova")}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Cadastre os provedores de infraestrutura, servidores ou gestores de domínio da Netline
+            {t("plataformas.form.plataforma.descricao")}
           </p>
         </div>
 
         {/* Tipo da Plataforma */}
         <div>
-          <label className={CLASSE_ROTULO}>Tipo de Plataforma *</label>
+          <label className={CLASSE_ROTULO}>{t("plataformas.form.plataforma.tipo")}</label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {OPCOES_TIPO.map((op) => (
+            {OPCOES_TIPO.map((valor) => (
               <label
-                key={op.valor}
+                key={valor}
                 className={`flex flex-col p-4 rounded-xl border cursor-pointer transition-all ${
-                  tipo === op.valor
+                  tipo === valor
                     ? "border-blue-600 bg-blue-50/50 ring-2 ring-blue-600/10 shadow-xs"
                     : "border-slate-200 hover:border-slate-300 bg-white"
                 }`}
@@ -227,14 +216,17 @@ export default function FormPlataforma({
                   <input
                     type="radio"
                     name="tipoPlataforma"
-                    value={op.valor}
-                    checked={tipo === op.valor}
-                    onChange={() => escolherTipo(op.valor)}
+                    value={valor}
+                    checked={tipo === valor}
+                    onChange={() => escolherTipo(valor)}
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-bold text-slate-800">{op.rotulo}</span>
+                  <span className="text-sm font-bold text-slate-800">
+                    {/* No formulário a gestão de domínio mostra-se com "& DNS" */}
+                    {valor === "GESTAO_DOMINIO" ? t("plataformas.form.plataforma.tipoGestaoDominio") : t(`plataformas.tipos.${valor}`)}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-500 pl-5 leading-relaxed">{op.descricao}</p>
+                <p className="text-xs text-slate-500 pl-5 leading-relaxed">{t(`plataformas.form.plataforma.tipoDescricoes.${valor}`)}</p>
               </label>
             ))}
           </div>
@@ -242,18 +234,18 @@ export default function FormPlataforma({
 
         {/* Fornecedor (dele sai o nome) */}
         <div>
-          <label htmlFor="plataforma-fornecedor" className={CLASSE_ROTULO}>Fornecedor *</label>
+          <label htmlFor="plataforma-fornecedor" className={CLASSE_ROTULO}>{t("plataformas.form.plataforma.fornecedor")}</label>
           <SelectPesquisavel
             id="plataforma-fornecedor"
             valor={fornecedor}
             onChange={escolherFornecedor}
             disabled={!catalogo}
-            placeholder={catalogo ? "Selecione o fornecedor..." : "A carregar..."}
+            placeholder={catalogo ? t("plataformas.form.plataforma.selecioneFornecedor") : t("plataformas.form.plataforma.aCarregar")}
             opcoes={opcoes.map((o) => ({ valor: o.valor, label: o.rotulo }))}
           />
           {fornecedorEscolhido && !ehOutro && (
             <p className="text-xs text-slate-500 mt-1.5">
-              Nome da plataforma: <strong>{fornecedorEscolhido.rotulo}</strong>
+              {t("plataformas.form.plataforma.nomeDaPlataforma")} <strong>{fornecedorEscolhido.rotulo}</strong>
             </p>
           )}
         </div>
@@ -261,10 +253,10 @@ export default function FormPlataforma({
         {/* Nome (só quando o fornecedor é "Outro") */}
         {ehOutro && (
           <div>
-            <label className={CLASSE_ROTULO}>Nome da Plataforma *</label>
+            <label className={CLASSE_ROTULO}>{t("plataformas.form.plataforma.nome")}</label>
             <input
               type="text"
-              placeholder="Ex: Servidores da Netline"
+              placeholder={t("plataformas.form.plataforma.nomePlaceholder")}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               className={CLASSE_CAMPO}
@@ -274,10 +266,10 @@ export default function FormPlataforma({
 
         {/* URL Painel */}
         <div>
-          <label className={CLASSE_ROTULO}>URL do Painel de Acesso (Opcional)</label>
+          <label className={CLASSE_ROTULO}>{t("plataformas.form.plataforma.urlPainel")}</label>
           <input
             type="url"
-            placeholder="https://dash.cloudflare.com ou https://console.hetzner.cloud"
+            placeholder={t("plataformas.form.plataforma.urlPainelPlaceholder")}
             value={urlPainel}
             onChange={(e) => setUrlPainel(e.target.value)}
             className={CLASSE_CAMPO}
@@ -287,17 +279,17 @@ export default function FormPlataforma({
         {/* Credenciais de acesso (todos os tipos) */}
         <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-4">
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-            Credenciais de Acesso
+            {t("plataformas.form.plataforma.credenciais")}
           </span>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Utilizador
+                {t("plataformas.form.plataforma.utilizador")}
               </label>
               <input
                 type="text"
-                placeholder="Utilizador da conta"
+                placeholder={t("plataformas.form.plataforma.utilizadorPlaceholder")}
                 value={utilizador}
                 onChange={(e) => setUtilizador(e.target.value)}
                 autoComplete="off"
@@ -307,15 +299,15 @@ export default function FormPlataforma({
 
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Token ou senha
+                {t("plataformas.form.plataforma.token")}
               </label>
               <div className="relative">
                 <input
                   type={mostrarToken ? "text" : "password"}
                   placeholder={
                     plataformaExistente?.temToken
-                      ? "Deixe em branco para manter"
-                      : "Token ou senha de acesso"
+                      ? t("plataformas.form.plataforma.tokenManter")
+                      : t("plataformas.form.plataforma.tokenPlaceholder")
                   }
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
@@ -335,9 +327,9 @@ export default function FormPlataforma({
 
           {plataformaExistente?.temToken && (
             <div className="space-y-1 bg-white border border-slate-200 rounded-lg p-2.5">
-              <p className="text-[11px] font-semibold text-slate-500">Token guardado</p>
+              <p className="text-[11px] font-semibold text-slate-500">{t("plataformas.form.plataforma.tokenGuardado")}</p>
               <SegredoRevelavel
-                descricao={`token da plataforma ${plataformaExistente.nome}`}
+                descricao={t("plataformas.form.plataforma.tokenDescricao", { nome: plataformaExistente.nome })}
                 obter={(tokenElevado) =>
                   revelarTokenPlataforma(plataformaExistente.id, tokenElevado)
                 }
@@ -350,30 +342,30 @@ export default function FormPlataforma({
         {ehContainerizacao && (
           <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-4">
             <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-              Registry de Imagens
+              {t("plataformas.form.plataforma.registry")}
             </span>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  URL do Registry
+                  {t("plataformas.form.plataforma.urlRegistry")}
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: docker.io ou ghcr.io/netline"
+                  placeholder={t("plataformas.form.plataforma.urlRegistryPlaceholder")}
                   value={registryUrl}
                   onChange={(e) => setRegistryUrl(e.target.value)}
                   className={`${CLASSE_CAMPO} bg-white`}
                 />
-                <p className="text-[11px] text-slate-400 mt-1">Sem http:// nem https://.</p>
+                <p className="text-[11px] text-slate-400 mt-1">{t("plataformas.form.plataforma.urlRegistryAjuda")}</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  Namespace
+                  {t("plataformas.form.plataforma.namespace")}
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: netline"
+                  placeholder={t("plataformas.form.plataforma.namespacePlaceholder")}
                   value={namespace}
                   onChange={(e) => setNamespace(e.target.value)}
                   className={`${CLASSE_CAMPO} bg-white`}
@@ -385,17 +377,17 @@ export default function FormPlataforma({
 
         {/* Logótipo */}
         <div>
-          <label className={CLASSE_ROTULO}>Logótipo (Opcional)</label>
+          <label className={CLASSE_ROTULO}>{t("plataformas.form.plataforma.logotipo")}</label>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden shrink-0">
               {logotipoMostrado ? (
                 <img
                   src={logotipoMostrado}
-                  alt="Logótipo da plataforma"
+                  alt={t("plataformas.form.plataforma.logotipoAlt")}
                   className="w-full h-full object-contain p-1"
                 />
               ) : (
-                <span className="text-[11px] text-slate-400">Sem logo</span>
+                <span className="text-[11px] text-slate-400">{t("plataformas.form.plataforma.semLogotipo")}</span>
               )}
             </div>
             <div className="space-y-1 min-w-0">
@@ -405,7 +397,7 @@ export default function FormPlataforma({
                 onChange={escolherLogotipo}
                 className="w-full text-xs text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-slate-100 file:text-slate-700 file:font-semibold hover:file:bg-slate-200 file:cursor-pointer"
               />
-              <p className="text-[11px] text-slate-400">PNG, JPEG ou WebP, até 2 MB.</p>
+              <p className="text-[11px] text-slate-400">{t("plataformas.form.plataforma.logotipoAjuda")}</p>
             </div>
           </div>
         </div>
@@ -420,7 +412,7 @@ export default function FormPlataforma({
             className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
           />
           <label htmlFor="platAtivo" className="text-sm font-medium text-slate-700 cursor-pointer">
-            Plataforma ativa e operacional
+            {t("plataformas.form.plataforma.ativa")}
           </label>
         </div>
       </div>
@@ -433,14 +425,14 @@ export default function FormPlataforma({
           disabled={salvando}
           className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all cursor-pointer"
         >
-          Cancelar
+          {t("plataformas.comum.cancelar")}
         </button>
         <button
           type="submit"
           disabled={salvando}
-          className="px-6 py-2.5 bg-[#18357a] hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+          className="px-6 py-2.5 bg-netline-azul hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
         >
-          {salvando ? "A salvar..." : plataformaExistente ? "Atualizar Plataforma" : "Criar Plataforma"}
+          {salvando ? t("plataformas.comum.aGuardar") : plataformaExistente ? t("plataformas.form.plataforma.atualizar") : t("plataformas.form.plataforma.criar")}
         </button>
       </div>
     </form>

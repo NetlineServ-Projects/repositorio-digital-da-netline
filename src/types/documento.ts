@@ -13,6 +13,8 @@ export interface Documento {
   categoria?: { id: number; nome: string };
   apagadoEm?: string | null;
   sistemaId?: number;
+  // Preenchido quando o documento foi anexado a partir de um sistema
+  sistema?: { id: number; nome: string } | null;
 }
 
 export interface Categoria {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import { useTranslation } from "react-i18next";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -9,12 +10,17 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
+// Os ficheiros exigem sessão: o pdf.js tem de enviar o cookie no pedido à API (outra origem).
+// Fora do componente, para o react-pdf não recarregar o documento a cada render.
+const OPCOES_PDF = { withCredentials: true };
+
 interface DocumentoViewerPdfProps {
   url: string;
   titulo: string;
 }
 
 export default function DocumentoViewerPdf({ url, titulo }: DocumentoViewerPdfProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [largura, setLargura] = useState(0);
   const [numPaginas, setNumPaginas] = useState(0);
@@ -39,15 +45,21 @@ export default function DocumentoViewerPdf({ url, titulo }: DocumentoViewerPdfPr
 
   return (
     <div className="flex flex-col w-full h-full">
-      <div ref={containerRef} className="flex-1 overflow-auto bg-slate-50 flex justify-center py-4">
+      <div
+        ref={containerRef}
+        role="region"
+        aria-label={t("documentos.visualizador.previsualizacaoDe", { titulo })}
+        className="flex-1 overflow-auto bg-slate-50 flex justify-center py-4"
+      >
         {erroCarregamento ? (
-          <p className="text-slate-400 text-sm p-8 self-center">Não foi possível carregar a pré-visualização do PDF.</p>
+          <p className="text-slate-400 text-sm p-8 self-center">{t("documentos.visualizador.erroPdf")}</p>
         ) : (
           <Document
             file={url}
+            options={OPCOES_PDF}
             onLoadSuccess={({ numPages }) => setNumPaginas(numPages)}
             onLoadError={() => setErroCarregamento(true)}
-            loading={<p className="text-slate-400 text-sm p-8">A carregar PDF...</p>}
+            loading={<p className="text-slate-400 text-sm p-8">{t("documentos.visualizador.aCarregarPdf")}</p>}
           >
             {largura > 0 && (
               <Page
@@ -68,17 +80,17 @@ export default function DocumentoViewerPdf({ url, titulo }: DocumentoViewerPdfPr
             disabled={paginaAtual <= 1}
             className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 disabled:opacity-40 hover:bg-slate-200 transition-colors"
           >
-            ← Anterior
+            ← {t("documentos.visualizador.anterior")}
           </button>
           <span className="text-xs text-slate-500 font-medium">
-            Página {paginaAtual} de {numPaginas}
+            {t("documentos.visualizador.pagina", { atual: paginaAtual, total: numPaginas })}
           </span>
           <button
             onClick={() => setPaginaAtual((p) => Math.min(numPaginas, p + 1))}
             disabled={paginaAtual >= numPaginas}
             className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 disabled:opacity-40 hover:bg-slate-200 transition-colors"
           >
-            Próxima →
+            {t("documentos.visualizador.seguinte")} →
           </button>
         </div>
       )}

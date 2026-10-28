@@ -1,4 +1,5 @@
 import type { ComponentType, KeyboardEvent } from "react";
+import { useTranslation } from "react-i18next";
 import EstadoVazio from "../../../components/plataformas/estadoVazio";
 import LogotipoPlataforma from "../../../components/plataformas/logotipoPlataforma";
 import {
@@ -31,11 +32,12 @@ const METRICA_POR_TIPO: Record<TipoPlataforma, Metrica> = {
   GESTAO_DOMINIO: "dominios",
 };
 
-const DADOS_METRICA: Record<Metrica, { rotulo: string; Icone: ComponentType<{ className?: string }> }> = {
-  servidores: { rotulo: "Servidores", Icone: IconServer },
-  dominios: { rotulo: "Domínios", Icone: IconDominio },
-  imagens: { rotulo: "Imagens", Icone: IconImagem },
-  sistemas: { rotulo: "Sistemas", Icone: IconSistemas },
+// O rótulo de cada métrica está em plataformas.abas.plataformas.metricas.<metrica>
+const ICONE_METRICA: Record<Metrica, ComponentType<{ className?: string }>> = {
+  servidores: IconServer,
+  dominios: IconDominio,
+  imagens: IconImagem,
+  sistemas: IconSistemas,
 };
 
 // Uma cloud sem servidores (ex: Vercel) é ela própria o alojamento: mostra os sistemas
@@ -56,7 +58,9 @@ interface CartaoPlataformaProps {
 }
 
 function CartaoPlataforma({ plataforma, metrica, total, aoAbrirDetalhes }: CartaoPlataformaProps) {
-  const { rotulo, Icone } = DADOS_METRICA[metrica];
+  const { t } = useTranslation();
+  const Icone = ICONE_METRICA[metrica];
+  const rotulo = t(`plataformas.abas.plataformas.metricas.${metrica}`);
   const abrirDetalhes = () => aoAbrirDetalhes(plataforma);
 
   const aoPressionarTecla = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -72,7 +76,7 @@ function CartaoPlataforma({ plataforma, metrica, total, aoAbrirDetalhes }: Carta
       tabIndex={0}
       onClick={abrirDetalhes}
       onKeyDown={aoPressionarTecla}
-      aria-label={`Ver detalhes da plataforma ${plataforma.nome}`}
+      aria-label={t("plataformas.abas.plataformas.ariaVerDetalhes", { nome: plataforma.nome })}
       className="group bg-white rounded-2xl border border-slate-100 border-l-4 border-l-blue-900 p-5 shadow-xs hover:shadow-md transition-all flex flex-col gap-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40"
     >
       <div className={`flex items-start gap-3 ${plataforma.ativo ? "" : "opacity-60"}`}>
@@ -90,7 +94,7 @@ function CartaoPlataforma({ plataforma, metrica, total, aoAbrirDetalhes }: Carta
             </span>
             {!plataforma.ativo && (
               <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                Inativa
+                {t("plataformas.comum.inativa")}
               </span>
             )}
           </div>
@@ -104,7 +108,7 @@ function CartaoPlataforma({ plataforma, metrica, total, aoAbrirDetalhes }: Carta
           {rotulo}
         </span>
         <span className="flex items-center gap-1 text-xs font-semibold text-blue-900">
-          Ver detalhes
+          {t("plataformas.abas.plataformas.verDetalhes")}
           <IconSetaDireita className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
@@ -131,8 +135,9 @@ export default function AbaPlataformas({
   imagens,
   aoAbrirDetalhes,
 }: AbaPlataformasProps) {
+  const { t } = useTranslation();
   if (plataformas.length === 0) {
-    return <EstadoVazio mensagem="Nenhuma plataforma registada." />;
+    return <EstadoVazio mensagem={t("plataformas.abas.plataformas.vazio")} />;
   }
 
   return (

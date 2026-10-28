@@ -3,6 +3,16 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Cores da identidade visual da Netline: usar sempre estes nomes (bg-netline-azul,
+   text-netline-dourado...) em vez do código hexadecimal, para mudarem num só sítio */
+@theme {
+  --color-netline-azul: #18357a; /* cabeçalhos, botões principais */
+  --color-netline-azul-escuro: #142a61; /* hover dos botões azuis */
+  --color-netline-marinho: #0b1f4d; /* fundos da página inicial */
+  --color-netline-dourado: #d99b26; /* destaques e bordas dos cartões */
+  --color-netline-amarelo: #e3c234; /* o amarelo do logótipo */
+}
+
 body {
   background-color: #ffffff;
 }
@@ -147,9 +157,8 @@ body {
 }
 
 /* Texto azul da marca usado como link ou destaque sobre branco */
-.dark .text-\[\#18357a\],
-.dark .hover\:text-\[\#18357a\]:hover,
-.dark .text-\[\#1b365d\] {
+.dark .text-netline-azul,
+.dark .hover\:text-netline-azul:hover {
   color: #93c5fd;
 }
 

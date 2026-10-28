@@ -11,6 +11,7 @@ import {
   IconAprovado,
 } from "../../../components/icons";
 import { rotuloTipoCredencial } from "./constantes";
+import { useTranslation } from "react-i18next";
 
 interface ListaCredenciaisProps {
   credenciais: Credencial[];
@@ -47,6 +48,7 @@ function BotaoIcone({
 
 // A aba inteira só abre depois da reautenticação, por isso os valores já vêm no GET
 export default function ListaCredenciais({ credenciais, ehAdmin, onEditar, onApagar }: ListaCredenciaisProps) {
+  const { t } = useTranslation();
   const [revelados, setRevelados] = useState<Set<number>>(new Set());
   const [copiadoId, setCopiadoId] = useState<number | null>(null);
 
@@ -62,17 +64,17 @@ export default function ListaCredenciais({ credenciais, ehAdmin, onEditar, onApa
     try {
       await navigator.clipboard.writeText(valor);
       setCopiadoId(id);
-      toast.success("Valor copiado para a área de transferência.");
+      toast.success(t("sistemas.credenciais.valorCopiado"));
       setTimeout(() => setCopiadoId(null), 2000);
     } catch {
-      toast.error("Não foi possível copiar o valor.");
+      toast.error(t("sistemas.credenciais.erroCopiar"));
     }
   };
 
   if (credenciais.length === 0) {
     return (
       <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-200">
-        <p className="text-xs text-slate-400 italic">Sem credenciais registadas neste ambiente.</p>
+        <p className="text-xs text-slate-400 italic">{t("sistemas.credenciais.vazio")}</p>
       </div>
     );
   }
@@ -85,7 +87,7 @@ export default function ListaCredenciais({ credenciais, ehAdmin, onEditar, onApa
         return (
           <li key={credencial.id} className="p-4 sm:px-5 space-y-3">
             <div className="flex items-center gap-3">
-              <span className="w-9 h-9 rounded-lg bg-[#d99b26]/10 text-[#b07a14] flex items-center justify-center shrink-0">
+              <span className="w-9 h-9 rounded-lg bg-netline-dourado/10 text-[#b07a14] flex items-center justify-center shrink-0">
                 <IconChave className="w-3.5 h-3.5" />
               </span>
               <div className="min-w-0 flex-1">
@@ -94,21 +96,21 @@ export default function ListaCredenciais({ credenciais, ehAdmin, onEditar, onApa
               </div>
               <div className="flex items-center shrink-0">
                 <BotaoIcone
-                  rotulo={revelado ? "Ocultar valor" : "Mostrar valor"}
+                  rotulo={revelado ? t("sistemas.credenciais.ocultarValor") : t("sistemas.credenciais.mostrarValor")}
                   Icone={revelado ? IconOlhoFechado : IconOlhoAberto}
                   onClick={() => alternarRevelado(credencial.id)}
                 />
                 <BotaoIcone
-                  rotulo={copiado ? "Copiado" : "Copiar valor"}
+                  rotulo={copiado ? t("sistemas.credenciais.copiado") : t("sistemas.credenciais.copiarValor")}
                   Icone={copiado ? IconAprovado : IconCopiar}
                   onClick={() => credencial.valor && copiarValor(credencial.id, credencial.valor)}
                 />
                 {ehAdmin && (
                   <>
                     <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true" />
-                    <BotaoIcone rotulo="Editar credencial" Icone={IconCaneta} onClick={() => onEditar(credencial)} />
+                    <BotaoIcone rotulo={t("sistemas.credenciais.editar")} Icone={IconCaneta} onClick={() => onEditar(credencial)} />
                     <BotaoIcone
-                      rotulo="Apagar credencial"
+                      rotulo={t("sistemas.credenciais.apagar")}
                       Icone={IconLixeira}
                       perigoso
                       onClick={() => onApagar(credencial)}

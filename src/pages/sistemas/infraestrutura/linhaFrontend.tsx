@@ -3,6 +3,7 @@ import type { PlataformaResumo } from "../../../hooks/useSistemasData";
 import { IconPlataforma } from "../../../components/icons";
 import LogotipoPlataforma from "../../../components/plataformas/logotipoPlataforma";
 import CartaoInfra from "./cartaoInfra";
+import { useTranslation } from "react-i18next";
 
 interface LinhaFrontendProps {
   plataforma?: PlataformaResumo | null;
@@ -11,12 +12,13 @@ interface LinhaFrontendProps {
 
 // A plataforma do frontend é a mesma nos dois ambientes (define-se no formulário do sistema)
 export default function LinhaFrontend({ plataforma, ehAdmin }: LinhaFrontendProps) {
+  const { t } = useTranslation();
   return (
     <CartaoInfra
-      titulo="Frontend"
-      subtitulo="Todos os ambientes"
+      titulo={t("sistemas.infraestrutura.frontend.titulo")}
+      subtitulo={t("sistemas.infraestrutura.frontend.todosAmbientes")}
       Icone={IconPlataforma}
-      classeIcone="bg-[#d99b26]/10 text-[#b07a14]"
+      classeIcone="bg-netline-dourado/10 text-[#b07a14]"
     >
       {plataforma ? (
         <Link
@@ -28,13 +30,13 @@ export default function LinhaFrontend({ plataforma, ehAdmin }: LinhaFrontendProp
             <span className="block text-sm font-semibold text-slate-800 truncate group-hover:text-blue-900">
               {plataforma.nome}
             </span>
-            <span className="block text-[11px] text-slate-400">Ver plataforma →</span>
+            <span className="block text-[11px] text-slate-400">{t("sistemas.infraestrutura.frontend.verPlataforma")}</span>
           </span>
         </Link>
       ) : (
         <p className="text-xs text-slate-400 italic">
-          O frontend ainda não tem plataforma.
-          {ehAdmin ? " Defina-a ao editar o sistema." : ""}
+          {t("sistemas.infraestrutura.frontend.semPlataforma")}
+          {ehAdmin ? t("sistemas.infraestrutura.frontend.definirAoEditar") : ""}
         </p>
       )}
     </CartaoInfra>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Option {
   valor: string;
@@ -16,12 +17,13 @@ interface FilterSelectProps {
 
 export default function FilterSelect({
   label,
-  placeholder = "Selecionar...",
+  placeholder,
   opcoes,
   selecionados,
   onChange,
   comBusca = true,
 }: FilterSelectProps) {
+  const { t } = useTranslation();
   const [aberto, setAberto] = useState(false);
   const [busca, setBusca] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,12 +52,13 @@ export default function FilterSelect({
   };
 
   // Texto amigável de exibição do botão
+  const textoVazio = placeholder ?? t("componentes.select.selecionar");
   const textoExibicao =
     selecionados.length === 0
-      ? placeholder
+      ? textoVazio
       : selecionados.length === 1
-      ? opcoes.find((o) => o.valor === selecionados[0])?.label || placeholder
-      : `${selecionados.length} selecionados`;
+      ? opcoes.find((o) => o.valor === selecionados[0])?.label || textoVazio
+      : t("componentes.select.selecionados", { count: selecionados.length });
 
   return (
     <div className="flex flex-col gap-1.5 w-full relative" ref={containerRef}>
@@ -65,7 +68,7 @@ export default function FilterSelect({
       <button
         type="button"
         onClick={() => setAberto(!aberto)}
-        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-100/80 transition-all focus:outline-none focus:ring-2 focus:ring-[#18357a]/20"
+        className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 hover:bg-slate-100/80 transition-all focus:outline-none focus:ring-2 focus:ring-netline-azul/20"
       >
         <span className={`truncate ${selecionados.length === 0 ? "text-slate-400" : "font-medium text-slate-700"}`}>
           {textoExibicao}
@@ -87,7 +90,7 @@ export default function FilterSelect({
               </svg>
               <input
                 type="text"
-                placeholder="Pesquisar..."
+                placeholder={t("componentes.select.pesquisar")}
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-slate-300"
@@ -105,21 +108,21 @@ export default function FilterSelect({
                     key={op.valor}
                     onClick={() => toggleOpcao(op.valor)}
                     className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors ${
-                      marcado ? "bg-[#d99b26]/10 text-[#d99b26] font-medium" : "text-slate-600 hover:bg-slate-50"
+                      marcado ? "bg-netline-dourado/10 text-netline-dourado font-medium" : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={marcado}
                       readOnly
-                      className="rounded border-slate-300 text-[#d99b26] focus:ring-[#d99b26]"
+                      className="rounded border-slate-300 text-netline-dourado focus:ring-netline-dourado"
                     />
                     <span className="truncate">{op.label}</span>
                   </label>
                 );
               })
             ) : (
-              <p className="p-2 text-xs text-center text-slate-400">Sem opções disponíveis</p>
+              <p className="p-2 text-xs text-center text-slate-400">{t("componentes.select.semOpcoes")}</p>
             )}
           </div>
         </div>

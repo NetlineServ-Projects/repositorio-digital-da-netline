@@ -2,29 +2,24 @@ import { useState, useEffect } from "react";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
 import type { Documento, Categoria } from "../types/documento";
+import { useCarregamento } from "./useCarregamento";
+import i18n from "../lang/i18n";
 
 export function useAprovacoesData() {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+  const { carregando: loading, aAtualizar, erro, executar } = useCarregamento(
+    i18n.t("comum.erros.carregarSolicitacoes"),
+  );
 
-  const carregarDados = async () => {
-    setLoading(true);
-    setErro(null);
-    try {
-      const [docs, cats] = await Promise.all([
-        fetchComToken(API_ENDPOINTS.DOCUMENTOS),
-        fetchComToken(API_ENDPOINTS.CATEGORIAS),
-      ]);
-      setDocumentos(docs);
-      setCategorias(cats);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Não foi possível carregar as solicitações.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const carregarDados = () =>
+    executar(
+      () => Promise.all([fetchComToken(API_ENDPOINTS.DOCUMENTOS), fetchComToken(API_ENDPOINTS.CATEGORIAS)]),
+      ([docs, cats]) => {
+        setDocumentos(Array.isArray(docs) ? docs : []);
+        setCategorias(Array.isArray(cats) ? cats : []);
+      },
+    );
 
   useEffect(() => {
     carregarDados();
@@ -42,5 +37,5 @@ export function useAprovacoesData() {
     await carregarDados();
   };
 
-  return { documentos, categorias, loading, erro, recarregar: carregarDados, alterarEstado };
+  return { documentos, categorias, loading, aAtualizar, erro, recarregar: carregarDados, alterarEstado };
 }

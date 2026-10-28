@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Outlet, useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { reautenticar, TOKEN_ELEVADO_DURACAO_MS } from "../hooks/useSistemasData";
 import { ErroApi } from "../utils/api";
 import ReautenticacaoModal from "./reautenticacaoModal";
@@ -52,6 +53,7 @@ interface PedidoPendente {
 }
 
 function AcessoElevadoProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [tokenElevado, setTokenElevado] = useState<string | null>(null);
   const tokenRef = useRef<string | null>(null);
   const expiraEmRef = useRef(0);
@@ -115,7 +117,7 @@ function AcessoElevadoProvider({ children }: { children: ReactNode }) {
       pedidoRef.current?.resolver(resultado.tokenElevado);
       pedidoRef.current = null;
     } catch (e) {
-      setErro(e instanceof Error ? e.message : "Erro ao reautenticar.");
+      setErro(e instanceof Error ? e.message : t("componentes.reautenticacao.erro"));
     } finally {
       setReautenticando(false);
     }
@@ -133,12 +135,12 @@ function AcessoElevadoProvider({ children }: { children: ReactNode }) {
     const timer = setTimeout(
       () => {
         bloquear();
-        toast.info("O acesso expirou. Reautentique-se para continuar.");
+        toast.info(t("componentes.reautenticacao.expirou"));
       },
       Math.max(expiraEmRef.current - Date.now(), 0),
     );
     return () => clearTimeout(timer);
-  }, [tokenElevado, bloquear]);
+  }, [tokenElevado, bloquear, t]);
 
   const valor = useMemo(
     () => ({ temAcesso: tokenElevado !== null, comAcesso, bloquear }),

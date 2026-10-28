@@ -6,6 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { toast } from "sonner";
+import { Trans, useTranslation } from "react-i18next";
 import { useSistemasData, podeGerirSistema, type Sistema } from "../../hooks/useSistemasData";
 import type { Documento } from "../../types/documento";
 import SistemasHeader from "./sistemasHeader";
@@ -20,6 +21,8 @@ import PainelFiltros from "../../components/painelFiltros";
 import InfraestruturaTab from "./infraestrutura/infraestruturaTab";
 import { useAcessoInfraestruturaOpcional } from "./infraestrutura/acessoInfraestrutura";
 import { rotuloStatus } from "../../utils/status";
+import { useConfirmacao } from "../../components/confirmacao";
+import { EstadoCarregando, EstadoErro, IndicadorAtualizar } from "../../components/estados";
 
 interface DashboardContext {
   usuario: { id?: number; nome: string; perfil?: string } | null;
@@ -29,6 +32,8 @@ type Aba = "geral" | "documentos" | "infraestrutura";
 
 export default function SistemasPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const confirmar = useConfirmacao();
   const { id } = useParams<{ id?: string }>();
   const { usuario } = useOutletContext<DashboardContext>();
   const ehAdmin = usuario?.perfil === "ADMIN";
@@ -41,6 +46,9 @@ export default function SistemasPage() {
     documentos,
     categorias,
     loading,
+    aAtualizar,
+    erro,
+    recarregar,
     criarSistema,
     editarSistema,
     apagarSistema,
@@ -106,17 +114,17 @@ export default function SistemasPage() {
   );
 
   // Opções dinâmicas derivadas dos dados de sistemas
-  const opcoesStatus = useMemo(() => {
+  const statusExistentes = useMemo(() => {
     const todosStatus = sistemas
       .map((s) => s.status)
       .filter((st): st is string => Boolean(st));
-    return Array.from(new Set(todosStatus))
-      .sort()
-      .map((st) => ({
-        valor: st,
-        label: rotuloStatus(st),
-      }));
+    return Array.from(new Set(todosStatus)).sort();
   }, [sistemas]);
+  // Rótulos fora do useMemo, para acompanharem a mudança de idioma
+  const opcoesStatus = statusExistentes.map((st) => ({
+    valor: st,
+    label: rotuloStatus(st),
+  }));
 
   const opcoesClientes = useMemo(() => {
     const todosClientes = sistemas.flatMap((s) => s.empresasClientes || []);
@@ -144,15 +152,15 @@ export default function SistemasPage() {
     try {
       if (formularioAberto && formularioAberto !== "novo") {
         await editarSistema(formularioAberto.id, dados);
-        toast.success("Sistema atualizado com sucesso!");
+        toast.success(t("sistemas.detalhe.sistemaAtualizado"));
       } else {
         await criarSistema(dados);
-        toast.success("Sistema registado com sucesso!");
+        toast.success(t("sistemas.detalhe.sistemaRegistado"));
       }
       setFormularioAberto(null);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Erro ao guardar o sistema.",
+        err instanceof Error ? err.message : t("sistemas.detalhe.erroGuardarSistema"),
       );
     } finally {
       setSalvando(false);
@@ -179,12 +187,12 @@ export default function SistemasPage() {
       // Segue o mesmo fluxo da aba Documentos: só os ADMIN publicam de imediato
       toast.success(
         ehAdmin
-          ? "Documento publicado no sistema."
-          : "Documento enviado para aprovação. Será notificado quando for revisto.",
+          ? t("sistemas.detalhe.documentoPublicado")
+          : t("sistemas.detalhe.documentoEnviadoAprovacao"),
       );
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Erro ao anexar o documento.",
+        err instanceof Error ? err.message : t("sistemas.detalhe.erroAnexar"),
       );
     } finally {
       setEnviandoDoc(false);
@@ -195,49 +203,51 @@ export default function SistemasPage() {
     navigate(`/dashboard/documentos/${doc.id}/editar`);
   };
 
-  const handleApagarDoc = (docId: number) => {
-    toast("Tem a certeza que deseja apagar este documento?", {
-      description: "Esta ação não pode ser desfeita.",
-      action: {
-        label: "Apagar",
-        onClick: async () => {
-          try {
-            await apagarDocumento(docId);
-            toast.success("Documento removido.");
-          } catch (err) {
-            toast.error(
-              err instanceof Error ? err.message : "Erro ao apagar documento.",
-            );
-          }
-        },
-      },
-      cancel: {
-        label: "Cancelar",
-        onClick: () => {},
-      },
-    });
+  const handleApagarDoc = async (docId: number) => {
+    const doc = documentos.find((d) => d.id === docId);
+    try {
+      const apagado = await confirmar({
+        titulo: t("sistemas.detalhe.apagarDocumento.titulo"),
+        mensagem: (
+          <Trans
+            i18nKey="sistemas.detalhe.apagarDocumento.mensagem"
+            values={{ nome: doc?.titulo || doc?.nomeArquivo || t("sistemas.detalhe.apagarDocumento.semNome") }}
+            components={{ destaque: <span className="font-semibold text-slate-800" /> }}
+          />
+        ),
+        textoConfirmar: t("sistemas.detalhe.apagarDocumento.confirmar"),
+        textoCarregando: t("sistemas.comum.aApagar"),
+        perigoso: true,
+        acao: () => apagarDocumento(docId),
+      });
+      if (apagado) toast.success(t("sistemas.detalhe.documentoRemovido"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("comum.erroApagarDocumento"));
+    }
   };
 
-  const handleApagarSistema = (sistema: Sistema) => {
-    toast(`Apagar o sistema "${sistema.nome}"?`, {
-      description:
-        "Apaga também a infraestrutura, as credenciais e os subdomínios deste sistema. Os documentos ficam, sem sistema associado.",
-      action: {
-        label: "Apagar",
-        onClick: async () => {
-          try {
-            await apagarSistema(sistema.id);
-            toast.success("Sistema apagado.");
-            navigate("/dashboard/sistemas");
-          } catch (err) {
-            toast.error(
-              err instanceof Error ? err.message : "Erro ao apagar o sistema.",
-            );
-          }
-        },
-      },
-      cancel: { label: "Cancelar", onClick: () => {} },
-    });
+  const handleApagarSistema = async (sistema: Sistema) => {
+    try {
+      const apagado = await confirmar({
+        titulo: t("sistemas.detalhe.apagarSistema.titulo"),
+        mensagem: (
+          <Trans
+            i18nKey="sistemas.detalhe.apagarSistema.mensagem"
+            values={{ nome: sistema.nome }}
+            components={{ destaque: <span className="font-semibold text-slate-800" /> }}
+          />
+        ),
+        textoConfirmar: t("sistemas.detalhe.apagarSistema.confirmar"),
+        textoCarregando: t("sistemas.comum.aApagar"),
+        perigoso: true,
+        acao: () => apagarSistema(sistema.id),
+      });
+      if (!apagado) return;
+      toast.success(t("sistemas.detalhe.sistemaApagado"));
+      navigate("/dashboard/sistemas");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("sistemas.detalhe.erroApagarSistema"));
+    }
   };
 
   const sistemasFiltrados = useMemo(() => {
@@ -265,7 +275,7 @@ export default function SistemasPage() {
 
       const atendeTecnologia =
         tecnologiaFiltro.length === 0 ||
-        (sis.tecnologias || []).some((t) => tecnologiaFiltro.includes(t));
+        (sis.tecnologias || []).some((tec) => tecnologiaFiltro.includes(tec));
 
       return atendeBusca && atendeStatus && atendeCliente && atendeTecnologia;
     });
@@ -293,28 +303,28 @@ export default function SistemasPage() {
     tecnologiaFiltro.length > 0;
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-12">
-        <p className="text-slate-500 text-sm animate-pulse">
-          A carregar sistemas...
-        </p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("sistemas.lista.carregando")} />;
+  }
+
+  // A primeira carga falhou: mostra o erro (antes aparecia uma lista vazia, ou
+  // "Sistema não encontrado" ao abrir um sistema pelo link)
+  if (erro) {
+    return <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />;
   }
 
   // Um :id na URL que não corresponde a nenhum sistema (apagado, ou link errado)
   if (id && !sistemas.some((s) => String(s.id) === id)) {
     return (
-      <div className="bg-white p-8 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
-        <p className="text-slate-700 font-semibold">Sistema não encontrado.</p>
-        <p className="text-sm text-slate-500">
-          O sistema pode ter sido apagado ou o link está incorreto.
-        </p>
+      <div className="space-y-3 text-center">
+        <EstadoErro
+          titulo={t("sistemas.detalhe.naoEncontradoTitulo")}
+          mensagem={t("sistemas.detalhe.naoEncontradoMensagem")}
+        />
         <button
           onClick={() => navigate("/dashboard/sistemas")}
-          className="text-sm text-[#18357a] font-semibold hover:underline cursor-pointer"
+          className="text-sm text-netline-azul font-semibold hover:underline cursor-pointer"
         >
-          Voltar aos Sistemas
+          {t("sistemas.detalhe.voltarAosSistemas")}
         </button>
       </div>
     );
@@ -342,37 +352,40 @@ export default function SistemasPage() {
         />
 
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
-          <div className="w-full md:w-80 relative">
-            <input
-              type="text"
-              placeholder="Pesquisar por nome, descrição, equipa ou cliente..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="w-full pl-4 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 placeholder-slate-400 transition-all"
-            />
+          <div className="flex items-center justify-between gap-3">
+            <div className="w-full md:w-80 relative">
+              <input
+                type="text"
+                placeholder={t("sistemas.lista.pesquisarPlaceholder")}
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="w-full pl-4 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 placeholder-slate-400 transition-all"
+              />
+            </div>
+            <IndicadorAtualizar ativo={aAtualizar} />
           </div>
 
           <PainelFiltros ativos={statusFiltro.length + clienteFiltro.length + tecnologiaFiltro.length}>
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <FilterSelect
-              label="Status"
-              placeholder="Todos os Status"
+              label={t("sistemas.lista.filtroEstado")}
+              placeholder={t("sistemas.lista.todosEstados")}
               opcoes={opcoesStatus}
               selecionados={statusFiltro}
               onChange={setStatusFiltro}
             />
 
             <FilterSelect
-              label="Cliente / Empresa"
-              placeholder="Todos os Clientes"
+              label={t("sistemas.lista.filtroCliente")}
+              placeholder={t("sistemas.lista.todosClientes")}
               opcoes={opcoesClientes}
               selecionados={clienteFiltro}
               onChange={setClienteFiltro}
             />
 
             <FilterSelect
-              label="Tecnologia"
-              placeholder="Todas as Tecnologias"
+              label={t("sistemas.lista.filtroTecnologia")}
+              placeholder={t("sistemas.lista.todasTecnologias")}
               opcoes={opcoesTecnologias}
               selecionados={tecnologiaFiltro}
               onChange={setTecnologiaFiltro}
@@ -386,7 +399,7 @@ export default function SistemasPage() {
                 onClick={limparFiltrosSistemas}
                 className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold hover:bg-rose-50 px-2.5 py-1.5 rounded-lg transition-colors border border-rose-100 cursor-pointer"
               >
-                ✕ Limpar filtros
+                ✕ {t("comum.limparFiltros")}
               </button>
             </div>
           )}
@@ -426,7 +439,7 @@ export default function SistemasPage() {
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Visão Geral & Ficha Técnica
+          {t("sistemas.detalhe.abas.geral")}
         </button>
         <button
           onClick={() => mudarAba("documentos")}
@@ -437,7 +450,7 @@ export default function SistemasPage() {
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Documentos do Sistema
+          {t("sistemas.detalhe.abas.documentos")}
           <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-normal">
             {documentosDoSistema.length}
           </span>
@@ -451,7 +464,7 @@ export default function SistemasPage() {
               : "text-slate-500 hover:text-slate-700"
           }`}
         >
-          Infraestrutura & Credenciais
+          {t("sistemas.detalhe.abas.infraestrutura")}
         </button>
       </div>
 

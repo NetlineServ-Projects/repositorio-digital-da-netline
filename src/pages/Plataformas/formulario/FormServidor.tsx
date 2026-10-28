@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { Plataforma, Servidor } from "../../../types/plataforma";
 import { IconOlhoAberto, IconOlhoFechado } from "../../../components/icons";
 import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
@@ -27,6 +28,7 @@ export default function FormServidor({
   onCancelar,
   onSubmit,
 }: FormServidorProps) {
+  const { t } = useTranslation();
   // Só a Cloud/Base de dados aloja servidores (containerização é um registo de imagens)
   const plataformasCloud = plataformas.filter((p) => p.tipo === "CLOUD_BASE_DADOS");
   // Um servidor antigo numa plataforma que já não é válida obriga a escolher outra
@@ -106,23 +108,23 @@ export default function FormServidor({
     e.preventDefault();
 
     if (!plataformaId) {
-      toast.error("Selecione uma plataforma para o servidor.");
+      toast.error(t("plataformas.form.servidor.selecionePlataforma"));
       return;
     }
     if (!nome.trim()) {
-      toast.error("O nome do servidor é obrigatório.");
+      toast.error(t("plataformas.form.servidor.nomeObrigatorio"));
       return;
     }
     if (!hostname.trim()) {
-      toast.error("O hostname é obrigatório.");
+      toast.error(t("plataformas.form.servidor.hostnameObrigatorio"));
       return;
     }
     if (!ip.trim()) {
-      toast.error("O IP do servidor é obrigatório.");
+      toast.error(t("plataformas.form.servidor.ipObrigatorio"));
       return;
     }
     if (!servidorExistente && !password.trim()) {
-      toast.error("A password de acesso SSH é obrigatória para novo servidor.");
+      toast.error(t("plataformas.form.servidor.passwordObrigatoria"));
       return;
     }
 
@@ -159,25 +161,24 @@ export default function FormServidor({
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
-            {servidorExistente ? "Editar Servidor" : "Novo Servidor"}
+            {servidorExistente ? t("plataformas.form.servidor.tituloEditar") : t("plataformas.form.servidor.tituloNovo")}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Cadastre um servidor físico ou máquina virtual com as suas
-            credenciais e recursos
+            {t("plataformas.form.servidor.descricao")}
           </p>
         </div>
 
         {/* Plataforma Pai */}
         <div>
           <label htmlFor="servidor-plataforma" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-            Plataforma Associada *
+            {t("plataformas.form.plataformaAssociada")}
           </label>
           <SelectPesquisavel
             id="servidor-plataforma"
             valor={String(plataformaId)}
             onChange={setPlataformaId}
             required
-            placeholder="Selecione a plataforma..."
+            placeholder={t("plataformas.form.selecionePlataforma")}
             opcoes={plataformasCloud.map((plat) => ({
               valor: String(plat.id),
               label: plat.nome,
@@ -188,15 +189,15 @@ export default function FormServidor({
         {/* Estado do Servidor */}
         <div>
           <label htmlFor="servidor-estado" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-            Estado do Servidor *
+            {t("plataformas.form.servidor.estado")}
           </label>
           <SelectPesquisavel
             id="servidor-estado"
             valor={estado}
             onChange={(v) => setEstado(v as EstadoServidor)}
             opcoes={[
-              { valor: "INATIVO", label: "Inativo" },
-              { valor: "ATIVO", label: "Ativo" },
+              { valor: "INATIVO", label: t("plataformas.estadoServidor.INATIVO") },
+              { valor: "ATIVO", label: t("plataformas.estadoServidor.ATIVO") },
             ]}
           />
         </div>
@@ -205,12 +206,12 @@ export default function FormServidor({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Nome de Exibição *
+              {t("plataformas.form.servidor.nome")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: Servidor Produção Apps"
+              placeholder={t("plataformas.form.servidor.nomePlaceholder")}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -218,12 +219,12 @@ export default function FormServidor({
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Hostname *
+              {t("plataformas.form.servidor.hostname")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: srv01.netline.co.mz"
+              placeholder={t("plataformas.form.servidor.hostnamePlaceholder")}
               value={hostname}
               onChange={(e) => setHostname(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -231,12 +232,12 @@ export default function FormServidor({
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Endereço IP (IPv4 ou IPv6) *
+              {t("plataformas.form.servidor.ip")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: 197.234.12.80"
+              placeholder={t("plataformas.form.servidor.ipPlaceholder")}
               value={ip}
               onChange={(e) => setIp(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -247,17 +248,17 @@ export default function FormServidor({
         {/* Credenciais SSH */}
         <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3">
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-            Acesso SSH Seguro
+            {t("plataformas.form.servidor.acessoSsh")}
           </span>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Utilizador SSH *
+                {t("plataformas.form.servidor.utilizadorSsh")}
               </label>
               <input
                 type="text"
                 required
-                placeholder="root ou ubuntu"
+                placeholder={t("plataformas.form.servidor.utilizadorSshPlaceholder")}
                 value={usernameSsh}
                 onChange={(e) => setUsernameSsh(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -265,15 +266,15 @@ export default function FormServidor({
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Password SSH{" "}
-                {servidorExistente ? "(Deixe em branco para manter)" : "*"}
+                {t("plataformas.form.servidor.passwordSsh")}{" "}
+                {servidorExistente ? t("plataformas.form.servidor.passwordManter") : "*"}
               </label>
               <div className="relative">
                 <input
                   type={mostrarPassword ? "text" : "password"}
                   required={!servidorExistente}
                   placeholder={
-                    servidorExistente ? "••••••••••••" : "Palavra-passe segura"
+                    servidorExistente ? "••••••••••••" : t("plataformas.form.servidor.passwordPlaceholder")
                   }
                   value={password}
                   // Impede o browser de preencher aqui a password de login da app
@@ -296,13 +297,13 @@ export default function FormServidor({
         {/* Recursos de Hardware */}
         <div>
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-3">
-            Recursos e Especificações de Hardware
+            {t("plataformas.form.servidor.recursos")}
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* CPU */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Núcleos CPU *
+                {t("plataformas.form.servidor.nucleosCpu")}
               </label>
               <input
                 type="number"
@@ -317,7 +318,7 @@ export default function FormServidor({
             {/* RAM */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Memória RAM *
+                {t("plataformas.form.servidor.memoriaRam")}
               </label>
               <div className="flex gap-1.5">
                 <input
@@ -329,7 +330,7 @@ export default function FormServidor({
                   className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
                 />
                 <SelectPesquisavel
-                  aria-label="Unidade da memória RAM"
+                  aria-label={t("plataformas.form.servidor.unidadeRam")}
                   comBusca={false}
                   className="w-24 shrink-0"
                   valor={memoriaRamUnidade}
@@ -342,7 +343,7 @@ export default function FormServidor({
             {/* Disco */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Disco / Armazenamento *
+                {t("plataformas.form.servidor.disco")}
               </label>
               <div className="flex gap-1.5">
                 <input
@@ -354,7 +355,7 @@ export default function FormServidor({
                   className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
                 />
                 <SelectPesquisavel
-                  aria-label="Unidade do disco"
+                  aria-label={t("plataformas.form.servidor.unidadeDisco")}
                   comBusca={false}
                   className="w-24 shrink-0"
                   valor={discoUnidade}
@@ -367,7 +368,7 @@ export default function FormServidor({
             {/* Largura de Banda */}
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Largura de Banda *
+                {t("plataformas.form.servidor.larguraBanda")}
               </label>
               <div className="flex gap-1.5">
                 <input
@@ -379,7 +380,7 @@ export default function FormServidor({
                   className="w-full min-w-0 px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
                 />
                 <SelectPesquisavel
-                  aria-label="Unidade da largura de banda"
+                  aria-label={t("plataformas.form.servidor.unidadeBanda")}
                   comBusca={false}
                   className="w-24 shrink-0"
                   valor={larguraBandaUnidade}
@@ -398,12 +399,12 @@ export default function FormServidor({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Sistema Operativo *
+              {t("plataformas.form.servidor.sistemaOperativo")}
             </label>
             <input
               type="text"
               required
-              placeholder="Ex: Ubuntu, Debian, Rocky Linux"
+              placeholder={t("plataformas.form.servidor.sistemaOperativoPlaceholder")}
               value={sistemaOperativo}
               onChange={(e) => setSistemaOperativo(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -411,11 +412,11 @@ export default function FormServidor({
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Versão do SO
+              {t("plataformas.form.servidor.versaoSo")}
             </label>
             <input
               type="text"
-              placeholder="Ex: 22.04 LTS"
+              placeholder={t("plataformas.form.servidor.versaoSoPlaceholder")}
               value={versaoSo}
               onChange={(e) => setVersaoSo(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -423,11 +424,11 @@ export default function FormServidor({
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Provedor Cloud
+              {t("plataformas.form.servidor.fornecedorCloud")}
             </label>
             <input
               type="text"
-              placeholder="Ex: Hetzner, AWS, On-Premise"
+              placeholder={t("plataformas.form.servidor.fornecedorCloudPlaceholder")}
               value={cloud}
               onChange={(e) => setCloud(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -435,11 +436,11 @@ export default function FormServidor({
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Região / Datacenter
+              {t("plataformas.form.servidor.regiao")}
             </label>
             <input
               type="text"
-              placeholder="Ex: Falkenstein, eu-central-1"
+              placeholder={t("plataformas.form.servidor.regiaoPlaceholder")}
               value={regiao}
               onChange={(e) => setRegiao(e.target.value)}
               className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -456,18 +457,18 @@ export default function FormServidor({
           disabled={salvando}
           className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all cursor-pointer"
         >
-          Cancelar
+          {t("plataformas.comum.cancelar")}
         </button>
         <button
           type="submit"
           disabled={salvando}
-          className="px-6 py-2.5 bg-[#18357a] hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+          className="px-6 py-2.5 bg-netline-azul hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
         >
           {salvando
-            ? "A salvar..."
+            ? t("plataformas.comum.aGuardar")
             : servidorExistente
-              ? "Atualizar Servidor"
-              : "Criar Servidor"}
+              ? t("plataformas.form.servidor.atualizar")
+              : t("plataformas.form.servidor.criar")}
         </button>
       </div>
     </form>

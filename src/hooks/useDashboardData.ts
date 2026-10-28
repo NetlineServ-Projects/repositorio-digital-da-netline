@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
+import i18n from "../lang/i18n";
 import { API_ENDPOINTS } from "../data/client/endpoint";
-import { aplicarTema } from "../utils/tema";
 
 export interface UsuarioData {
   id?: number;
@@ -34,71 +34,61 @@ export interface Atividade {
   sistema: { id: number; nome: string } | null; 
 }
 
-export function useDashboardData() {
-  const [usuario, setUsuario] = useState<UsuarioData | null>(null);
-  const [documentos, setDocumentos] = useState<Documento[]>([]);
-  const [totalCategorias, setTotalCategorias] = useState(0);
-  const [totalSistemas, setTotalSistemas] = useState(0);
-  const [totalPlataformas, setTotalPlataformas] = useState(0);
-  const [atividades, setAtividades] = useState<Atividade[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+// Um valor por secção: null enquanto carrega, ou a mensagem de erro dessa secção.
+// Cada pedido é independente: se as atividades falharem, os números aparecem na mesma.
+type Secao<T> = { dados: T; erro: string | null };
+
+const mensagem = (r: PromiseSettledResult<unknown>, padrao: string) =>
+  r.status === "rejected" ? (r.reason instanceof Error ? r.reason.message : padrao) : null;
+
+const lista = <T,>(r: PromiseSettledResult<unknown>): T[] =>
+  r.status === "fulfilled" && Array.isArray(r.value) ? (r.value as T[]) : [];
+
+export function useDashboardData(ehAdmin: boolean) {
+  const [carregando, setCarregando] = useState(true);
+  const [documentos, setDocumentos] = useState<Secao<Documento[]>>({ dados: [], erro: null });
+  const [totais, setTotais] = useState({ categorias: 0, sistemas: 0, plataformas: 0 });
+  const [atividades, setAtividades] = useState<Secao<Atividade[]>>({ dados: [], erro: null });
 
   const buscarDados = useCallback(async () => {
-    setLoading(true);
-    setErro(null);
+    const [docs, cats, sist, plat, ativ] = await Promise.allSettled([
+      fetchComToken(API_ENDPOINTS.DOCUMENTOS),
+      fetchComToken(API_ENDPOINTS.CATEGORIAS),
+      fetchComToken(API_ENDPOINTS.SISTEMAS),
+      fetchComToken(API_ENDPOINTS.PLATAFORMAS),
+      fetchComToken(API_ENDPOINTS.ATIVIDADES_RECENTES),
+    ]);
 
-    try {
-      const [auth, docs, cats, sist, plat, ativ] = await Promise.all([
-        fetchComToken(API_ENDPOINTS.PERFIL),
-        fetchComToken(API_ENDPOINTS.DOCUMENTOS),
-        fetchComToken(API_ENDPOINTS.CATEGORIAS),
-        fetchComToken(API_ENDPOINTS.SISTEMAS),
-        fetchComToken(API_ENDPOINTS.PLATAFORMAS).catch(() => []),
-        fetchComToken(API_ENDPOINTS.ATIVIDADES_RECENTES),
-      ]);
-
-      setUsuario(auth);
-      // A preferência do backend manda (ex: mudada noutro computador)
-      aplicarTema(Boolean(auth?.temaEscuro));
-      setDocumentos(Array.isArray(docs) ? docs : []);
-      setTotalCategorias(Array.isArray(cats) ? cats.length : 0);
-      setTotalSistemas(Array.isArray(sist) ? sist.length : 0);
-      setTotalPlataformas(Array.isArray(plat) ? plat.length : 0);
-      setAtividades(Array.isArray(ativ) ? ativ : []);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao conectar com o servidor.");
-    } finally {
-      setLoading(false);
-    }
+    setDocumentos({ dados: lista<Documento>(docs), erro: mensagem(docs, i18n.t("comum.erros.carregarDocumentos")) });
+    setTotais({
+      categorias: lista(cats).length,
+      sistemas: lista(sist).length,
+      plataformas: lista(plat).length,
+    });
+    setAtividades({ dados: lista<Atividade>(ativ), erro: mensagem(ativ, i18n.t("comum.erros.carregarAtividades")) });
+    setCarregando(false);
   }, []);
 
   useEffect(() => {
     buscarDados();
   }, [buscarDados]);
 
-  const ehAdmin = usuario?.perfil === "ADMIN";
-  const documentosVisiveis = ehAdmin ? documentos : documentos.filter((d) => d.estado === "APROVADO");
-
-  const totalDocumentos = documentosVisiveis.length;
-  const pendentesAprovacao = documentos.filter((d) => d.estado === "PENDENTE").length;
-  const totalAprovados = documentos.filter((d) => d.estado === "APROVADO").length;
-  const documentosRecentes = [...documentosVisiveis].reverse().slice(0, 5);
+  const docs = documentos.dados;
+  const documentosVisiveis = ehAdmin ? docs : docs.filter((d) => d.estado === "APROVADO");
 
   return {
-    usuario,
-    documentos,
-    totalCategorias,
-    totalSistemas,
-    totalPlataformas,
-    totalDocumentos,
-    pendentesAprovacao,
-    totalAprovados,
-    documentosRecentes,
-    atividades,
-    ehAdmin,
-    loading,
-    erro,
+    carregando,
+    totalCategorias: totais.categorias,
+    totalSistemas: totais.sistemas,
+    totalPlataformas: totais.plataformas,
+    totalDocumentos: documentosVisiveis.length,
+    pendentesAprovacao: docs.filter((d) => d.estado === "PENDENTE").length,
+    totalAprovados: docs.filter((d) => d.estado === "APROVADO").length,
+    // O backend já os devolve do mais recente para o mais antigo
+    documentosRecentes: documentosVisiveis.slice(0, 5),
+    erroDocumentos: documentos.erro,
+    atividades: atividades.dados,
+    erroAtividades: atividades.erro,
     recarregar: buscarDados,
   };
 }

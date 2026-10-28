@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import AcoesItem from "../../../components/plataformas/acoesItem";
 import EstadoVazio from "../../../components/plataformas/estadoVazio";
 import {
@@ -29,10 +30,11 @@ export default function AbaServidores({
   aoEditar,
   aoEliminar,
 }: AbaServidoresProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   if (servidores.length === 0) {
-    return <EstadoVazio mensagem="Nenhum servidor registado." />;
+    return <EstadoVazio mensagem={t("plataformas.abas.servidores.vazio")} />;
   }
 
   // O que a linha da tabela e o cartão do telemóvel partilham
@@ -48,11 +50,11 @@ export default function AbaServidores({
       abrirDetalhes,
       acoes: (
         <AcoesItem
-          tituloVer={`Ver detalhes do servidor ${servidor.nome}`}
+          tituloVer={t("plataformas.abas.servidores.verDetalhes", { nome: servidor.nome })}
           onVer={abrirDetalhes}
           {...(ehAdmin && {
-            tituloEditar: `Editar servidor ${servidor.nome}`,
-            tituloEliminar: `Eliminar servidor ${servidor.nome}`,
+            tituloEditar: t("plataformas.abas.servidores.editar", { nome: servidor.nome }),
+            tituloEliminar: t("plataformas.abas.servidores.eliminar", { nome: servidor.nome }),
             onEditar: () => aoEditar("servidor", servidor),
             onEliminar: () => aoEliminar("servidor", servidor.id, servidor.nome),
           })}
@@ -93,7 +95,7 @@ export default function AbaServidores({
                 </span>
                 {seloEstado(servidor)}
                 <span className="text-[11px] text-slate-500">
-                  {totalSistemas} sistema{totalSistemas === 1 ? "" : "s"}
+                  {t("plataformas.comum.totalSistemas", { count: totalSistemas })}
                 </span>
               </div>
             </div>
@@ -109,12 +111,12 @@ export default function AbaServidores({
         <table className="w-full min-w-140 text-left text-xs">
           <thead className="border-b border-slate-100 text-slate-400 uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-4 py-3">Servidor</th>
-              <th className="px-4 py-3">Endereço IP</th>
-              <th className="px-4 py-3">Plataforma</th>
-              <th className="px-4 py-3 text-center">Sistemas</th>
-              <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3 text-right">Ações</th>
+              <th className="px-4 py-3">{t("plataformas.abas.servidores.colunas.servidor")}</th>
+              <th className="px-4 py-3">{t("plataformas.abas.servidores.colunas.ip")}</th>
+              <th className="px-4 py-3">{t("plataformas.abas.servidores.colunas.plataforma")}</th>
+              <th className="px-4 py-3 text-center">{t("plataformas.abas.servidores.colunas.sistemas")}</th>
+              <th className="px-4 py-3">{t("plataformas.abas.servidores.colunas.estado")}</th>
+              <th className="px-4 py-3 text-right">{t("plataformas.abas.servidores.colunas.acoes")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -145,7 +147,7 @@ export default function AbaServidores({
                     className={`inline-flex min-w-7 justify-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
                       totalSistemas > 0 ? "bg-blue-50 text-blue-900" : "bg-slate-100 text-slate-400"
                     }`}
-                    title={`${totalSistemas} sistema(s) hospedado(s)`}
+                    title={t("plataformas.abas.servidores.sistemasHospedados", { count: totalSistemas })}
                   >
                     {totalSistemas}
                   </span>

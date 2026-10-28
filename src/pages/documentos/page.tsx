@@ -12,6 +12,7 @@ import PainelFiltros from "../../components/painelFiltros";
 import { IconVer } from "../../components/icons";
 import { classificarTipo, OPCOES_TIPO } from "../../utils/tipoDocumento";
 import { toast } from "sonner";
+import { EstadoCarregando, EstadoErro, EstadoVazio, IndicadorAtualizar } from "../../components/estados";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
@@ -19,7 +20,7 @@ interface DashboardContext {
 
 export default function DocumentosPage() {
   const { t } = useTranslation();
-  const { documentos, categorias, loading, erro, recarregar, apagarDocumento } = useDocumentosData();
+  const { documentos, categorias, loading, aAtualizar, erro, recarregar, apagarDocumento } = useDocumentosData();
   const { usuario } = useOutletContext<DashboardContext>();
   const ehAdmin = usuario?.perfil === "ADMIN";
 
@@ -115,31 +116,17 @@ export default function DocumentosPage() {
     anoFiltro.length > 0;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">{t("documentos.carregando")}</p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("documentos.carregando")} />;
   }
 
   if (erro) {
-    return (
-      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
-        <p className="text-red-600 text-sm font-medium">{erro}</p>
-        <button
-          onClick={recarregar}
-          className="px-4 py-2 bg-[#18357a] text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          {t("comum.tentarNovamente")}
-        </button>
-      </div>
-    );
+    return <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />;
   }
 
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">{t("documentos.repositorio")}</p>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">{t("documentos.titulo")}</h1>
@@ -148,7 +135,7 @@ export default function DocumentosPage() {
 
         <Link
           to="/dashboard/documentos/new"
-          className="w-full sm:w-auto text-center px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors sm:self-start md:self-auto"
+          className="w-full sm:w-auto text-center px-4 py-2.5 bg-white text-netline-azul text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors sm:self-start md:self-auto"
         >
           {t("documentos.botaoNovo")}
         </Link>
@@ -160,8 +147,11 @@ export default function DocumentosPage() {
           <div className="w-full md:w-80 relative">
             <SearchInput value={busca} onChange={setBusca} placeholder={t("documentos.pesquisarPlaceholder")} />
           </div>
-          <div className="hidden xl:block">
-            <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          <div className="flex items-center gap-3">
+            <IndicadorAtualizar ativo={aAtualizar} />
+            <div className="hidden xl:block">
+              <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+            </div>
           </div>
         </div>
 
@@ -256,7 +246,7 @@ export default function DocumentosPage() {
                             <>
                               <Link
                                 to={`/dashboard/documentos/${doc.id}/editar`}
-                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100"
+                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-netline-azul text-xs font-semibold rounded-lg transition-colors border border-blue-100"
                               >
                                 {t("comum.editar")}
                               </Link>
@@ -303,7 +293,7 @@ export default function DocumentosPage() {
                     <>
                       <Link
                         to={`/dashboard/documentos/${doc.id}/editar`}
-                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-netline-azul font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
                       >
                         {t("comum.editar")}
                       </Link>
@@ -320,8 +310,28 @@ export default function DocumentosPage() {
             />
           ))
         ) : (
-          <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-            {t("documentos.nenhumDocumento")}
+          <div className="col-span-full">
+            {/* Sem filtros a lista está mesmo vazia: sugere criar o primeiro; com filtros, limpá-los */}
+            <EstadoVazio
+              mensagem={t("documentos.nenhumDocumento")}
+              acao={
+                filtrosAtivos ? (
+                  <button
+                    onClick={limparFiltros}
+                    className="px-4 py-2 text-xs font-semibold text-rose-600 border border-rose-100 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    {t("comum.limparFiltros")}
+                  </button>
+                ) : (
+                  <Link
+                    to="/dashboard/documentos/new"
+                    className="px-4 py-2 text-xs font-semibold text-white bg-netline-azul hover:bg-netline-azul-escuro rounded-lg transition-colors"
+                  >
+                    {t("documentos.botaoNovo")}
+                  </Link>
+                )
+              }
+            />
           </div>
         )}
       </div>

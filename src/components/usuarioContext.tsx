@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext } from "react";
 import { limparTema } from "../utils/tema";
+import { limparSessaoLocal, terminarSessaoNoServidor } from "../utils/api";
 
 interface Usuario {
   name: string;
@@ -9,13 +10,16 @@ interface Usuario {
 interface UsuarioContextType {
   usuarioLogado: Usuario | null;
   fazerLogin: (usuario: Usuario) => void;
-  fazerLogout: () => void;
+  fazerLogout: () => Promise<void>;
 }
 
 const UsuarioContext = createContext<UsuarioContextType | undefined>(undefined);
 
 export function UsuarioProvider({ children }: { children: React.ReactNode }) {
   const [usuarioLogado, setUsuarioLogado] = useState<Usuario | null>(() => {
+    // A versão antiga guardava o token aqui; com o cookie HttpOnly deixa de fazer sentido
+    localStorage.removeItem("token_sistema");
+    localStorage.removeItem("token");
     const dadosSalvos = localStorage.getItem("usuario_logado");
 
     if (dadosSalvos && dadosSalvos !== "undefined" && dadosSalvos !== "null") {
@@ -34,9 +38,9 @@ export function UsuarioProvider({ children }: { children: React.ReactNode }) {
     setUsuarioLogado(usuario);
   };
 
-  const fazerLogout = () => {
-    localStorage.removeItem("token_sistema");
-    localStorage.removeItem("usuario_logado");
+  const fazerLogout = async () => {
+    await terminarSessaoNoServidor(); // só o backend consegue apagar o cookie HttpOnly
+    limparSessaoLocal();
     limparTema();
     setUsuarioLogado(null);
     window.location.href = "/";

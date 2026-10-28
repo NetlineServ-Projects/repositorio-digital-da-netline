@@ -1,0 +1,106 @@
+{
+  "logotipo": "Logótipo Netline",
+  "iniciarSessao": "Iniciar sessão",
+  "navegacao": {
+    "seccoes": "Secções",
+    "inicio": "Início",
+    "plataforma": "A plataforma",
+    "comoFunciona": "Como funciona",
+    "suporte": "Suporte",
+    "abrirMenu": "Abrir menu",
+    "fecharMenu": "Fechar menu"
+  },
+  "hero": {
+    "etiqueta": "Repositório interno da Netline Serv",
+    "titulo": "O conhecimento da <destaque>Netline</destaque>, organizado e seguro.",
+    "texto": "Documentação, sistemas desenvolvidos e infraestrutura da empresa reunidos numa plataforma única, para consultar, preservar e partilhar com a equipa.",
+    "entrar": "Entrar no repositório",
+    "conhecer": "Conhecer a plataforma",
+    "logotipo": "Logótipo da Netline Serv, Lda",
+    "etiquetaDocumentos": "Documentos",
+    "etiquetaSistemas": "Sistemas",
+    "etiquetaPlataformas": "Plataformas"
+  },
+  "pilares": {
+    "centralizado": { "titulo": "Centralizado", "texto": "Tudo num só lugar" },
+    "seguro": { "titulo": "Seguro", "texto": "Acesso interno e auditado" },
+    "sempreAMao": { "titulo": "Sempre à mão", "texto": "Consulta a qualquer hora" }
+  },
+  "plataforma": {
+    "etiqueta": "A plataforma",
+    "titulo": "Um só lugar para a memória da empresa",
+    "texto": "Aplicações desenvolvidas, documentação técnica, manuais e registos de eventos, sempre acessíveis e organizados.",
+    "cartoes": {
+      "aplicacoes": {
+        "titulo": "Aplicações e documentação",
+        "texto": "Consulte o catálogo de soluções desenvolvidas pela Netline, com os seus manuais e especificações técnicas."
+      },
+      "conhecimento": {
+        "titulo": "Conhecimento centralizado",
+        "texto": "Aplicações, procedimentos operacionais e documentos essenciais reunidos num único local."
+      },
+      "memoria": {
+        "titulo": "Memória institucional",
+        "texto": "O histórico da empresa preservado: marcos importantes, conquistas e eventos corporativos."
+      }
+    }
+  },
+  "modulos": {
+    "etiqueta": "Módulos",
+    "titulo": "Tudo o que a equipa precisa, ligado entre si",
+    "ilustracao": "Ilustração de documentos organizados numa pasta partilhada pela equipa",
+    "documentos": {
+      "titulo": "Documentos",
+      "texto": "Manuais, contratos e especificações organizados por categoria, com pesquisa e pré-visualização."
+    },
+    "sistemas": {
+      "titulo": "Sistemas desenvolvidos",
+      "texto": "Ficha técnica de cada solução: equipa, tecnologias, ambientes e documentação associada."
+    },
+    "plataformas": {
+      "titulo": "Plataformas e servidores",
+      "texto": "Onde cada sistema corre: clouds, servidores, imagens de containers e domínios."
+    },
+    "aprovacoes": {
+      "titulo": "Aprovações",
+      "texto": "Cada documento submetido é revisto antes de ficar visível para toda a equipa."
+    }
+  },
+  "comoFunciona": {
+    "etiqueta": "Como funciona",
+    "titulo": "Do envio à consulta, com revisão pelo meio",
+    "texto": "Nada é publicado sem passar por um administrador, para que a informação partilhada seja sempre fiável.",
+    "passo": "Passo {{numero}}",
+    "submeter": { "titulo": "Submeter", "texto": "O colaborador envia o documento e escolhe a categoria." },
+    "rever": { "titulo": "Rever", "texto": "Um administrador aprova ou rejeita, com o motivo da decisão." },
+    "consultar": { "titulo": "Consultar", "texto": "Depois de aprovado, fica disponível para toda a equipa." }
+  },
+  "suporte": {
+    "etiqueta": "Canais de ajuda",
+    "titulo": "Suporte técnico",
+    "texto": "Dúvidas sobre o envio de manuais ou a utilização do sistema? A equipa de suporte ajuda diretamente.",
+    "faleConnosco": "Fale com a equipa",
+    "horario": "Respondemos em dias úteis, durante o horário de expediente.",
+    "telefone": "Telefone",
+    "email": "E-mail",
+    "localizacao": "Localização",
+    "imagem": "Técnico de suporte da Netline ao computador",
+    "disponivel": "Suporte técnico interno disponível"
+  },
+  "chamada": {
+    "titulo": "Pronto para começar?",
+    "texto": "Inicie sessão com a sua conta da Netline e aceda ao repositório."
+  },
+  "rodape": {
+    "subtitulo": "Repositório digital interno",
+    "texto": "Preservamos o conhecimento, as aplicações e a memória institucional da empresa num único lugar.",
+    "navegacaoAria": "Navegação do rodapé",
+    "navegacao": "Navegação",
+    "acesso": "Acesso ao sistema",
+    "suporteInterno": "Suporte interno",
+    "precisaAjuda": "Precisa de ajuda ou de registar novos ficheiros?",
+    "local": "Maputo, Moçambique",
+    "direitos": "© {{ano}} Netline Serv, Lda. Todos os direitos reservados.",
+    "usoInterno": "Uso exclusivo interno"
+  }
+}

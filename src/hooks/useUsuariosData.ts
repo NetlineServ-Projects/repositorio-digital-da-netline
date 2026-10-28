@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useCarregamento } from "./useCarregamento";
+import i18n from "../lang/i18n";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
 
@@ -26,37 +28,29 @@ export interface UsuarioFormData {
 
 export function useUsuariosData() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [carregando, setCarregando] = useState(true);
+  const { carregando, aAtualizar, erro, executar } = useCarregamento(
+    i18n.t("comum.erros.carregarUtilizadores"),
+  );
 
   // =========================================================
   // CARREGAR USUÁRIOS
   // =========================================================
 
-  const carregarUsuarios = useCallback(async () => {
-    setCarregando(true);
-
-    try {
-      const data = await fetchComToken(
-        API_ENDPOINTS.USUARIOS,
-      );
-
-      setUsuarios(data ?? []);
-    } finally {
-      setCarregando(false);
-    }
-  }, []);
+  const carregarUsuarios = useCallback(
+    () =>
+      executar(
+        () => fetchComToken(API_ENDPOINTS.USUARIOS),
+        (data) => setUsuarios(Array.isArray(data) ? data : []),
+      ),
+    [executar],
+  );
 
   // =========================================================
   // CARREGAMENTO INICIAL
   // =========================================================
 
   useEffect(() => {
-    carregarUsuarios().catch((error) => {
-      console.error(
-        "Erro ao carregar usuários:",
-        error,
-      );
-    });
+    carregarUsuarios();
   }, [carregarUsuarios]);
 
   // =========================================================
@@ -111,6 +105,8 @@ export function useUsuariosData() {
   return {
     usuarios,
     carregando,
+    aAtualizar,
+    erro,
     carregarUsuarios,
     salvarUsuario,
     eliminarUsuario,

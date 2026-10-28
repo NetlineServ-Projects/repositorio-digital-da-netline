@@ -11,6 +11,7 @@ import {
 } from "./constantes";
 import { useId } from "react";
 import SelectPesquisavel from "../../../components/selectPesquisavel";
+import { useTranslation } from "react-i18next";
 
 interface BlocoSubdominioProps {
   dominios: OpcaoHospedagem[];
@@ -42,6 +43,7 @@ export default function BlocoSubdominio({
   destino,
   onDestino,
 }: BlocoSubdominioProps) {
+  const { t } = useTranslation();
   const usaServidor = registoUsaServidor(tipoDns);
   const dominio = dominios.find((d) => String(d.id) === dominioId);
   const endereco = montarEndereco(nome, dominio?.nome);
@@ -51,34 +53,34 @@ export default function BlocoSubdominio({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div className="space-y-1.5">
-        <label htmlFor={`${idBase}-dominio`} className={CLASSE_ROTULO}>Domínio</label>
+        <label htmlFor={`${idBase}-dominio`} className={CLASSE_ROTULO}>{t("sistemas.subdominio.dominio")}</label>
         <SelectPesquisavel
           id={`${idBase}-dominio`}
           valor={dominioId}
           onChange={onDominioId}
-          opcaoVazia="Selecionar..."
+          opcaoVazia={t("sistemas.comum.selecionar")}
           opcoes={dominios.map((d) => ({ valor: String(d.id), label: d.nome }))}
         />
         {dominios.length === 0 && (
           <p className="text-[11px] text-slate-400">
-            Ainda não há domínios registados. Registe-os na página Plataformas.
+            {t("sistemas.subdominio.semDominios")}
           </p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <label className={CLASSE_ROTULO}>Nome (só o prefixo)</label>
+        <label className={CLASSE_ROTULO}>{t("sistemas.subdominio.nome")}</label>
         <input
           type="text"
           value={nome}
           onChange={(e) => onNome(e.target.value.toLowerCase())}
-          placeholder="Ex: repositorio (use @ para a raiz do domínio)"
+          placeholder={t("sistemas.subdominio.nomePlaceholder")}
           className={CLASSE_CAMPO}
         />
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor={`${idBase}-tipo`} className={CLASSE_ROTULO}>Tipo de registo</label>
+        <label htmlFor={`${idBase}-tipo`} className={CLASSE_ROTULO}>{t("sistemas.subdominio.tipoRegisto")}</label>
         <SelectPesquisavel
           id={`${idBase}-tipo`}
           valor={tipoDns}
@@ -89,28 +91,28 @@ export default function BlocoSubdominio({
 
       {usaServidor ? (
         <div className="space-y-1.5">
-          <label htmlFor={`${idBase}-servidor`} className={CLASSE_ROTULO}>Servidor</label>
+          <label htmlFor={`${idBase}-servidor`} className={CLASSE_ROTULO}>{t("sistemas.subdominio.servidor")}</label>
           <SelectPesquisavel
             id={`${idBase}-servidor`}
             valor={servidorId}
             onChange={onServidorId}
-            opcaoVazia="Selecionar..."
+            opcaoVazia={t("sistemas.comum.selecionar")}
             opcoes={servidores.map((s) => ({ valor: String(s.id), label: s.nome }))}
           />
           {servidores.length === 0 && (
             <p className="text-[11px] text-slate-400">
-              Ainda não há servidores registados.
+              {t("sistemas.subdominio.semServidores")}
             </p>
           )}
         </div>
       ) : (
         <div className="space-y-1.5">
-          <label className={CLASSE_ROTULO}>Destino</label>
+          <label className={CLASSE_ROTULO}>{t("sistemas.subdominio.destino")}</label>
           <input
             type="text"
             value={destino}
             onChange={(e) => onDestino(e.target.value)}
-            placeholder="Ex: cname.vercel-dns.com (sem https://)"
+            placeholder={t("sistemas.subdominio.destinoPlaceholder")}
             className={`${CLASSE_CAMPO} font-mono`}
           />
         </div>
@@ -118,7 +120,7 @@ export default function BlocoSubdominio({
 
       {endereco && (
         <p className="sm:col-span-2 text-sm text-slate-600">
-          Endereço: <span className="font-mono font-semibold break-all">{endereco}</span>
+          {t("sistemas.subdominio.endereco")} <span className="font-mono font-semibold break-all">{endereco}</span>
         </p>
       )}
     </div>

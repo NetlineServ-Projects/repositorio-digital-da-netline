@@ -13,6 +13,7 @@ import Documentos from "./pages/documentos/page";
 import DocumentoDetalhesPage from "./pages/documentos/details/page";
 import Categorias from "./pages/categorias/page";
 import Usuarios from "./pages/admin/usuarios/page";
+import UsuarioDetalhesPage from "./pages/admin/usuarios/detalhes/page";
 import Perfil from "./pages/perfil/page";
 import ConfiguracoesPage from "./pages/configuracoes/configuracoesPage";
 import Lixeira from "./pages/admin/lixeira/page";
@@ -24,6 +25,7 @@ import SistemasPage from "./pages/sistemas/page";
 import PlataformasPage from "./pages/Plataformas/page";
 import ServidorDetalhePage from "./pages/Plataformas/servidor/page";
 import { Toaster } from "sonner";
+import { ProvedorConfirmacao } from "./components/confirmacao";
 import NovoDocumentoPage from "./pages/documentos/new/page";
 import { AcessoInfraestruturaLayout } from "./pages/sistemas/infraestrutura/acessoInfraestrutura";
 import { AcessoElevadoLayout } from "./components/acessoElevado";
@@ -52,6 +54,7 @@ function App() {
   return (
     <BrowserRouter>
       <UsuarioProvider>
+      <ProvedorConfirmacao>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/autenticacao" element={<Autenticacao />} />
@@ -91,6 +94,7 @@ function App() {
                 element={<AprovacaoEditPage />}
               />
               <Route path="usuarios" element={<Usuarios />} />
+              <Route path="usuarios/:id" element={<UsuarioDetalhesPage />} />
               <Route path="lixeira" element={<Lixeira />} />
             </Route>
             <Route path="perfil" element={<Perfil />} />
@@ -118,6 +122,7 @@ function App() {
             <Route path="configuracoes" element={<ConfiguracoesPage />} />
           </Route>
         </Routes>
+      </ProvedorConfirmacao>
       </UsuarioProvider>
       <Toaster richColors position="top-right" />
     </BrowserRouter>

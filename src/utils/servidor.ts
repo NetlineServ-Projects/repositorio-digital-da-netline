@@ -1,14 +1,10 @@
 import type { Servidor } from "../types/plataforma";
+import { rotulosTraduzidos } from "../types/plataformaConstantes";
 
-export const ROTULO_AMBIENTE: Record<"PRODUCAO" | "TESTES", string> = {
-  PRODUCAO: "Produção",
-  TESTES: "Testes",
-};
+// Rótulos traduzidos no momento da leitura (idioma ativo)
+export const ROTULO_AMBIENTE = rotulosTraduzidos<"PRODUCAO" | "TESTES">("plataformas.ambientes", ["PRODUCAO", "TESTES"]);
 
-export const ROTULO_ESTADO_SERVIDOR: Record<Servidor["estado"], string> = {
-  ATIVO: "Ativo",
-  INATIVO: "Inativo",
-};
+export const ROTULO_ESTADO_SERVIDOR = rotulosTraduzidos<Servidor["estado"]>("plataformas.estadoServidor", ["ATIVO", "INATIVO"]);
 
 export const CLASSE_ESTADO_SERVIDOR: Record<Servidor["estado"], string> = {
   ATIVO: "bg-emerald-50 text-emerald-700 border-emerald-200",

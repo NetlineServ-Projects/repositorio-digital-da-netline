@@ -121,7 +121,7 @@ export default function Sidebar({ fechada = false }: SidebarProps) {
       >
         <img
           src={logoNetline}
-          alt="Logo Netline"
+          alt={t("sidebar.logotipo")}
           className="w-8 h-8 rounded object-cover shadow-sm shrink-0"
         />
         {!fechada && (

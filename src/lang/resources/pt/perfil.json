@@ -1,0 +1,39 @@
+{
+  "carregando": "A carregar dados do perfil...",
+  "atualizado": "Perfil atualizado com sucesso!",
+  "erroGuardar": "Erro ao guardar as alterações.",
+  "alterarFotografia": "Alterar fotografia",
+  "alterar": "Alterar",
+  "utilizador": "Utilizador",
+  "colaborador": "Colaborador",
+  "editar": "Editar perfil",
+  "guardarAlteracoes": "Guardar alterações",
+  "semValor": "N/D",
+  "seguranca": "Segurança da conta",
+  "campos": {
+    "nome": "Nome completo",
+    "email": "Endereço de e-mail",
+    "cargo": "Cargo",
+    "departamento": "Departamento"
+  },
+  "senha": {
+    "alterar": "Alterar palavra-passe de acesso",
+    "ocultarAlteracao": "Ocultar alteração da palavra-passe",
+    "atual": "Palavra-passe atual",
+    "nova": "Nova palavra-passe",
+    "novaPlaceholder": "Nova palavra-passe",
+    "confirmar": "Confirmar palavra-passe",
+    "confirmarPlaceholder": "Confirmar nova palavra-passe",
+    "mostrar": "Mostrar palavra-passe",
+    "ocultar": "Ocultar palavra-passe",
+    "preenchaTodos": "Preencha todos os campos da alteração da palavra-passe.",
+    "naoCoincidem": "A nova palavra-passe e a confirmação não coincidem."
+  },
+  "fotografia": {
+    "titulo": "Alterar fotografia",
+    "previsualizacao": "Pré-visualização",
+    "aEnviar": "A enviar...",
+    "atualizada": "Fotografia atualizada com sucesso!",
+    "erro": "Erro ao atualizar a fotografia."
+  }
+}

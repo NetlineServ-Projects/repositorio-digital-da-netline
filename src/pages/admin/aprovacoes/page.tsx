@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useAcoesEmCurso } from "../../../hooks/useAcoesEmCurso";
 import { useAprovacoesData } from "../../../hooks/useAprovacoesData";
 import { Link } from "react-router-dom";
 import { IconVer } from "../../../components/icons";
@@ -9,9 +11,11 @@ import DocumentoCard from "../../../components/documentoCard";
 import ModalMotivoRejeicao from "./modalMotivoRejeicao";
 import { toast } from "sonner";
 import SelectPesquisavel from "../../../components/selectPesquisavel";
+import { EstadoCarregando, EstadoErro, EstadoVazio, IndicadorAtualizar } from "../../../components/estados";
 
 export default function AprovacoesPage() {
-  const { documentos, categorias, loading, erro, recarregar, alterarEstado } =
+  const { t } = useTranslation();
+  const { documentos, categorias, loading, aAtualizar, erro, recarregar, alterarEstado } =
     useAprovacoesData();
 
   const [busca, setBusca] = useState("");
@@ -22,20 +26,23 @@ export default function AprovacoesPage() {
   );
   const [idParaRejeitar, setIdParaRejeitar] = useState<number | null>(null);
 
-  const handleAprovar = async (id: number) => {
-    try {
-      await alterarEstado(id, "APROVADO");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao aprovar documento.");
-    }
-  };
+  // Um duplo clique em "Aprovar" não envia o pedido duas vezes
+  const { executar, estaEmCurso } = useAcoesEmCurso();
+  const handleAprovar = (id: number) =>
+    executar(id, async () => {
+      try {
+        await alterarEstado(id, "APROVADO");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t("admin.aprovacoes.erroAprovar"));
+      }
+    });
 
   const confirmarRejeicao = async (motivo: string) => {
     if (idParaRejeitar === null) return;
     try {
       await alterarEstado(idParaRejeitar, "REJEITADO", motivo || undefined);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao rejeitar documento.");
+      toast.error(err instanceof Error ? err.message : t("admin.aprovacoes.erroRejeitar"));
     } finally {
       setIdParaRejeitar(null);
     }
@@ -61,48 +68,31 @@ export default function AprovacoesPage() {
   ).length;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">
-          A carregar solicitações...
-        </p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("admin.aprovacoes.carregando")} />;
   }
 
   if (erro) {
-    return (
-      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
-        <p className="text-red-600 text-sm font-medium">{erro}</p>
-        <button
-          onClick={recarregar}
-          className="px-4 py-2 bg-[#18357a] text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          Tentar Novamente  
-        </button>
-      </div>
-    );
+    return <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />;
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">
-            Gestão de Submissões
+            {t("admin.aprovacoes.eyebrow")}
           </p>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Painel de Aprovações
+            {t("admin.aprovacoes.titulo")}
           </h1>
           <p className="text-sm text-blue-100/80 mt-1">
-            Analise, verifique e valide os documentos submetidos pelos
-            colaboradores
+            {t("admin.aprovacoes.subtitulo")}
           </p>
         </div>
         <div className="flex items-center gap-2 bg-amber-400/20 text-amber-200 border border-amber-300/30 px-4 py-2.5 rounded-xl backdrop-blur-sm self-start md:self-auto shrink-0">
           <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
           <span className="text-xs font-bold">
-            {totalPendentes} Solicitações Pendentes
+            {t("admin.aprovacoes.pendentes", { count: totalPendentes })}
           </span>
         </div>
       </div>
@@ -112,32 +102,33 @@ export default function AprovacoesPage() {
           <SearchInput
             value={busca}
             onChange={setBusca}
-            placeholder="Pesquisar por documento ou colaborador..."
+            placeholder={t("admin.aprovacoes.pesquisar")}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full md:flex md:flex-wrap md:items-center md:gap-3 md:w-auto">
           <SelectPesquisavel
-            aria-label="Filtrar por estado"
+            aria-label={t("admin.aprovacoes.filtrarEstado")}
             className="w-full md:w-48"
             valor={statusFiltro}
             onChange={setStatusFiltro}
             opcoes={[
-              { valor: "PENDENTE", label: "Apenas Pendentes" },
-              { valor: "APROVADO", label: "Apenas Aprovados" },
-              { valor: "REJEITADO", label: "Apenas Rejeitados" },
-              { valor: "Todos", label: "Todos os Status" },
+              { valor: "PENDENTE", label: t("admin.aprovacoes.apenasPendentes") },
+              { valor: "APROVADO", label: t("admin.aprovacoes.apenasAprovados") },
+              { valor: "REJEITADO", label: t("admin.aprovacoes.apenasRejeitados") },
+              { valor: "Todos", label: t("admin.aprovacoes.todosEstados") },
             ]}
           />
           <SelectPesquisavel
-            aria-label="Filtrar por categoria"
+            aria-label={t("admin.aprovacoes.filtrarCategoria")}
             className="w-full md:w-56"
             valor={categoriaFiltro}
             onChange={setCategoriaFiltro}
             opcoes={[
-              { valor: "Todas", label: "Todas as Categorias" },
+              { valor: "Todas", label: t("documentos.todasCategorias") },
               ...categorias.map((cat) => ({ valor: cat.nome, label: cat.nome })),
             ]}
           />
+          <IndicadorAtualizar ativo={aAtualizar} />
           <div className="hidden xl:block">
             <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
           </div>
@@ -151,12 +142,12 @@ export default function AprovacoesPage() {
             <table className="w-full text-left text-sm text-slate-600">
               <thead className="bg-slate-50 text-slate-400 uppercase text-xs border-b border-slate-100">
                 <tr>
-                  <th className="py-3.5 px-4 font-semibold">Documento</th>
-                  <th className="py-3.5 px-4 font-semibold">Categoria</th>
-                  <th className="py-3.5 px-4 font-semibold">Submetido Por</th>
-                  <th className="py-3.5 px-4 font-semibold">Data</th>
+                  <th className="py-3.5 px-4 font-semibold">{t("documentos.tabela.documento")}</th>
+                  <th className="py-3.5 px-4 font-semibold">{t("documentos.tabela.categoria")}</th>
+                  <th className="py-3.5 px-4 font-semibold">{t("documentos.tabela.submetidoPor")}</th>
+                  <th className="py-3.5 px-4 font-semibold">{t("documentos.tabela.data")}</th>
                   <th className="py-3.5 px-4 font-semibold text-right">
-                    Ações do Gestor
+                    {t("admin.aprovacoes.acoesGestor")}
                   </th>
                 </tr>
               </thead>
@@ -171,7 +162,7 @@ export default function AprovacoesPage() {
                           <Link
                             to={`/dashboard/aprovacoes/details/${doc.id}`}
                             className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60 inline-flex"
-                            title="Ver detalhes"
+                            title={t("admin.aprovacoes.verDetalhes")}
                           >
                             <IconVer />
                           </Link>
@@ -179,20 +170,21 @@ export default function AprovacoesPage() {
                             <>
                               <button
                                 onClick={() => handleAprovar(doc.id)}
-                                className="px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                                disabled={estaEmCurso(doc.id)}
+                                className="disabled:opacity-60 disabled:cursor-wait px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
                               >
-                                Aprovar
+                                {t("admin.aprovacoes.aprovar")}
                               </button>
                               <button
                                 onClick={() => setIdParaRejeitar(doc.id)}
                                 className="px-3 py-2 md:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
                               >
-                                Rejeitar
+                                {t("admin.aprovacoes.rejeitar")}
                               </button>
                             </>
                           ) : (
                             <span className="text-xs text-slate-400 italic pl-2">
-                              Concluído
+                              {t("admin.aprovacoes.concluido")}
                             </span>
                           )}
                         </>
@@ -202,7 +194,7 @@ export default function AprovacoesPage() {
                 ) : (
                   <tr>
                     <td colSpan={5} className="text-center py-8 text-slate-400">
-                      Nenhuma solicitação encontrada para o filtro selecionado.
+                      {t("admin.aprovacoes.nenhuma")}
                     </td>
                   </tr>
                 )}
@@ -222,7 +214,7 @@ export default function AprovacoesPage() {
                   <Link
                     to={`/dashboard/aprovacoes/details/${doc.id}`}
                     className="p-2 md:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-                    title="Ver detalhes"
+                    title={t("admin.aprovacoes.verDetalhes")}
                   >
                     <IconVer />
                   </Link>
@@ -230,20 +222,21 @@ export default function AprovacoesPage() {
                     <>
                       <button
                         onClick={() => handleAprovar(doc.id)}
-                        className="px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                        disabled={estaEmCurso(doc.id)}
+                        className="disabled:opacity-60 disabled:cursor-wait px-3 py-2 md:py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
                       >
-                        Aprovar
+                        {t("admin.aprovacoes.aprovar")}
                       </button>
                       <button
                         onClick={() => setIdParaRejeitar(doc.id)}
                         className="px-3 py-2 md:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
                       >
-                        Rejeitar
+                        {t("admin.aprovacoes.rejeitar")}
                       </button>
                     </>
                   ) : (
                     <span className="text-xs text-slate-400 italic pl-2">
-                      Concluído
+                      {t("admin.aprovacoes.concluido")}
                     </span>
                   )}
                 </>
@@ -251,8 +244,8 @@ export default function AprovacoesPage() {
             />
           ))
         ) : (
-          <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-            Nenhuma solicitação encontrada para o filtro selecionado.
+          <div className="col-span-full">
+            <EstadoVazio mensagem={t("admin.aprovacoes.nenhuma")} />
           </div>
         )}
       </div>

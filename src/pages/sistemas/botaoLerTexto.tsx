@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { IconVolume, IconVolumeOff } from "../../components/icons";
+import { useTranslation } from "react-i18next";
 
 interface BotaoLerTextoProps {
   texto: string;
@@ -7,6 +8,7 @@ interface BotaoLerTextoProps {
 }
 
 export default function BotaoLerTexto({ texto, idioma = "pt-PT" }: BotaoLerTextoProps) {
+  const { t } = useTranslation();
   const [lendo, setLendo] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
@@ -39,7 +41,7 @@ export default function BotaoLerTexto({ texto, idioma = "pt-PT" }: BotaoLerTexto
   return (
     <button
       onClick={alternarLeitura}
-      title={lendo ? "Parar leitura" : "Ouvir descrição"}
+      title={lendo ? t("sistemas.ficha.pararLeitura") : t("sistemas.ficha.ouvirDescricao")}
       className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors cursor-pointer"
     >
       {lendo ? <IconVolumeOff className="w-4 h-4" /> : <IconVolume className="w-4 h-4" />}

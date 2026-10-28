@@ -2,32 +2,21 @@ import { useState, useEffect, useCallback } from "react";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
 import type { Documento } from "../types/documento";
+import { useCarregamento } from "./useCarregamento";
+import i18n from "../lang/i18n";
 
 export function useLixeiraData() {
     const [documentos, setDocumentos] = useState<Documento[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [erro, setErro] = useState<string | null>(null);
+    const { carregando: loading, aAtualizar, erro, executar } = useCarregamento(i18n.t("comum.erros.carregarLixeira"));
 
-    const fetchLixeira = useCallback(async () => {
-        setLoading(true);
-        setErro(null);
-
-        try {
-            const docs = await fetchComToken(
-                API_ENDPOINTS.DOCUMENTOS_LIXEIRA
-            );
-
-            setDocumentos(docs);
-        } catch (error) {
-            setErro(
-                error instanceof Error
-                    ? error.message
-                    : "Erro ao carregar a lixeira."
-            );
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const fetchLixeira = useCallback(
+        () =>
+            executar(
+                () => fetchComToken(API_ENDPOINTS.DOCUMENTOS_LIXEIRA),
+                (docs) => setDocumentos(Array.isArray(docs) ? docs : []),
+            ),
+        [executar],
+    );
 
     useEffect(() => {
         fetchLixeira();
@@ -46,7 +35,7 @@ export function useLixeiraData() {
         } catch (error) {
             throw error instanceof Error
                 ? error
-                : new Error("Erro ao restaurar o documento.");
+                : new Error(i18n.t("comum.erros.restaurarDocumento"));
         }
     };
 
@@ -63,7 +52,7 @@ export function useLixeiraData() {
         } catch (error) {
             throw error instanceof Error
                 ? error
-                : new Error("Erro ao eliminar o documento.");
+                : new Error(i18n.t("comum.erros.eliminarDocumento"));
         }
     };
 
@@ -84,13 +73,14 @@ export function useLixeiraData() {
         } catch (error) {
             throw error instanceof Error
                 ? error
-                : new Error("Erro ao esvaziar a lixeira.");
+                : new Error(i18n.t("comum.erros.esvaziarLixeira"));
         }
     };
 
     return {
         documentos,
         loading,
+        aAtualizar,
         erro,
         refetch: fetchLixeira,
         restaurar,

@@ -1,0 +1,39 @@
+{
+  "carregando": "Loading profile data...",
+  "atualizado": "Profile updated successfully!",
+  "erroGuardar": "Error saving the changes.",
+  "alterarFotografia": "Change photo",
+  "alterar": "Change",
+  "utilizador": "User",
+  "colaborador": "Employee",
+  "editar": "Edit profile",
+  "guardarAlteracoes": "Save changes",
+  "semValor": "N/A",
+  "seguranca": "Account security",
+  "campos": {
+    "nome": "Full name",
+    "email": "Email address",
+    "cargo": "Job title",
+    "departamento": "Department"
+  },
+  "senha": {
+    "alterar": "Change sign-in password",
+    "ocultarAlteracao": "Hide password change",
+    "atual": "Current password",
+    "nova": "New password",
+    "novaPlaceholder": "New password",
+    "confirmar": "Confirm password",
+    "confirmarPlaceholder": "Confirm new password",
+    "mostrar": "Show password",
+    "ocultar": "Hide password",
+    "preenchaTodos": "Fill in all the password change fields.",
+    "naoCoincidem": "The new password and the confirmation do not match."
+  },
+  "fotografia": {
+    "titulo": "Change photo",
+    "previsualizacao": "Preview",
+    "aEnviar": "Uploading...",
+    "atualizada": "Photo updated successfully!",
+    "erro": "Error updating the photo."
+  }
+}

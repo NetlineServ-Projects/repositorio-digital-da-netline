@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { fetchComToken } from "../../utils/api";
 import { aplicarTema } from "../../utils/tema";
 import SelectPesquisavel from "../../components/selectPesquisavel";
+import { EstadoCarregando, EstadoErro } from "../../components/estados";
 
 export default function ConfiguracoesPage() {
   const { t, i18n } = useTranslation();
@@ -14,7 +15,18 @@ export default function ConfiguracoesPage() {
   const [idioma, setIdioma] = useState<string>("pt");
 
   const [loading, setLoading] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+
+  // Se as preferências não carregarem, mostra-se o erro em vez do formulário: com os
+  // valores por omissão, "Salvar" sobrescreveria as preferências reais do utilizador
+  const [tentativa, setTentativa] = useState(0);
+
+  const tentarNovamente = () => {
+    setLoading(true);
+    setErroCarregamento(null);
+    setTentativa((n) => n + 1);
+  };
 
   useEffect(() => {
     const carregarPreferencias = async () => {
@@ -31,19 +43,19 @@ export default function ConfiguracoesPage() {
 
         aplicarTema(temaAtivo);
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : t("configuracoes.erroCarregar"));
+        setErroCarregamento(err instanceof Error ? err.message : t("configuracoes.erroCarregar"));
       } finally {
         setLoading(false);
       }
     };
 
     carregarPreferencias();
-    // Este efeito deve correr só uma vez, ao montar a página.
+    // Este efeito deve correr só ao montar a página (e em "Tentar novamente").
     // Não incluir i18n/t nas dependências: a função `t` muda de referência
     // sempre que o idioma muda, o que faria este efeito correr de novo
     // e reverter a escolha do usuário buscando outra vez o valor antigo do backend.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [tentativa]);
 
   // O tema grava-se logo ao mudar: antes só ficava guardado com "Salvar", e quem
   // saísse da página sem guardar via o tema voltar atrás no próximo carregamento
@@ -89,18 +101,16 @@ export default function ConfiguracoesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-12">
-        <p className="text-slate-500 font-medium text-sm animate-pulse">
-          {t("configuracoes.carregando")}
-        </p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("configuracoes.carregando")} />;
+  }
+
+  if (erroCarregamento) {
+    return <EstadoErro mensagem={erroCarregamento} onTentarNovamente={tentarNovamente} />;
   }
 
   return (
     <div className="w-full space-y-6">
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
         <div>
           <span className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
             {t("configuracoes.preferencias")}
@@ -155,7 +165,7 @@ export default function ConfiguracoesPage() {
               type="checkbox"
               checked={notificacoesEmail}
               onChange={(e) => setNotificacoesEmail(e.target.checked)}
-              className="w-4 h-4 text-[#1b365d] border-slate-300 rounded focus:ring-[#1b365d] cursor-pointer"
+              className="w-4 h-4 text-netline-azul border-slate-300 rounded focus:ring-netline-azul cursor-pointer"
             />
           </div>
 
@@ -187,7 +197,7 @@ export default function ConfiguracoesPage() {
             <button
               type="submit"
               disabled={salvando}
-              className="w-full sm:w-auto px-5 py-2.5 bg-[#1b365d] hover:bg-[#142847] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 bg-netline-azul hover:bg-[#142847] disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-xs transition-colors shadow-sm cursor-pointer"
             >
               {salvando ? t("configuracoes.salvando") : t("configuracoes.salvar")}
             </button>

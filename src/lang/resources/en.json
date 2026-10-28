@@ -16,18 +16,19 @@
       "DOMINIO_EXPIRADO": "The domain {{referencia}} expired on {{data}}."
     }
   },
+
   "configuracoes": {
-    "titulo": "System Settings",
+    "titulo": "System settings",
     "subtitulo": "Manage your interface and notification preferences.",
     "preferencias": "PREFERENCES",
-    "aparencia": "Platform Appearance",
-    "modoEscuro": "Dark Mode enabled",
-    "modoClaro": "Light Mode enabled (Default)",
-    "notificacoesEmail": "Email Notifications",
+    "aparencia": "Platform appearance",
+    "modoEscuro": "Dark mode enabled",
+    "modoClaro": "Light mode enabled (default)",
+    "notificacoesEmail": "Email notifications",
     "notificacoesEmailDesc": "Receive email alerts when new documents are added",
-    "idioma": "Platform Language",
+    "idioma": "Platform language",
     "idiomaDesc": "Select your preferred language",
-    "salvar": "Save Changes",
+    "salvar": "Save changes",
     "salvando": "Saving...",
     "salvoComSucesso": "Settings saved successfully!",
     "erroCarregar": "Could not load settings.",
@@ -36,10 +37,10 @@
   },
 
   "documentos": {
-    "novoDocumento": "New Document",
+    "novoDocumento": "New document",
     "guardar": "Save",
     "aGuardar": "Saving...",
-    "submeter": "Submit Document",
+    "submeter": "Submit document",
     "aSubmeter": "Submitting...",
     "publicadoComSucesso": "Document published successfully.",
     "submetidoParaAprovacao": "Document submitted for approval.",
@@ -48,42 +49,42 @@
     "repositorio": "Repository",
     "titulo": "Documents",
     "subtitulo": "Browse and manage published documents",
-    "botaoNovo": "+ New Document",
+    "botaoNovo": "+ New document",
     "pesquisarPlaceholder": "Search by document or author...",
     "categoria": "Category",
-    "todasCategorias": "All Categories",
+    "todasCategorias": "All categories",
     "carregando": "Loading documents...",
     "nenhumDocumento": "No documents found.",
     "tabela": {
       "documento": "Document",
       "categoria": "Category",
-      "submetidoPor": "Submitted By",
+      "submetidoPor": "Submitted by",
       "data": "Date"
     },
 
     "form": {
-      "voltar": "Back to Documents",
+      "voltar": "Back to documents",
       "tituloLabel": "Title",
-      "tituloPlaceholder": "E.g.: External Procedures Guide",
+      "tituloPlaceholder": "E.g.: External procedures guide",
       "tituloObrigatorio": "Please enter the document title.",
       "descricaoLabel": "Description",
       "descricaoPlaceholder": "Brief summary of the document's content...",
       "categoriaLabel": "Category",
-      "semCategoria": "No Category",
+      "semCategoria": "No category",
       "ficheiroLabel": "File",
       "ficheiroObrigatorio": "Please select a file to upload.",
       "clicarOuArrastar": "Click here to choose or drag the file",
-      "formatosAceites": "PDF, PNG, JPG, DOCX up to 50MB",
-      "erroCriar": "Error creating document.",
+      "formatosAceites": "PDF, PNG, JPG, DOCX up to 50 MB",
+      "erroCriar": "Error creating the document.",
       "cancelar": "Cancel"
     },
 
     "detalhes": {
       "carregando": "Loading document...",
       "naoEncontrado": "Document not found.",
-      "voltar": "Back to Documents",
+      "voltar": "Back to documents",
       "categoria": "Category",
-      "semCategoria": "No Category",
+      "semCategoria": "No category",
       "submetidoPor": "Submitted by",
       "sistema": "System",
       "data": "Date",
@@ -92,12 +93,23 @@
     },
 
     "editar": {
-      "titulo": "Edit Document",
+      "titulo": "Edit document",
       "tituloLabel": "Title",
       "descricaoLabel": "Description",
       "categoriaLabel": "Category",
       "atualizadoComSucesso": "Document updated successfully.",
-      "erroAtualizar": "Error updating document."
+      "erroAtualizar": "Error updating the document."
+    },
+
+    "visualizador": {
+      "indisponivel": "Preview is not available for this file type.",
+      "transferirParaVer": "Download to view",
+      "previsualizacaoDe": "Preview of {{titulo}}",
+      "erroPdf": "Could not load the PDF preview.",
+      "aCarregarPdf": "Loading PDF...",
+      "anterior": "Previous",
+      "seguinte": "Next",
+      "pagina": "Page {{atual}} of {{total}}"
     }
   },
 
@@ -107,16 +119,21 @@
     "apagar": "Delete",
     "ver": "View",
     "verDocumento": "View document",
-    "tentarNovamente": "Try Again",
+    "tentarNovamente": "Try again",
+    "estados": {
+      "carregando": "Loading...",
+      "erroTitulo": "Could not load",
+      "aAtualizar": "Updating..."
+    },
     "limparFiltros": "Clear filters",
     "autor": "Author",
-    "todosAutores": "All Authors",
-    "tipoFicheiro": "File Type",
-    "todosTipos": "All Types",
+    "todosAutores": "All authors",
+    "tipoFicheiro": "File type",
+    "todosTipos": "All types",
     "mes": "Month",
-    "todosMeses": "All Months",
+    "todosMeses": "All months",
     "ano": "Year",
-    "todosAnos": "All Years",
+    "todosAnos": "All years",
     "meses": {
       "0": "January", "1": "February", "2": "March", "3": "April",
       "4": "May", "5": "June", "6": "July", "7": "August",
@@ -127,11 +144,35 @@
       "mensagem": "Are you sure you want to delete this document? This action cannot be undone.",
       "confirmar": "Delete"
     },
-    "erroApagarDocumento": "Error deleting document.",
+    "erroApagarDocumento": "Error deleting the document.",
     "status": {
       "PENDENTE": "Pending",
       "APROVADO": "Approved",
       "REJEITADO": "Rejected"
+    },
+    "documentoSemTitulo": "Untitled document",
+    "tiposFicheiro": {
+      "todos": "All types",
+      "word": "Word",
+      "pdf": "PDF",
+      "imagem": "Image",
+      "outro": "Other"
+    },
+    "erros": {
+      "servidorLento": "The server took too long to respond. Please try again.",
+      "semLigacao": "Could not connect to the server. Check your connection.",
+      "comunicarServidor": "Error communicating with the server.",
+      "atualizar": "Could not refresh: {{mensagem}}",
+      "carregarSolicitacoes": "Could not load the requests.",
+      "carregarDocumentos": "Could not load the documents.",
+      "carregarDocumento": "Could not load the document.",
+      "carregarAtividades": "Could not load the activity.",
+      "carregarLixeira": "Error loading the trash.",
+      "restaurarDocumento": "Error restoring the document.",
+      "eliminarDocumento": "Error deleting the document.",
+      "esvaziarLixeira": "Error emptying the trash.",
+      "carregarPerfil": "Could not load your profile.",
+      "carregarUtilizadores": "Could not load the users."
     }
   },
 
@@ -145,14 +186,14 @@
     "contagemDocumentos_one": "{{count}} document",
     "contagemDocumentos_other": "{{count}} documents",
     "acederCategoria": "Open category",
-    "voltar": "Back to Categories",
+    "voltar": "Back to categories",
     "contagemNestaCategoria_one": "{{count}} document in this category",
-    "contagemNestaCategoria_other": "{{count}} document(s) in this category",
-    "novoDocumento": "+ New Document",
+    "contagemNestaCategoria_other": "{{count}} documents in this category",
+    "novoDocumento": "+ New document",
     "pesquisarDocumento": "Search document in this category...",
     "tabela": {
       "documento": "Document",
-      "submetidoPor": "Submitted By",
+      "submetidoPor": "Submitted by",
       "data": "Date"
     },
     "nenhumDocumento": "No documents found in this category."
@@ -161,87 +202,105 @@
   "layout": {
     "carregandoPainel": "Loading dashboard...",
     "erroOcorreu": "An error occurred: {{erro}}",
-    "erroApagarConta": "Error deleting account.",
+    "erroApagarConta": "Error deleting the account.",
     "modalApagarConta": {
-      "titulo": "Delete Account",
-      "mensagem": "Warning: are you sure you want to log out and PERMANENTLY DELETE your account? This action cannot be undone.",
+      "titulo": "Delete account",
+      "mensagem": "Warning: are you sure you want to sign out and PERMANENTLY DELETE your account? This action cannot be undone.",
       "confirmar": "Delete account"
     }
   },
 
   "dashboard": {
     "acoesRapidas": {
-      "label": "Quick Actions:",
-      "gerirAprovacoes": "Manage Approvals",
-      "verCategorias": "View Categories",
-      "gerirSistemas": "Manage Systems",
-      "gerirPlataformas": "Manage Platforms",
-      "verDocumentos": "View Documents",
-      "verSistemas": "View Systems",
-      "verPlataformas": "View Platforms"
+      "label": "Quick actions:",
+      "gerirAprovacoes": "Manage approvals",
+      "verCategorias": "View categories",
+      "gerirSistemas": "Manage systems",
+      "gerirPlataformas": "Manage platforms",
+      "verDocumentos": "View documents",
+      "verSistemas": "View systems",
+      "verPlataformas": "View platforms"
     },
     "atividadeRecente": {
-      "titulo": "Recent Activity",
-      "semAtividade": "No recent activity."
+      "titulo": "Recent activity",
+      "tituloAdmin": "Recent system activity",
+      "minhasAtividades": "My activity",
+      "subtituloAdmin": "Actions by all employees and administrators",
+      "subtituloProprio": "Only actions performed by your account",
+      "filtroTodos": "All",
+      "filtroFuncionarios": "Employees",
+      "filtroAdmins": "Administrators",
+      "perfilAdmin": "Admin",
+      "perfilFuncionario": "Employee",
+      "semAtividade": "No recent activity.",
+      "indisponivel": "Recent activity unavailable"
     },
     "documentosRecentes": {
-      "titulo": "Recent Documents",
-      "verTodos": "View All",
+      "titulo": "Recent documents",
+      "verTodos": "View all",
       "nome": "Name",
       "categoria": "Category",
       "data": "Date",
       "statusHeader": "Status",
       "semNome": "Untitled document",
       "geral": "General",
-      "nenhumDocumento": "No documents registered in the repository."
+      "nenhumDocumento": "No documents registered in the repository.",
+      "indisponivel": "Recent documents unavailable"
     },
     "heroBanner": {
-      "eyebrow": "Digital Repository",
-      "titulo": "Explore Netline's Documents",
+      "eyebrow": "Digital repository",
+      "titulo": "Explore Netline's documents",
       "documentosDisponiveis_one": "{{count}} document available",
       "documentosDisponiveis_other": "{{count}} documents available",
       "sistemasIntegrados_one": "{{count}} system integrated",
       "sistemasIntegrados_other": "{{count}} systems integrated",
-      "verTodos": "View All Documents"
+      "verTodos": "View all documents"
+    },
+    "metricas": {
+      "totalDocumentos": "Total documents",
+      "pendentesAprovacao": "Pending approval",
+      "aprovados": "Approved",
+      "totalSistemas": "Total systems",
+      "plataformas": "Platforms",
+      "categorias": "Categories"
     }
   },
 
   "auth": {
     "marca": "Netline Serv",
-    "heroTitulo": "Connecting People, Sharing Knowledge.",
-    "heroTexto": "Welcome to Netline's Internal Repository. This is your centralized portal for accessing technical documents, shared resources, and exclusive tools. Sign in to securely access the system.",
-    "painelAcesso": "Access Panel",
-    "acederConta": "Access Your Account",
-    "emailLabel": "Work Email",
+    "heroTitulo": "Connecting people, sharing knowledge.",
+    "heroTexto": "Welcome to Netline's internal repository. This is your centralised portal for accessing technical documents, shared resources and exclusive tools. Sign in to access the system securely.",
+    "painelAcesso": "Access panel",
+    "acederConta": "Access your account",
+    "emailLabel": "Work email",
     "emailPlaceholder": "name@netline.co.mz",
     "senhaLabel": "Password",
     "processando": "Processing...",
-    "entrar": "Sign In",
+    "entrar": "Sign in",
     "erroPadrao": "An error occurred while trying to sign in.",
     "erroCredenciais": "Incorrect email or password",
     "sessaoExpirada": "Your session has expired. Please sign in again to continue.",
     "direitosReservados": "© {{ano}} Netline.Serv,Lda. All rights reserved."
   },
-   "sidebar": {
-   "marca": "Netline Serv",
-   "seccoes": {
-    "principal": "MAIN",
-    "sistemasNetline": "NETLINE SYSTEMS",
-    "configuracoes": "SETTINGS"
-  },
-     "itens": {
+
+  "sidebar": {
+    "marca": "Netline Serv",
+    "logotipo": "Netline logo",
+    "seccoes": {
+      "principal": "MAIN",
+      "sistemasNetline": "SYSTEMS",
+      "configuracoes": "SETTINGS"
+    },
+    "itens": {
       "dashboard": "Dashboard",
       "documentos": "Documents",
       "categorias": "Categories",
       "aprovacoes": "Approvals",
       "lixeira": "Trash",
-      "sistemasDesenvolvidos": "Developed Systems",
+      "sistemasDesenvolvidos": "Developed systems",
       "plataformas": "Platforms",
       "usuarios": "Users",
       "configuracoes": "Settings"
-     }
-   }
-   
-
-
+    }
+  }
 }

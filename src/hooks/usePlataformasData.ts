@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCarregamento } from "./useCarregamento";
+import { toast } from "sonner";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
 import type { Plataforma, Servidor, Dominio, Subdominio,ImagemContainer, DadosPlataforma, CatalogoFornecedores} from "../types/plataforma";
@@ -38,20 +40,31 @@ export function usePlataformasData() {
   const [dominios, setDominios] = useState<Dominio[]>([]);
   const [subdominios, setSubdominios] = useState<Subdominio[]>([]);
   const [imagens, setImagens] = useState<ImagemContainer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { carregando: loading, aAtualizar, erro, executar } = useCarregamento(
+    "Não foi possível carregar as plataformas.",
+  );
 
-  const carregarTodos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [platRes, arvoreRes, servRes, domRes, subRes, imgRes] = await Promise.allSettled([
+  const carregarTodos = useCallback(
+    () =>
+      executar(
+        async () => {
+          const resultados = await Promise.allSettled([
         fetchComToken(API_ENDPOINTS.PLATAFORMAS),
         fetchComToken(API_ENDPOINTS.PLATAFORMA_ARVORE),
         fetchComToken(API_ENDPOINTS.SERVIDORES),
         fetchComToken(API_ENDPOINTS.DOMINIOS),
         fetchComToken(API_ENDPOINTS.SUBDOMINIOS),
-        fetchComToken(API_ENDPOINTS.IMAGENS),
-      ]);
-
+            fetchComToken(API_ENDPOINTS.IMAGENS),
+          ]);
+          // Sem a lista de plataformas a página não serve de nada: isso é um erro a sério.
+          // Se só uma parte falhar (ex: imagens), mostra-se o resto e avisa-se.
+          if (resultados[0].status === "rejected") throw resultados[0].reason;
+          const NOMES = ["plataformas", "árvore", "servidores", "domínios", "registos DNS", "imagens"];
+          const falhadas = resultados.flatMap((r, i) => (r.status === "rejected" ? [NOMES[i]] : []));
+          if (falhadas.length > 0) toast.warning(`Alguns dados não carregaram: ${falhadas.join(", ")}.`);
+          return resultados;
+        },
+        ([platRes, arvoreRes, servRes, domRes, subRes, imgRes]) => {
       if (platRes.status === "fulfilled" && Array.isArray(platRes.value)) {
         setPlataformas(platRes.value);
       }
@@ -70,12 +83,10 @@ export function usePlataformasData() {
       if (imgRes.status === "fulfilled" && Array.isArray(imgRes.value)) {
         setImagens(imgRes.value);
       }
-    } catch (error) {
-      console.error("Erro ao carregar dados de plataformas:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        },
+      ),
+    [executar],
+  );
 
   useEffect(() => {
     carregarTodos();
@@ -225,6 +236,8 @@ export function usePlataformasData() {
     subdominios,
     imagens,
     loading,
+    aAtualizar,
+    erro,
     carregarTodos,
     criarPlataforma,
     atualizarPlataforma,

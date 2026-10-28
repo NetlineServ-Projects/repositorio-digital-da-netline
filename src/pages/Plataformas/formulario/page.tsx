@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   IconVoltar,
   IconPlataforma,
@@ -44,6 +45,7 @@ export default function PlataformaFormularioPage({
   onVoltar,
   onSucesso,
 }: PlataformaFormularioPageProps) {
+  const { t } = useTranslation();
   const [tipoAtivo, setTipoAtivo] = useState<TipoFormularioPlataforma>(
     itemEdicao?.tipo ?? tipoInicial,
   );
@@ -77,19 +79,19 @@ export default function PlataformaFormularioPage({
       if (itemEdicao?.tipo === "plataforma") {
         await atualizarPlataforma(itemEdicao.dados.id, dados);
         plataformaId = itemEdicao.dados.id;
-        toast.success("Plataforma atualizada com sucesso!");
+        toast.success(t("plataformas.form.plataforma.atualizada"));
       } else {
         const criada = await criarPlataforma(dados);
         plataformaId = criada.id;
-        toast.success("Plataforma cadastrada com sucesso!");
+        toast.success(t("plataformas.form.plataforma.registada"));
       }
 
       if (logotipo) {
         try {
           await enviarLogotipoPlataforma(plataformaId, logotipo);
         } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : "erro desconhecido";
-          toast.error(`A plataforma foi guardada, mas o logótipo não foi enviado: ${msg}`);
+          const msg = err instanceof Error ? err.message : t("plataformas.comum.erroDesconhecido");
+          toast.error(t("plataformas.form.plataforma.logotipoFalhou", { erro: msg }));
         }
       }
 
@@ -97,7 +99,7 @@ export default function PlataformaFormularioPage({
       onVoltar();
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Erro ao salvar plataforma.";
+        err instanceof Error ? err.message : t("plataformas.form.plataforma.erroGuardar");
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -110,16 +112,16 @@ export default function PlataformaFormularioPage({
     try {
       if (itemEdicao?.tipo === "servidor") {
         await atualizarServidor(itemEdicao.dados.id, dados);
-        toast.success("Servidor atualizado com sucesso!");
+        toast.success(t("plataformas.form.servidor.atualizado"));
       } else {
         await criarServidor(dados);
-        toast.success("Servidor cadastrado com sucesso!");
+        toast.success(t("plataformas.form.servidor.registado"));
       }
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Erro ao salvar servidor.";
+        err instanceof Error ? err.message : t("plataformas.form.servidor.erroGuardar");
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -136,16 +138,16 @@ export default function PlataformaFormularioPage({
     try {
       if (itemEdicao?.tipo === "dominio") {
         await atualizarDominio(itemEdicao.dados.id, dados);
-        toast.success("Domínio atualizado com sucesso!");
+        toast.success(t("plataformas.form.dominio.atualizado"));
       } else {
         await criarDominio(dados);
-        toast.success("Domínio cadastrado com sucesso!");
+        toast.success(t("plataformas.form.dominio.registado"));
       }
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : "Erro ao salvar domínio.";
+        err instanceof Error ? err.message : t("plataformas.form.dominio.erroGuardar");
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -158,15 +160,15 @@ export default function PlataformaFormularioPage({
     try {
       if (itemEdicao?.tipo === "imagem") {
         await atualizarImagem(itemEdicao.dados.id, dados);
-        toast.success("Imagem atualizada com sucesso!");
+        toast.success(t("plataformas.form.imagem.atualizada"));
       } else {
         await criarImagem(dados);
-        toast.success("Imagem registada com sucesso!");
+        toast.success(t("plataformas.form.imagem.registada"));
       }
       onSucesso?.();
       onVoltar();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Erro ao salvar imagem.";
+      const msg = err instanceof Error ? err.message : t("plataformas.form.imagem.erroGuardar");
       toast.error(msg);
     } finally {
       setSalvando(false);
@@ -176,27 +178,27 @@ export default function PlataformaFormularioPage({
   const tabsConfig = [
     {
       tipo: "plataforma" as const,
-      label: "Plataforma",
+      label: t("plataformas.form.separadores.plataforma"),
       icon: <IconPlataforma className="w-4 h-4" />,
-      sublabel: "Provedor / Nuvem",
+      sublabel: t("plataformas.form.separadores.plataformaDescricao"),
     },
     {
       tipo: "servidor" as const,
-      label: "Servidor",
+      label: t("plataformas.form.separadores.servidor"),
       icon: <IconServer className="w-4 h-4" />,
-      sublabel: "VPS / Máquina",
+      sublabel: t("plataformas.form.separadores.servidorDescricao"),
     },
     {
       tipo: "dominio" as const,
-      label: "Domínio",
+      label: t("plataformas.form.separadores.dominio"),
       icon: <IconDominio className="w-4 h-4" />,
-      sublabel: "Zona DNS Principal",
+      sublabel: t("plataformas.form.separadores.dominioDescricao"),
     },
     {
       tipo: "imagem" as const,
-      label: "Imagem",
+      label: t("plataformas.form.separadores.imagem"),
       icon: <IconImagem className="w-4 h-4" />,
-      sublabel: "Recursos de Imagem",
+      sublabel: t("plataformas.form.separadores.imagemDescricao"),
     },
   ];
 
@@ -209,12 +211,12 @@ export default function PlataformaFormularioPage({
           className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
         >
           <IconVoltar className="w-4 h-4" />
-          <span>Voltar para Plataformas</span>
+          <span>{t("plataformas.form.voltar")}</span>
         </button>
 
         {emEdicao && (
           <span className="text-xs font-semibold px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">
-            Modo Edição
+            {t("plataformas.form.modoEdicao")}
           </span>
         )}
       </div>
@@ -231,7 +233,7 @@ export default function PlataformaFormularioPage({
                 onClick={() => setTipoAtivo(tab.tipo)}
                 className={`flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer text-left ${
                   ativa
-                    ? "bg-[#18357a] text-white shadow-xs"
+                    ? "bg-netline-azul text-white shadow-xs"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >

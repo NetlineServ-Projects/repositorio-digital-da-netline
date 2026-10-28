@@ -13,6 +13,7 @@ import { IconVer, IconPasta, IconSetaDireita } from "../../components/icons";
 import { classificarTipo, OPCOES_TIPO } from "../../utils/tipoDocumento";
 import type { Categoria } from "../../types/documento";
 import { toast } from "sonner";
+import { EstadoCarregando, EstadoErro, EstadoVazio, IndicadorAtualizar } from "../../components/estados";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
@@ -21,7 +22,7 @@ interface DashboardContext {
 export default function CategoriasPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { documentos, categorias, loading, erro, recarregar, apagarDocumento } = useDocumentosData();
+  const { documentos, categorias, loading, aAtualizar, erro, recarregar, apagarDocumento } = useDocumentosData();
   const { usuario } = useOutletContext<DashboardContext>();
   const ehAdmin = usuario?.perfil === "ADMIN";
 
@@ -133,32 +134,18 @@ export default function CategoriasPage() {
     anoFiltro.length > 0;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">{t("categorias.carregando")}</p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("categorias.carregando")} />;
   }
 
   if (erro) {
-    return (
-      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
-        <p className="text-red-600 text-sm font-medium">{erro}</p>
-        <button
-          onClick={recarregar}
-          className="px-4 py-2 bg-[#18357a] text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          {t("comum.tentarNovamente")}
-        </button>
-      </div>
-    );
+    return <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />;
   }
 
   // --- VISÃO 1: LISTA GERAL DE CATEGORIAS ---
   if (!categoriaAtiva) {
     return (
       <div className="space-y-6">
-        <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm">
+        <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl shadow-sm">
           <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-1">{t("categorias.repositorio")}</p>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">{t("categorias.titulo")}</h1>
           <p className="text-sm text-blue-100/80 mt-1">
@@ -186,7 +173,7 @@ export default function CategoriasPage() {
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="p-2.5 bg-blue-50 text-[#18357a] rounded-xl border border-blue-100">
+                    <div className="p-2.5 bg-blue-50 text-netline-azul rounded-xl border border-blue-100">
                       <IconPasta className="w-5 h-5" />
                     </div>
 
@@ -226,7 +213,7 @@ export default function CategoriasPage() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <button
             onClick={() => {
@@ -245,7 +232,7 @@ export default function CategoriasPage() {
         {ehAdmin && (
           <button
             onClick={abrirCriar}
-            className="w-full sm:w-auto text-center px-4 py-2.5 bg-white text-[#18357a] text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors sm:self-start md:self-auto"
+            className="w-full sm:w-auto text-center px-4 py-2.5 bg-white text-netline-azul text-sm font-semibold rounded-xl hover:bg-blue-50 transition-colors sm:self-start md:self-auto"
           >
             {t("categorias.novoDocumento")}
           </button>
@@ -262,8 +249,11 @@ export default function CategoriasPage() {
               placeholder={t("categorias.pesquisarDocumento")}
             />
           </div>
-          <div className="hidden xl:block">
-            <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+          <div className="flex items-center gap-3">
+            <IndicadorAtualizar ativo={aAtualizar} />
+            <div className="hidden xl:block">
+              <ViewToggle modo={modoExibicao} onChange={setModoExibicao} />
+            </div>
           </div>
         </div>
 
@@ -350,7 +340,7 @@ export default function CategoriasPage() {
                             <>
                               <Link
                                 to={`/dashboard/documentos/${doc.id}/editar`}
-                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-xs font-semibold rounded-lg transition-colors border border-blue-100"
+                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-netline-azul text-xs font-semibold rounded-lg transition-colors border border-blue-100"
                               >
                                 {t("comum.editar")}
                               </Link>
@@ -397,7 +387,7 @@ export default function CategoriasPage() {
                     <>
                       <Link
                         to={`/dashboard/documentos/${doc.id}/editar`}
-                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-[#18357a] font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
+                        className="px-3 py-2 md:px-2.5 md:py-1 text-xs text-netline-azul font-semibold hover:bg-blue-50 rounded-lg transition-colors border border-blue-100"
                       >
                         {t("comum.editar")}
                       </Link>
@@ -414,8 +404,8 @@ export default function CategoriasPage() {
             />
           ))
         ) : (
-          <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400">
-            {t("categorias.nenhumDocumento")}
+          <div className="col-span-full">
+            <EstadoVazio mensagem={t("categorias.nenhumDocumento")} />
           </div>
         )}
       </div>

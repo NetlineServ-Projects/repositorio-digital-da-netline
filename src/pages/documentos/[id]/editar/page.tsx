@@ -5,13 +5,14 @@ import { useDocumentosData } from "../../../../hooks/useDocumentosData";
 import { useDocumentoDetalhe } from "../../../../hooks/useDocumentoDetalhe";
 import { toast } from "sonner";
 import SelectPesquisavel from "../../../../components/selectPesquisavel";
+import { EstadoCarregando, EstadoErro } from "../../../../components/estados";
 
 export default function EditarDocumentoPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { categorias, editarDocumento } = useDocumentosData();
-  const { documento, loading, erro } = useDocumentoDetalhe(id ?? "");
+  const { documento, loading, erro, recarregar } = useDocumentoDetalhe(id ?? "");
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -47,18 +48,18 @@ export default function EditarDocumentoPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">{t("documentos.detalhes.carregando")}</p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("documentos.detalhes.carregando")} />;
   }
 
   if (erro || !documento) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3 max-w-lg">
-        <p className="text-red-600 text-sm font-medium">{erro || t("documentos.detalhes.naoEncontrado")}</p>
-        <Link to="/dashboard/documentos" className="text-sm text-[#18357a] font-semibold hover:underline">
+      <div className="space-y-3 text-center">
+        {erro ? (
+          <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />
+        ) : (
+          <EstadoErro mensagem={t("documentos.detalhes.naoEncontrado")} />
+        )}
+        <Link to="/dashboard/documentos" className="text-sm text-netline-azul font-semibold hover:underline">
           {t("documentos.detalhes.voltar")}
         </Link>
       </div>
@@ -112,7 +113,7 @@ export default function EditarDocumentoPage() {
           <button
             onClick={handleSalvar}
             disabled={salvando || !titulo}
-            className="flex-1 py-2.5 bg-[#18357a] hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-netline-azul hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
           >
             {salvando ? t("documentos.aGuardar") : t("documentos.guardar")}
           </button>

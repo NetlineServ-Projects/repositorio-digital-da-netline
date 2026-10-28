@@ -54,7 +54,7 @@ export default function AcoesItem({
       {onVer && (
         <button
           onClick={onVer}
-          className={`${classeBase} hover:text-[#18357a] hover:border-[#18357a]/30 hover:bg-slate-50 transition-colors cursor-pointer`}
+          className={`${classeBase} hover:text-netline-azul hover:border-netline-azul/30 hover:bg-slate-50 transition-colors cursor-pointer`}
           title={tituloVer}
           aria-label={tituloVer}
         >

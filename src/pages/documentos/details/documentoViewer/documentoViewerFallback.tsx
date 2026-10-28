@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface DocumentoViewerFallbackProps {
   extensao: string;
   url: string;
@@ -5,20 +7,21 @@ interface DocumentoViewerFallbackProps {
 }
 
 export default function DocumentoViewerFallback({ extensao, url, nomeArquivo }: DocumentoViewerFallbackProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center gap-3 text-center px-6 py-12">
-      <span className="p-3 bg-blue-50 text-[#18357a] rounded-lg text-sm font-extrabold uppercase border border-blue-100/50">
+      <span className="p-3 bg-blue-50 text-netline-azul rounded-lg text-sm font-extrabold uppercase border border-blue-100/50">
         {extensao}
       </span>
       <p className="text-slate-500 text-sm">
-        Pré-visualização não disponível para este tipo de ficheiro.
+        {t("documentos.visualizador.indisponivel")}
       </p>
       <a
         href={url}
         download={nomeArquivo}
-        className="text-sm text-[#18357a] font-semibold hover:underline"
+        className="text-sm text-netline-azul font-semibold hover:underline"
       >
-        Baixar para visualizar
+        {t("documentos.visualizador.transferirParaVer")}
       </a>
     </div>
   );

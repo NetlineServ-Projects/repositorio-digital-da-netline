@@ -1,4 +1,5 @@
 import { limparTema } from "./tema";
+import i18n from "../lang/i18n";
 
 // Endereço do backend, definido por ambiente em VITE_API_BASE_URL (sem a barra final)
 export const API_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
@@ -26,8 +27,41 @@ export class ErroApi extends Error {
   }
 }
 
-export function obterToken(): string | null {
-  return localStorage.getItem("token_sistema") || localStorage.getItem("token");
+// A sessão vive num cookie HttpOnly posto pelo backend no login: o JavaScript não o lê nem o
+// guarda. Aqui só se guarda o essencial para o ecrã (id, nome, perfil) em "usuario_logado".
+const CHAVE_USUARIO = "usuario_logado";
+
+export function temSessaoLocal(): boolean {
+  return Boolean(localStorage.getItem(CHAVE_USUARIO));
+}
+
+export function guardarUsuarioLocal(usuario: { id: number; nome?: string; name?: string; perfil: string }) {
+  localStorage.setItem(
+    CHAVE_USUARIO,
+    JSON.stringify({ id: usuario.id, nome: usuario.nome ?? usuario.name, perfil: usuario.perfil }),
+  );
+}
+
+// Pede ao backend que apague o cookie (só ele o consegue apagar) e limpa os dados locais
+export async function terminarSessaoNoServidor() {
+  try {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      keepalive: true,
+      signal: AbortSignal.timeout(TIMEOUT_PADRAO_MS),
+    });
+  } catch {
+    // Sem rede o cookie expira sozinho; a sessão local é limpa na mesma
+  }
+  limparSessaoLocal();
+}
+
+export function limparSessaoLocal() {
+  localStorage.removeItem(CHAVE_USUARIO);
+  // Restos da versão antiga, que guardava o token no localStorage
+  localStorage.removeItem("token_sistema");
+  localStorage.removeItem("token");
 }
 
 function obterIdiomaCache(): string {
@@ -62,10 +96,10 @@ export const TIMEOUT_UPLOAD_MS = 120_000;
 // Um cancelamento pedido pelo próprio código (AbortError) é devolvido tal como está.
 export function erroDeLigacao(erro: unknown): unknown {
   if (erro instanceof DOMException && erro.name === "TimeoutError") {
-    return new ErroApi("O servidor demorou demasiado a responder. Tente novamente.");
+    return new ErroApi(i18n.t("comum.erros.servidorLento"));
   }
   if (erro instanceof TypeError) {
-    return new ErroApi("Não foi possível ligar ao servidor. Verifique a sua ligação.");
+    return new ErroApi(i18n.t("comum.erros.semLigacao"));
   }
   return erro;
 }
@@ -81,8 +115,7 @@ function sessaoExpirou(endpoint: string, options: RequestInit): boolean {
 }
 
 function terminarSessao() {
-  localStorage.removeItem("token_sistema");
-  localStorage.removeItem("usuario_logado");
+  void terminarSessaoNoServidor();
   limparTema();
   if (window.location.pathname !== "/autenticacao") {
     window.location.href = "/autenticacao?sessao=expirada";
@@ -92,7 +125,6 @@ function terminarSessao() {
 const PAUSA_ANTES_DE_REPETIR_MS = 1_000;
 
 export async function fetchComToken(endpoint: string, options: RequestInit = {}) {
-  const token = obterToken();
   const ehFormData = options.body instanceof FormData;
   const ehLeitura = !options.method || options.method.toUpperCase() === "GET";
 
@@ -103,9 +135,9 @@ export async function fetchComToken(endpoint: string, options: RequestInit = {})
     return fetch(`${API_BASE}${endpoint}`, {
       ...options,
       signal,
+      credentials: "include", // envia o cookie HttpOnly da sessão
       headers: {
         ...(!ehFormData && { "Content-Type": "application/json" }),
-        Authorization: `Bearer ${token}`,
         "Accept-Language": obterIdiomaCache(),
         ...options.headers,
       },
@@ -129,14 +161,14 @@ export async function fetchComToken(endpoint: string, options: RequestInit = {})
   // Respostas sem corpo JSON (ex: 204, ou um 502 em HTML de um proxy) não devem rebentar aqui
   const corpo = await resposta.json().catch(() => null);
 
-  if (resposta.status === 401 && token && sessaoExpirou(endpoint, options)) {
+  if (resposta.status === 401 && temSessaoLocal() && sessaoExpirou(endpoint, options)) {
     terminarSessao();
   }
 
   if (!resposta.ok) {
     // O backend devolve os erros de validação Zod em `data`, um por campo
     const detalhes = Array.isArray(corpo?.data) ? corpo.data : undefined;
-    const mensagemBase = corpo?.mensagem || "Erro ao comunicar com o servidor.";
+    const mensagemBase = corpo?.mensagem || i18n.t("comum.erros.comunicarServidor");
     throw new ErroApi(construirMensagemDetalhada(mensagemBase, detalhes), detalhes,resposta.status,);
   }
 

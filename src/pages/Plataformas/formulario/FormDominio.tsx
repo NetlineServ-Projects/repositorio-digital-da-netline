@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { Plataforma, Dominio } from "../../../types/plataforma";
 import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
 import SelectPesquisavel from "../../../components/selectPesquisavel";
@@ -23,6 +24,7 @@ export default function FormDominio({
   onCancelar,
   onSubmit,
 }: FormDominioProps) {
+  const { t } = useTranslation();
   // Filtrar apenas plataformas de gestão de domínio ou qualquer plataforma se não houver desse tipo
   const plataformasDns = plataformas.filter(
     (p) => p.tipo === "GESTAO_DOMINIO"
@@ -55,23 +57,23 @@ export default function FormDominio({
     e.preventDefault();
 
     if (!plataformaId) {
-      toast.error("Selecione a plataforma onde o domínio está registrado.");
+      toast.error(t("plataformas.form.dominio.selecionePlataforma"));
       return;
     }
     if (!nome.trim()) {
-      toast.error("O nome do domínio é obrigatório.");
+      toast.error(t("plataformas.form.dominio.nomeObrigatorio"));
       return;
     }
 
     const dominioLimpo = nome.trim().toLowerCase();
     // Regex simples para formato de domínio
     if (!dominioLimpo.includes(".") || dominioLimpo.startsWith(".") || dominioLimpo.endsWith(".")) {
-      toast.error("Indique um nome de domínio válido (ex: netline.co.mz).");
+      toast.error(t("plataformas.form.dominio.nomeInvalido"));
       return;
     }
 
     if (!dataExpiracao) {
-      toast.error("A data de expiração do domínio é obrigatória.");
+      toast.error(t("plataformas.form.dominio.dataObrigatoria"));
       return;
     }
 
@@ -87,24 +89,24 @@ export default function FormDominio({
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
-            {dominioExistente ? "Editar Domínio" : "Novo Domínio"}
+            {dominioExistente ? t("plataformas.form.dominio.tituloEditar") : t("plataformas.form.dominio.tituloNovo")}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Cadastre os domínios corporativos e controle as datas de renovação e apontamentos
+            {t("plataformas.form.dominio.descricao")}
           </p>
         </div>
 
         {/* Plataforma Pai */}
         <div>
           <label htmlFor="dominio-plataforma" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-            Plataforma / Registrador DNS *
+            {t("plataformas.form.dominio.plataforma")}
           </label>
           <SelectPesquisavel
             id="dominio-plataforma"
             valor={String(plataformaId)}
             onChange={setPlataformaId}
             required
-            placeholder="Selecione a plataforma..."
+            placeholder={t("plataformas.form.selecionePlataforma")}
             opcoes={listaPlataformas.map((plat) => ({
               valor: String(plat.id),
               label: plat.nome,
@@ -116,12 +118,12 @@ export default function FormDominio({
         {/* Nome do Domínio */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-            Nome do Domínio Principal *
+            {t("plataformas.form.dominio.nome")}
           </label>
           <input
             type="text"
             required
-            placeholder="Ex: netline.co.mz ou intranet.netline.co.mz"
+            placeholder={t("plataformas.form.dominio.nomePlaceholder")}
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
@@ -131,7 +133,7 @@ export default function FormDominio({
         {/* Data de Expiração */}
         <div>
           <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-            Data de Expiração / Renovação *
+            {t("plataformas.form.dominio.dataExpiracao")}
           </label>
           <input
             type="date"
@@ -141,7 +143,7 @@ export default function FormDominio({
             className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800"
           />
           <p className="text-xs text-slate-400 mt-1">
-            Data em que o domínio expira no registrador para alertas de renovação
+            {t("plataformas.form.dominio.dataExpiracaoAjuda")}
           </p>
         </div>
       </div>
@@ -154,14 +156,14 @@ export default function FormDominio({
           disabled={salvando}
           className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all cursor-pointer"
         >
-          Cancelar
+          {t("plataformas.comum.cancelar")}
         </button>
         <button
           type="submit"
           disabled={salvando}
-          className="px-6 py-2.5 bg-[#18357a] hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+          className="px-6 py-2.5 bg-netline-azul hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
         >
-          {salvando ? "A salvar..." : dominioExistente ? "Atualizar Domínio" : "Criar Domínio"}
+          {salvando ? t("plataformas.comum.aGuardar") : dominioExistente ? t("plataformas.form.dominio.atualizar") : t("plataformas.form.dominio.criar")}
         </button>
       </div>
     </form>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import SelectPesquisavel from "../../components/selectPesquisavel";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ import BotaoAba, {
 } from "../../components/plataformas/botaoAba";
 import MenuAdicionar from "../../components/plataformas/menuAdicionar";
 import PainelFiltros from "../../components/painelFiltros";
+import { EstadoCarregando, EstadoErro, IndicadorAtualizar } from "../../components/estados";
 import {
   IconPlataforma,
   IconServer,
@@ -62,24 +64,6 @@ interface EstadoModalExclusao {
   nome: string;
 }
 
-/* ========================================================================== */
-/* Constantes                                                                 */
-/* ========================================================================== */
-
-const NOMES_RECURSO: Record<TipoFormularioPlataforma, string> = {
-  plataforma: "Plataforma",
-  servidor: "Servidor",
-  dominio: "Domínio",
-  imagem: "Imagem",
-};
-
-const MENSAGENS_SUCESSO_EXCLUSAO: Record<TipoFormularioPlataforma, string> = {
-  plataforma: "Plataforma eliminada com sucesso.",
-  servidor: "Servidor eliminado com sucesso.",
-  dominio: "Domínio eliminado com sucesso.",
-  imagem: "Imagem eliminada com sucesso.",
-};
-
 function textoContem(valor: string | null | undefined, termo: string): boolean {
   return Boolean(valor) && valor!.toLowerCase().includes(termo);
 }
@@ -89,6 +73,7 @@ function textoContem(valor: string | null | undefined, termo: string): boolean {
 /* ========================================================================== */
 
 export default function PlataformasPage() {
+  const { t } = useTranslation();
   const { usuarioLogado } = useUsuario();
   const ehAdmin = usuarioLogado?.perfil === "ADMIN";
 
@@ -100,6 +85,8 @@ export default function PlataformasPage() {
     subdominios,
     imagens,
     loading,
+    aAtualizar,
+    erro,
     carregarTodos,
     eliminarPlataforma,
     eliminarServidor,
@@ -153,31 +140,31 @@ export default function PlataformasPage() {
   }[] = [
     {
       id: "plataformas",
-      rotulo: `Plataformas (${plataformas.length})`,
+      rotulo: t("plataformas.lista.abas.plataformas", { total: plataformas.length }),
       Icone: IconPlataforma,
       corIcone: "text-blue-900",
     },
     {
       id: "servidores",
-      rotulo: `Servidores (${servidores.length})`,
+      rotulo: t("plataformas.lista.abas.servidores", { total: servidores.length }),
       Icone: IconServer,
       corIcone: "text-emerald-900",
     },
     {
       id: "imagens",
-      rotulo: `Imagens (${imagens.length})`,
+      rotulo: t("plataformas.lista.abas.imagens", { total: imagens.length }),
       Icone: IconImagem,
       corIcone: "text-violet-900",
     },
     {
       id: "dominios",
-      rotulo: `Domínios & DNS (${dominios.length})`,
+      rotulo: t("plataformas.lista.abas.dominios", { total: dominios.length }),
       Icone: IconDominio,
       corIcone: "text-indigo-900",
     },
     {
       id: "arvore",
-      rotulo: "Topologia / Árvore",
+      rotulo: t("plataformas.lista.abas.arvore"),
       Icone: IconRede,
       corIcone: "text-amber-900",
     },
@@ -301,7 +288,7 @@ export default function PlataformasPage() {
 
     try {
       await funcoesEliminar[modalExclusao.tipo](modalExclusao.id);
-      toast.success(MENSAGENS_SUCESSO_EXCLUSAO[modalExclusao.tipo]);
+      toast.success(t(`plataformas.eliminar.sucesso.${modalExclusao.tipo}`));
 
       if (
         modalExclusao.tipo === "plataforma" &&
@@ -311,7 +298,7 @@ export default function PlataformasPage() {
       }
     } catch (erro: unknown) {
       const mensagem =
-        erro instanceof Error ? erro.message : "Erro ao eliminar recurso.";
+        erro instanceof Error ? erro.message : t("plataformas.eliminar.erro");
       toast.error(mensagem);
     } finally {
       setModalExclusao(null);
@@ -324,11 +311,11 @@ export default function PlataformasPage() {
     <ModalConfirmacao
       aberto={Boolean(modalExclusao?.aberto)}
       perigoso
-      titulo={`Eliminar ${
-        modalExclusao ? NOMES_RECURSO[modalExclusao.tipo] : ""
-      }`}
-      mensagem={`Tens a certeza de que desejas eliminar "${modalExclusao?.nome}"? Esta ação é irreversível.`}
-      textoConfirmar="Eliminar Definitivamente"
+      titulo={t("plataformas.eliminar.titulo", {
+        recurso: modalExclusao ? t(`plataformas.recursos.${modalExclusao.tipo}`) : "",
+      })}
+      mensagem={t("plataformas.eliminar.mensagem", { nome: modalExclusao?.nome })}
+      textoConfirmar={t("plataformas.eliminar.confirmar")}
       onConfirmar={handleConfirmarExclusao}
       onCancelar={() => setModalExclusao(null)}
     />
@@ -385,7 +372,7 @@ export default function PlataformasPage() {
         valor={valorAtual}
         onChange={onSelecionar}
         opcoes={opcoes.map((o) => ({ valor: o.valor, label: o.rotulo }))}
-        opcaoVazia="Todos"
+        opcaoVazia={t("plataformas.lista.filtros.todos")}
         tamanho="sm"
       />
     </div>
@@ -394,17 +381,16 @@ export default function PlataformasPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* ================= HEADER ================= */}
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-5 sm:gap-6">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-5 sm:gap-6">
         <div>
           <span className="text-xs uppercase font-semibold text-blue-200/80 tracking-widest block mb-1">
-            INFRAESTRUTURA & OPERAÇÕES
+            {t("plataformas.lista.sobretitulo")}
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold">
-            Plataformas & Servidores
+            {t("plataformas.lista.titulo")}
           </h2>
           <p className="text-sm text-blue-100/80 mt-1 max-w-xl">
-            Gerencie provedores de nuvem, servidores virtuais, zonas DNS e
-            domínios corporativos da Netline.
+            {t("plataformas.lista.descricao")}
           </p>
         </div>
 
@@ -413,17 +399,20 @@ export default function PlataformasPage() {
 
       {/* ================= ABAS ================= */}
       {/* Numa só linha: em ecrãs estreitos desliza na horizontal (o separador ativo fica à vista) */}
-      <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto w-fit max-w-full [scrollbar-width:none]">
-        {abas.map((aba) => (
-          <BotaoAba
-            key={aba.id}
-            rotulo={aba.rotulo}
-            Icone={aba.Icone}
-            corIcone={aba.corIcone}
-            ativa={abaAtiva === aba.id}
-            onSelecionar={() => setAbaAtiva(aba.id)}
-          />
-        ))}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto w-fit max-w-full min-w-0 [scrollbar-width:none]">
+          {abas.map((aba) => (
+            <BotaoAba
+              key={aba.id}
+              rotulo={aba.rotulo}
+              Icone={aba.Icone}
+              corIcone={aba.corIcone}
+              ativa={abaAtiva === aba.id}
+              onSelecionar={() => setAbaAtiva(aba.id)}
+            />
+          ))}
+        </div>
+        <IndicadorAtualizar ativo={aAtualizar} />
       </div>
 
       {/* ================= LAYOUT PRINCIPAL (CONTEÚDO À ESQUERDA, FILTROS À DIREITA) ================= */}
@@ -434,7 +423,7 @@ export default function PlataformasPage() {
           <div className="relative w-full">
             <input
               type="text"
-              placeholder="Pesquisar por nome, IP, hostname..."
+              placeholder={t("plataformas.lista.pesquisar")}
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               className="w-full pl-9 pr-9 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 shadow-sm transition-all"
@@ -445,7 +434,7 @@ export default function PlataformasPage() {
                 type="button"
                 onClick={() => setBusca("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 transition-colors"
-                title="Limpar pesquisa"
+                title={t("plataformas.lista.limparPesquisa")}
               >
                 ✕
               </button>
@@ -453,10 +442,12 @@ export default function PlataformasPage() {
           </div>
 
           {/* CONTEÚDO DAS ABAS */}
+          {/* "loading" só é verdadeiro na primeira carga; as recargas mantêm as listas no ecrã.
+              Se a primeira carga falhar mostra-se o erro (antes ficava uma lista vazia) */}
           {loading ? (
-            <div className="p-16 text-center text-slate-400 text-sm animate-pulse bg-white rounded-2xl border border-slate-100 shadow-sm">
-              A carregar infraestrutura de plataformas...
-            </div>
+            <EstadoCarregando mensagem={t("plataformas.lista.aCarregar")} />
+          ) : erro ? (
+            <EstadoErro mensagem={erro} onTentarNovamente={carregarTodos} />
           ) : (
             <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
               {abaAtiva === "plataformas" && (
@@ -509,14 +500,14 @@ export default function PlataformasPage() {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="text-xs uppercase font-bold text-slate-700 tracking-wider">
-                Filtros
+                {t("plataformas.lista.filtros.titulo")}
               </span>
               <button
                 type="button"
                 onClick={limparFiltros}
                 className="text-xs text-slate-400 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
               >
-                ✕ Limpar
+                {t("plataformas.lista.filtros.limpar")}
               </button>
             </div>
 
@@ -525,18 +516,18 @@ export default function PlataformasPage() {
               <div className="space-y-4">
                 {renderDropdownFiltro(
                   "tipoPlataforma",
-                  "Tipo",
+                  t("plataformas.lista.filtros.tipo"),
                   filtroTipoPlataforma,
                   setFiltroTipoPlataforma,
                   [
                     {
                       valor: "CONTAINERIZACAO",
-                      rotulo: "Containerização & Nuvem",
+                      rotulo: t("plataformas.tipos.CONTAINERIZACAO"),
                     },
-                    { valor: "CLOUD_BASE_DADOS", rotulo: "Cloud Base de Dados" },
+                    { valor: "CLOUD_BASE_DADOS", rotulo: t("plataformas.tipos.CLOUD_BASE_DADOS") },
                     {
                       valor: "GESTAO_DOMINIO",
-                      rotulo: "Gestão de Domínio & DNS",
+                      rotulo: t("plataformas.lista.filtros.tipoGestaoDominio"),
                     },
                   ],
                 )}
@@ -548,7 +539,7 @@ export default function PlataformasPage() {
               <div className="space-y-4">
                 {renderDropdownFiltro(
                   "soServidor",
-                  "Sistema Operativo",
+                  t("plataformas.lista.filtros.sistemaOperativo"),
                   filtroSoServidor,
                   setFiltroSoServidor,
                   Array.from(
@@ -562,7 +553,7 @@ export default function PlataformasPage() {
                 )}
                 {renderDropdownFiltro(
                   "cloudServidor",
-                  "Provedor Cloud",
+                  t("plataformas.lista.filtros.fornecedorCloud"),
                   filtroCloudServidor,
                   setFiltroCloudServidor,
                   Array.from(
@@ -574,12 +565,12 @@ export default function PlataformasPage() {
                 )}
                 {renderDropdownFiltro(
                   "estadoServidor",
-                  "Estado",
+                  t("plataformas.lista.filtros.estado"),
                   filtroEstadoServidor,
                   setFiltroEstadoServidor,
                   [
-                    { valor: "ATIVO", rotulo: "Ativo" },
-                    { valor: "INATIVO", rotulo: "Inativo" },
+                    { valor: "ATIVO", rotulo: t("plataformas.estadoServidor.ATIVO") },
+                    { valor: "INATIVO", rotulo: t("plataformas.estadoServidor.INATIVO") },
                   ],
                 )}
               </div>
@@ -590,7 +581,7 @@ export default function PlataformasPage() {
               <div className="space-y-4">
                 {renderDropdownFiltro(
                   "dominioBase",
-                  "Domínio Base",
+                  t("plataformas.lista.filtros.dominioBase"),
                   filtroDominioBase,
                   setFiltroDominioBase,
                   dominios.map((d) => ({
@@ -606,22 +597,22 @@ export default function PlataformasPage() {
               <div className="space-y-4">
                 {renderDropdownFiltro(
                   "origemImagem",
-                  "Origem",
+                  t("plataformas.lista.filtros.origem"),
                   filtroOrigemImagem,
                   setFiltroOrigemImagem,
                   [
-                    { valor: "PROPRIA", rotulo: "Própria / Interna" },
-                    { valor: "EXTERNA", rotulo: "Externa" },
+                    { valor: "PROPRIA", rotulo: t("plataformas.lista.filtros.origemPropria") },
+                    { valor: "TERCEIROS", rotulo: t("plataformas.lista.filtros.origemExterna") },
                   ],
                 )}
                 {renderDropdownFiltro(
                   "visibilidadeImagem",
-                  "Visibilidade",
+                  t("plataformas.lista.filtros.visibilidade"),
                   filtroVisibilidadeImagem,
                   setFiltroVisibilidadeImagem,
                   [
-                    { valor: "PRIVADA", rotulo: "Privada" },
-                    { valor: "PUBLICA", rotulo: "Pública" },
+                    { valor: "PRIVADA", rotulo: t("plataformas.visibilidade.PRIVADA") },
+                    { valor: "PUBLICA", rotulo: t("plataformas.visibilidade.PUBLICA") },
                   ],
                 )}
               </div>
@@ -629,7 +620,7 @@ export default function PlataformasPage() {
 
             {abaAtiva === "arvore" && (
               <p className="text-xs text-slate-400 italic">
-                Sem filtros para a topologia em árvore.
+                {t("plataformas.lista.filtros.semFiltrosTopologia")}
               </p>
             )}
           </div>

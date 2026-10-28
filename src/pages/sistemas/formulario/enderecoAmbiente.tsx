@@ -2,9 +2,10 @@ import type { OpcaoHospedagem } from "../../../hooks/useSistemasData";
 import BlocoSubdominio from "../infraestrutura/blocoSubdominio";
 import { CLASSE_CAMPO, CLASSE_ROTULO } from "../infraestrutura/constantes";
 import type { EstadoEndereco } from "./enderecos";
+import { useTranslation } from "react-i18next";
 
 interface EnderecoAmbienteProps {
-  titulo: string; // "Produção" | "Testes"
+  titulo: string; // nome do ambiente, já traduzido
   estado: EstadoEndereco;
   onChange: (alteracoes: Partial<EstadoEndereco>) => void;
   dominios: OpcaoHospedagem[];
@@ -21,10 +22,11 @@ export default function EnderecoAmbiente({
   servidores,
   tinhaSubdominio = false,
 }: EnderecoAmbienteProps) {
+  const { t } = useTranslation();
   return (
     <section className="md:col-span-2 space-y-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
       <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-        Endereço — {titulo}
+        {t("sistemas.endereco.titulo", { ambiente: titulo })}
       </h3>
 
       <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
@@ -33,13 +35,12 @@ export default function EnderecoAmbiente({
           checked={estado.temSubdominio}
           onChange={(e) => onChange({ temSubdominio: e.target.checked })}
         />
-        Este ambiente tem subdomínio próprio
+        {t("sistemas.endereco.temSubdominio")}
       </label>
 
       {tinhaSubdominio && !estado.temSubdominio && (
         <p className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          Ao guardar, o subdomínio atual deste ambiente será removido. Volte a marcar a opção
-          para o manter.
+          {t("sistemas.endereco.avisoRemocao")}
         </p>
       )}
 
@@ -60,7 +61,7 @@ export default function EnderecoAmbiente({
         />
       ) : (
         <div className="space-y-1.5">
-          <label className={CLASSE_ROTULO}>Endereço do sistema (opcional)</label>
+          <label className={CLASSE_ROTULO}>{t("sistemas.endereco.enderecoSistema")}</label>
           <input
             type="url"
             value={estado.url}
@@ -69,7 +70,7 @@ export default function EnderecoAmbiente({
             className={CLASSE_CAMPO}
           />
           <p className="text-[11px] text-slate-400">
-            Use só quando o sistema não tem subdomínio próprio (por exemplo, um endereço .vercel.app).
+            {t("sistemas.endereco.enderecoAjuda")}
           </p>
         </div>
       )}

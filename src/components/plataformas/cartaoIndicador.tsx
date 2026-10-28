@@ -20,7 +20,7 @@ export default function CartaoIndicador({
   valorTexto = false,
 }: CartaoIndicadorProps) {
   return (
-    <div className="bg-white rounded-2xl border-2 border-[#d99b26]/25 border-t-[5px] border-t-[#d99b26] shadow-xs p-3.5 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0">
+    <div className="bg-white rounded-2xl border-2 border-netline-dourado/25 border-t-[5px] border-t-netline-dourado shadow-xs p-3.5 sm:p-5 flex items-center gap-3 sm:gap-4 min-w-0">
       <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${classeIcone}`}>
         <Icone className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>

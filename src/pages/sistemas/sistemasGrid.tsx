@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next";
 import type { Sistema, Documento } from "../../hooks/useSistemasData";
 import SistemaCard from "./sistemaCard";
+import { EstadoVazio } from "../../components/estados";
 
 interface SistemasGridProps {
   sistemas: Sistema[];
@@ -8,8 +10,9 @@ interface SistemasGridProps {
 }
 
 export default function SistemasGrid({ sistemas, documentos, onSelecionar }: SistemasGridProps) {
+  const { t } = useTranslation();
   if (sistemas.length === 0) {
-    return <div className="col-span-full bg-white p-8 rounded-xl border border-slate-100 text-center text-slate-400 text-sm">Nenhum sistema encontrado com os termos pesquisados.</div>;
+    return <EstadoVazio mensagem={t("sistemas.lista.vazio")} />;
   }
 
   return (

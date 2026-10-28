@@ -1,0 +1,70 @@
+{
+  "confirmacao": {
+    "cancelar": "Cancelar",
+    "confirmar": "Confirmar",
+    "aProcessar": "A processar..."
+  },
+  "filtros": {
+    "titulo": "Filtros"
+  },
+  "select": {
+    "selecionar": "Selecionar...",
+    "pesquisar": "Pesquisar...",
+    "pesquisarOpcoes": "Pesquisar opções",
+    "semResultados": "Sem resultados",
+    "semOpcoes": "Sem opções disponíveis",
+    "selecionados_one": "{{count}} selecionado",
+    "selecionados_other": "{{count}} selecionados"
+  },
+  "segredo": {
+    "mostrar": "Mostrar",
+    "aObter": "A obter...",
+    "copiar": "Copiar",
+    "copiado": "Copiado!",
+    "ocultar": "Ocultar",
+    "vazio": "(vazio)",
+    "mostrarAria": "Mostrar {{descricao}}",
+    "copiarAria": "Copiar {{descricao}}",
+    "ocultarAria": "Ocultar {{descricao}}",
+    "erroObter": "Não foi possível obter o valor.",
+    "copiadoSucesso": "Valor copiado para a área de transferência.",
+    "erroCopiar": "Não foi possível copiar o valor."
+  },
+  "reautenticacao": {
+    "titulo": "Confirme a sua palavra-passe",
+    "descricao": "Por segurança, confirme a sua palavra-passe para aceder a dados protegidos (palavras-passe, tokens e credenciais). A confirmação é válida durante 3 minutos.",
+    "label": "Palavra-passe",
+    "placeholder": "A sua palavra-passe",
+    "aConfirmar": "A confirmar...",
+    "erro": "Erro ao confirmar a palavra-passe.",
+    "expirou": "O acesso expirou. Confirme novamente a palavra-passe para continuar."
+  },
+  "header": {
+    "utilizador": "Utilizador",
+    "perfilAdmin": "Admin",
+    "expandirMenu": "Expandir menu",
+    "recolherMenu": "Recolher menu",
+    "repositorioInterno": "Repositório interno da Netline",
+    "meuPerfil": "O meu perfil",
+    "terminarSessao": "Terminar sessão"
+  },
+  "documento": {
+    "submetidoPor": "Submetido por",
+    "categoria": "Categoria",
+    "tamanho": "Tamanho",
+    "semCategoria": "Sem categoria",
+    "sistema": "Sistema",
+    "semData": "N/D",
+    "transferir": "Transferir",
+    "transferirFicheiro": "Transferir ficheiro",
+    "pertenceSistema": "Sistema",
+    "verSistema": "Ver o sistema {{nome}}",
+    "semSistema": "Sem sistema",
+    "filtroSistema": "Sistema",
+    "todosSistemas": "Todos os sistemas"
+  },
+  "vista": {
+    "tabela": "Tabela",
+    "grelha": "Grelha"
+  }
+}

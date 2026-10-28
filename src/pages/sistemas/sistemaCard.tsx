@@ -1,6 +1,7 @@
 import { IconSistema, IconVer } from "../../components/icons";
 import type { Sistema, Documento } from "../../hooks/useSistemasData";
 import { rotuloStatus } from "../../utils/status";
+import { useTranslation } from "react-i18next";
 
 function renderBadgeStatus(status: string) {
   switch (status) {
@@ -17,6 +18,7 @@ interface SistemaCardProps {
 }
 
 export default function SistemaCard({ sistema, documentos, onVerDetalhes }: SistemaCardProps) {
+  const { t } = useTranslation();
   const totalDocs = sistema.totalDocumentos ?? documentos.filter((d) => Number(d.sistemaId) === Number(sistema.id)).length;
   const devs = Array.isArray(sistema.desenvolvedores) ? sistema.desenvolvedores : [];
   const clientes = Array.isArray(sistema.empresasClientes) ? sistema.empresasClientes : [];
@@ -27,7 +29,7 @@ export default function SistemaCard({ sistema, documentos, onVerDetalhes }: Sist
   ];
 
   return (
-    <div className="bg-white p-5 rounded-xl border-2 border-[#d99b26]/25 border-t-[5px] border-t-[#d99b26] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+    <div className="bg-white p-5 rounded-xl border-2 border-netline-dourado/25 border-t-[5px] border-t-netline-dourado shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="p-2.5 bg-blue-50 text-blue-900 rounded-lg"><IconSistema className="w-5 h-5 text-blue-900" /></div>
@@ -37,11 +39,11 @@ export default function SistemaCard({ sistema, documentos, onVerDetalhes }: Sist
         </div>
 
         <h3 className="font-bold text-slate-800 text-base">{sistema.nome}</h3>
-        <p className="text-xs text-slate-500 mt-1 line-clamp-2">{sistema.descricaoCurta || sistema.descricaoLonga || "Sem descrição disponível."}</p>
+        <p className="text-xs text-slate-500 mt-1 line-clamp-2">{sistema.descricaoCurta || sistema.descricaoLonga || t("sistemas.cartao.semDescricao")}</p>
 
         {clientes.length > 0 && (
           <div className="mt-3">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Clientes / Empresas:</span>
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">{t("sistemas.cartao.clientes")}</span>
             <div className="flex flex-wrap gap-1">
               {clientes.map((c, i) => <span key={i} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-medium rounded border border-emerald-200">{c}</span>)}
             </div>
@@ -50,7 +52,7 @@ export default function SistemaCard({ sistema, documentos, onVerDetalhes }: Sist
 
         {devs.length > 0 && (
           <div className="mt-3">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Equipa Dev:</span>
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">{t("sistemas.cartao.equipa")}</span>
             <p className="text-xs font-medium text-slate-700">{devs.join(", ")}</p>
           </div>
         )}
@@ -63,10 +65,10 @@ export default function SistemaCard({ sistema, documentos, onVerDetalhes }: Sist
       </div>
 
       <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-        <span className="text-[11px] text-slate-400">Ficheiros: <strong className="text-slate-700">{totalDocs}</strong></span>
+        <span className="text-[11px] text-slate-400">{t("sistemas.cartao.ficheiros")} <strong className="text-slate-700">{totalDocs}</strong></span>
         <button onClick={onVerDetalhes} className="flex items-center gap-1.5 py-1.5 px-3 bg-slate-50 hover:bg-blue-900 hover:text-white text-slate-700 text-xs font-semibold rounded-lg transition-colors border border-slate-200 hover:border-blue-900">
           <IconVer />
-          <span>Ver detalhes</span>
+          <span>{t("sistemas.cartao.verDetalhes")}</span>
         </button>
       </div>
     </div>

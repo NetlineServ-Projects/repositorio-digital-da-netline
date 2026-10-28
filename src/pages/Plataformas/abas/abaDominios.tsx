@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import AcoesItem from "../../../components/plataformas/acoesItem";
 import EstadoVazio from "../../../components/plataformas/estadoVazio";
 import type { AoEditarItem, AoEliminarItem } from "../../../types/plataformaTipos";
@@ -7,6 +9,8 @@ import type {
   Dominio,
   Subdominio,
 } from "../../../types/plataforma";
+import { localeDatas } from "../../../types/plataformaConstantes";
+import { ROTULO_AMBIENTE } from "../../../utils/servidor";
 
 interface AbaDominiosProps {
   dominios: Dominio[];
@@ -17,29 +21,25 @@ interface AbaDominiosProps {
   aoEliminar: AoEliminarItem;
 }
 
-const ROTULO_AMBIENTE: Record<Subdominio["ambiente"], string> = {
-  PRODUCAO: "Produção",
-  TESTES: "Testes",
-};
-
 // A partir de quantos dias o domínio passa a "a expirar" (igual ao aviso das notificações)
 const DIAS_AVISO_EXPIRACAO = 30;
 const MS_POR_DIA = 24 * 60 * 60 * 1000;
 
-function seloExpiracao(dataExpiracao: string) {
+function seloExpiracao(dataExpiracao: string, t: TFunction) {
   const dias = Math.ceil((new Date(dataExpiracao).getTime() - Date.now()) / MS_POR_DIA);
-  const data = new Date(dataExpiracao).toLocaleDateString("pt-PT");
+  const data = new Date(dataExpiracao).toLocaleDateString(localeDatas());
 
   if (dias < 0) {
-    return { texto: `Expirou em ${data}`, classe: "bg-red-50 text-red-700 border-red-200" };
+    return { texto: t("plataformas.abas.dominios.expirou", { data }), classe: "bg-red-50 text-red-700 border-red-200" };
   }
   if (dias <= DIAS_AVISO_EXPIRACAO) {
+    const prazo = dias === 0 ? t("plataformas.abas.dominios.hoje") : t("plataformas.abas.dominios.dias", { count: dias });
     return {
-      texto: `Expira em ${data} (${dias === 0 ? "hoje" : `${dias} dia${dias === 1 ? "" : "s"}`})`,
+      texto: t("plataformas.abas.dominios.expiraComPrazo", { data, prazo }),
       classe: "bg-amber-50 text-amber-800 border-amber-200",
     };
   }
-  return { texto: `Expira em ${data}`, classe: "bg-emerald-50 text-emerald-700 border-emerald-100/60" };
+  return { texto: t("plataformas.abas.dominios.expira", { data }), classe: "bg-emerald-50 text-emerald-700 border-emerald-100/60" };
 }
 
 // Conteúdo das células de um registo DNS, igual na tabela e na lista do telemóvel
@@ -86,22 +86,22 @@ export default function AbaDominios({
   aoEditar,
   aoEliminar,
 }: AbaDominiosProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <p className="text-xs text-slate-500">
-        Domínios da empresa e os registos DNS de cada sistema. Os registos criam-se e editam-se
-        no formulário de cada sistema, em "Endereço".
+        {t("plataformas.abas.dominios.descricao")}
       </p>
 
       {dominios.length === 0 ? (
-        <EstadoVazio mensagem="Nenhum domínio registado." />
+        <EstadoVazio mensagem={t("plataformas.abas.dominios.vazio")} />
       ) : (
         <div className="space-y-6">
           {dominios.map((dominio) => {
             const subdominiosDoDominio = subdominios.filter(
               (s) => s.dominioId === dominio.id
             );
-            const selo = dominio.dataExpiracao ? seloExpiracao(dominio.dataExpiracao) : null;
+            const selo = dominio.dataExpiracao ? seloExpiracao(dominio.dataExpiracao, t) : null;
 
             return (
               <div
@@ -113,7 +113,7 @@ export default function AbaDominios({
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="min-w-0">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                        Domínio Principal
+                        {t("plataformas.abas.dominios.dominioPrincipal")}
                       </span>
                       <div className="flex items-center gap-2.5 mt-0.5 flex-wrap">
                         <h3 className="text-base font-extrabold text-slate-900 tracking-tight break-all">
@@ -130,8 +130,8 @@ export default function AbaDominios({
 
                   {ehAdmin && (
                     <AcoesItem
-                      tituloEditar="Editar domínio"
-                      tituloEliminar="Eliminar domínio"
+                      tituloEditar={t("plataformas.abas.dominios.editar")}
+                      tituloEliminar={t("plataformas.abas.dominios.eliminar")}
                       onEditar={() => aoEditar("dominio", dominio)}
                       onEliminar={() =>
                         aoEliminar("dominio", dominio.id, dominio.nome)
@@ -145,7 +145,7 @@ export default function AbaDominios({
                   {subdominiosDoDominio.length === 0 ? (
                     <div className="text-center py-6 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
                       <p className="text-xs text-slate-400 italic">
-                        Nenhum sistema usa ainda este domínio.
+                        {t("plataformas.abas.dominios.semRegistos")}
                       </p>
                     </div>
                   ) : (
@@ -172,10 +172,10 @@ export default function AbaDominios({
                       <div className="hidden @2xl:block overflow-x-auto">
                         <div className="min-w-160 space-y-3">
                           <div className="grid grid-cols-12 text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 pb-1">
-                            <div className="col-span-4">Registo / Subdomínio</div>
-                            <div className="col-span-1">Tipo</div>
-                            <div className="col-span-4">Destino / Apontamento</div>
-                            <div className="col-span-3">Sistema</div>
+                            <div className="col-span-4">{t("plataformas.abas.dominios.colunas.registo")}</div>
+                            <div className="col-span-1">{t("plataformas.abas.dominios.colunas.tipo")}</div>
+                            <div className="col-span-4">{t("plataformas.abas.dominios.colunas.destino")}</div>
+                            <div className="col-span-3">{t("plataformas.abas.dominios.colunas.sistema")}</div>
                           </div>
 
                           <div className="divide-y divide-slate-100">

@@ -85,7 +85,7 @@ export default function NovoDocumentoPage() {
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             placeholder={t("documentos.form.tituloPlaceholder")}
-            className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] transition-all"
+            className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-netline-azul/20 focus:border-netline-azul transition-all"
           />
         </div>
 
@@ -100,7 +100,7 @@ export default function NovoDocumentoPage() {
             onChange={(e) => setDescricao(e.target.value)}
             rows={3}
             placeholder={t("documentos.form.descricaoPlaceholder")}
-            className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] transition-all resize-none"
+            className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-netline-azul/20 focus:border-netline-azul transition-all resize-none"
           />
         </div>
 
@@ -123,7 +123,7 @@ export default function NovoDocumentoPage() {
           <label className="text-xs font-semibold text-slate-500 uppercase">
             {t("documentos.form.ficheiroLabel")} <span className="text-red-500">*</span>
           </label>
-          <div className="relative border-2 border-dashed border-slate-200 hover:border-[#18357a]/50 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors text-center cursor-pointer">
+          <div className="relative border-2 border-dashed border-slate-200 hover:border-netline-azul/50 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors text-center cursor-pointer">
             <input
               type="file"
               required
@@ -134,7 +134,7 @@ export default function NovoDocumentoPage() {
               <IconUpload className="w-5 h-5 text-slate-400 mb-1" />
               <span className="text-xs text-slate-500 font-medium">
                 {ficheiro ? (
-                  <span className="text-[#18357a] font-semibold break-all">{ficheiro.name}</span>
+                  <span className="text-netline-azul font-semibold break-all">{ficheiro.name}</span>
                 ) : (
                   t("documentos.form.clicarOuArrastar")
                 )}
@@ -164,7 +164,7 @@ export default function NovoDocumentoPage() {
           <button
             type="submit"
             disabled={salvando || !titulo || !ficheiro}
-            className="flex-1 py-2.5 bg-[#18357a] hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 py-2.5 bg-netline-azul hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {salvando
               ? ehAdmin ? t("documentos.aGuardar") : t("documentos.aSubmeter")

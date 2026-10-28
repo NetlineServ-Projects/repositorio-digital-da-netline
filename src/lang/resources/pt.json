@@ -16,30 +16,31 @@
       "DOMINIO_EXPIRADO": "O domínio {{referencia}} expirou a {{data}}."
     }
   },
+
   "configuracoes": {
-    "titulo": "Configurações do Sistema",
-    "subtitulo": "Gerencie as preferências de interface e notificações da sua conta.",
+    "titulo": "Configurações do sistema",
+    "subtitulo": "Gira as preferências de interface e de notificações da sua conta.",
     "preferencias": "PREFERÊNCIAS",
-    "aparencia": "Aparência da Plataforma",
-    "modoEscuro": "Modo Escuro ativado",
-    "modoClaro": "Modo Claro ativado (Padrão)",
-    "notificacoesEmail": "Notificações por E-mail",
-    "notificacoesEmailDesc": "Receber alertas no e-mail quando novos documentos forem adicionados",
-    "idioma": "Idioma da Plataforma",
-    "idiomaDesc": "Selecione o idioma de preferência",
-    "salvar": "Salvar Alterações",
-    "salvando": "A salvar...",
-    "salvoComSucesso": "Configurações salvas com sucesso!",
+    "aparencia": "Aparência da plataforma",
+    "modoEscuro": "Modo escuro ativado",
+    "modoClaro": "Modo claro ativado (predefinição)",
+    "notificacoesEmail": "Notificações por e-mail",
+    "notificacoesEmailDesc": "Receber alertas por e-mail quando forem adicionados novos documentos",
+    "idioma": "Idioma da plataforma",
+    "idiomaDesc": "Selecione o idioma preferido",
+    "salvar": "Guardar alterações",
+    "salvando": "A guardar...",
+    "salvoComSucesso": "Configurações guardadas com sucesso!",
     "erroCarregar": "Não foi possível carregar as configurações.",
-    "erroSalvar": "Não foi possível salvar as configurações.",
+    "erroSalvar": "Não foi possível guardar as configurações.",
     "carregando": "A carregar configurações..."
   },
 
   "documentos": {
-    "novoDocumento": "Novo Documento",
+    "novoDocumento": "Novo documento",
     "guardar": "Guardar",
     "aGuardar": "A guardar...",
-    "submeter": "Submeter Documento",
+    "submeter": "Submeter documento",
     "aSubmeter": "A submeter...",
     "publicadoComSucesso": "Documento publicado com sucesso.",
     "submetidoParaAprovacao": "Documento submetido para aprovação.",
@@ -48,95 +49,131 @@
     "repositorio": "Repositório",
     "titulo": "Documentos",
     "subtitulo": "Consulte e gira os documentos publicados",
-    "botaoNovo": "+ Novo Documento",
+    "botaoNovo": "+ Novo documento",
     "pesquisarPlaceholder": "Pesquisar por documento ou autor...",
     "categoria": "Categoria",
-    "todasCategorias": "Todas as Categorias",
+    "todasCategorias": "Todas as categorias",
     "carregando": "A carregar documentos...",
     "nenhumDocumento": "Nenhum documento encontrado.",
     "tabela": {
       "documento": "Documento",
       "categoria": "Categoria",
-      "submetidoPor": "Submetido Por",
+      "submetidoPor": "Submetido por",
       "data": "Data"
     },
 
     "form": {
-      "voltar": "Voltar aos Documentos",
+      "voltar": "Voltar aos documentos",
       "tituloLabel": "Título",
-      "tituloPlaceholder": "Ex: Guia de Procedimentos Externa",
-      "tituloObrigatorio": "Por favor, insira o título do documento.",
+      "tituloPlaceholder": "Ex.: Guia de procedimentos externos",
+      "tituloObrigatorio": "Introduza o título do documento.",
       "descricaoLabel": "Descrição",
-      "descricaoPlaceholder": "Breve resumo sobre o conteúdo do documento...",
+      "descricaoPlaceholder": "Breve resumo do conteúdo do documento...",
       "categoriaLabel": "Categoria",
-      "semCategoria": "Sem Categoria",
+      "semCategoria": "Sem categoria",
       "ficheiroLabel": "Ficheiro",
-      "ficheiroObrigatorio": "Por favor, selecione um ficheiro para carregar.",
+      "ficheiroObrigatorio": "Selecione um ficheiro para carregar.",
       "clicarOuArrastar": "Clique aqui para escolher ou arraste o ficheiro",
-      "formatosAceites": "PDF, PNG, JPG, DOCX até 50MB",
-      "erroCriar": "Erro ao criar documento.",
+      "formatosAceites": "PDF, PNG, JPG, DOCX até 50 MB",
+      "erroCriar": "Erro ao criar o documento.",
       "cancelar": "Cancelar"
     },
 
     "detalhes": {
-     "carregando": "A carregar documento...",
-     "naoEncontrado": "Documento não encontrado.",
-     "voltar": "Voltar aos Documentos",
-     "categoria": "Categoria",
-     "semCategoria": "Sem Categoria",
+      "carregando": "A carregar documento...",
+      "naoEncontrado": "Documento não encontrado.",
+      "voltar": "Voltar aos documentos",
+      "categoria": "Categoria",
+      "semCategoria": "Sem categoria",
       "submetidoPor": "Submetido por",
-     "sistema": "Sistema",
-     "data": "Data",
-     "tamanho": "Tamanho",
-     "baixarFicheiro": "Baixar ficheiro"
-},
+      "sistema": "Sistema",
+      "data": "Data",
+      "tamanho": "Tamanho",
+      "baixarFicheiro": "Transferir ficheiro"
+    },
 
-   "editar": {
-     "titulo": "Editar Documento",
-     "tituloLabel": "Título",
-     "descricaoLabel": "Descrição",
-     "categoriaLabel": "Categoria",
-     "atualizadoComSucesso": "Documento atualizado com sucesso.",
-     "erroAtualizar": "Erro ao atualizar documento."
-}
+    "editar": {
+      "titulo": "Editar documento",
+      "tituloLabel": "Título",
+      "descricaoLabel": "Descrição",
+      "categoriaLabel": "Categoria",
+      "atualizadoComSucesso": "Documento atualizado com sucesso.",
+      "erroAtualizar": "Erro ao atualizar o documento."
+    },
 
-
-
-
+    "visualizador": {
+      "indisponivel": "Pré-visualização indisponível para este tipo de ficheiro.",
+      "transferirParaVer": "Transferir para ver",
+      "previsualizacaoDe": "Pré-visualização de {{titulo}}",
+      "erroPdf": "Não foi possível carregar a pré-visualização do PDF.",
+      "aCarregarPdf": "A carregar PDF...",
+      "anterior": "Anterior",
+      "seguinte": "Seguinte",
+      "pagina": "Página {{atual}} de {{total}}"
+    }
   },
 
   "comum": {
     "acoes": "Ações",
     "editar": "Editar",
-    "apagar": "Apagar",
+    "apagar": "Eliminar",
     "ver": "Ver",
     "verDocumento": "Ver documento",
-    "tentarNovamente": "Tentar Novamente",
+    "tentarNovamente": "Tentar novamente",
+    "estados": {
+      "carregando": "A carregar...",
+      "erroTitulo": "Não foi possível carregar",
+      "aAtualizar": "A atualizar..."
+    },
     "limparFiltros": "Limpar filtros",
     "autor": "Autor",
-    "todosAutores": "Todos os Autores",
-    "tipoFicheiro": "Tipo de Ficheiro",
-    "todosTipos": "Todos os Tipos",
+    "todosAutores": "Todos os autores",
+    "tipoFicheiro": "Tipo de ficheiro",
+    "todosTipos": "Todos os tipos",
     "mes": "Mês",
-    "todosMeses": "Todos os Meses",
+    "todosMeses": "Todos os meses",
     "ano": "Ano",
-    "todosAnos": "Todos os Anos",
+    "todosAnos": "Todos os anos",
     "meses": {
       "0": "Janeiro", "1": "Fevereiro", "2": "Março", "3": "Abril",
       "4": "Maio", "5": "Junho", "6": "Julho", "7": "Agosto",
       "8": "Setembro", "9": "Outubro", "10": "Novembro", "11": "Dezembro"
     },
     "modalApagarDocumento": {
-      "titulo": "Apagar documento",
-      "mensagem": "Tem a certeza que deseja apagar este documento? Esta ação não pode ser desfeita.",
-      "confirmar": "Apagar"
+      "titulo": "Eliminar documento",
+      "mensagem": "Tem a certeza de que pretende eliminar este documento? Esta ação não pode ser anulada.",
+      "confirmar": "Eliminar"
     },
-    "erroApagarDocumento": "Erro ao apagar documento.",
-         "status": {
-       "PENDENTE": "Pendente",
-       "APROVADO": "Aprovado",
-       "REJEITADO": "Rejeitado"
-     }
+    "erroApagarDocumento": "Erro ao eliminar o documento.",
+    "status": {
+      "PENDENTE": "Pendente",
+      "APROVADO": "Aprovado",
+      "REJEITADO": "Rejeitado"
+    },
+    "documentoSemTitulo": "Documento sem título",
+    "tiposFicheiro": {
+      "todos": "Todos os tipos",
+      "word": "Word",
+      "pdf": "PDF",
+      "imagem": "Imagem",
+      "outro": "Outro"
+    },
+    "erros": {
+      "servidorLento": "O servidor demorou demasiado a responder. Tente novamente.",
+      "semLigacao": "Não foi possível ligar ao servidor. Verifique a sua ligação.",
+      "comunicarServidor": "Erro ao comunicar com o servidor.",
+      "atualizar": "Não foi possível atualizar: {{mensagem}}",
+      "carregarSolicitacoes": "Não foi possível carregar as solicitações.",
+      "carregarDocumentos": "Não foi possível carregar os documentos.",
+      "carregarDocumento": "Não foi possível carregar o documento.",
+      "carregarAtividades": "Não foi possível carregar as atividades.",
+      "carregarLixeira": "Erro ao carregar a lixeira.",
+      "restaurarDocumento": "Erro ao restaurar o documento.",
+      "eliminarDocumento": "Erro ao eliminar o documento.",
+      "esvaziarLixeira": "Erro ao esvaziar a lixeira.",
+      "carregarPerfil": "Não foi possível carregar o seu perfil.",
+      "carregarUtilizadores": "Não foi possível carregar os utilizadores."
+    }
   },
 
   "categorias": {
@@ -148,107 +185,122 @@
     "pesquisarCategoria": "Pesquisar categoria...",
     "contagemDocumentos_one": "{{count}} documento",
     "contagemDocumentos_other": "{{count}} documentos",
-    "acederCategoria": "Aceder categoria",
-    "voltar": "Voltar às Categorias",
+    "acederCategoria": "Aceder à categoria",
+    "voltar": "Voltar às categorias",
     "contagemNestaCategoria_one": "{{count}} documento nesta categoria",
-    "contagemNestaCategoria_other": "{{count}} documento(s) nesta categoria",
-    "novoDocumento": "+ Novo Documento",
+    "contagemNestaCategoria_other": "{{count}} documentos nesta categoria",
+    "novoDocumento": "+ Novo documento",
     "pesquisarDocumento": "Pesquisar documento nesta categoria...",
     "tabela": {
       "documento": "Documento",
-      "submetidoPor": "Submetido Por",
+      "submetidoPor": "Submetido por",
       "data": "Data"
     },
     "nenhumDocumento": "Nenhum documento encontrado nesta categoria."
   },
 
   "layout": {
-  "carregandoPainel": "Carregando painel...",
-  "erroOcorreu": "Ocorreu um erro: {{erro}}",
-  "erroApagarConta": "Erro ao excluir a conta.",
-  "modalApagarConta": {
-    "titulo": "Apagar Conta",
-    "mensagem": "Atenção: tem certeza que deseja encerrar a sessão e APAGAR permanentemente a sua conta? Esta ação não pode ser desfeita.",
-    "confirmar": "Apagar conta"
-  }
- },
-
-
-   "dashboard": {
-    "acoesRapidas": {
-    "label": "Ações Rápidas:",
-    "gerirAprovacoes": "Gerir Aprovações",
-    "verCategorias": "Ver Categorias",
-    "gerirSistemas": "Gerir Sistemas",
-    "gerirPlataformas": "Gerir Plataformas",
-    "verDocumentos": "Ver Documentos",
-    "verSistemas": "Ver Sistemas",
-    "verPlataformas": "Ver Plataformas"
-    },
-      "atividadeRecente": {
-    "titulo": "Atividade Recente",
-    "semAtividade": "Sem atividade recente."
-    }, 
-
-       "documentosRecentes": {
-    "titulo": "Documentos Recentes",
-    "verTodos": "Ver Todos",
-    "nome": "Nome",
-    "categoria": "Categoria",
-    "data": "Data",
-    "statusHeader": "Status",
-    "semNome": "Documento sem nome",
-    "geral": "Geral",
-    "nenhumDocumento": "Nenhum documento registado no repositório."
-    },
-
-     "heroBanner": {
-          "eyebrow": "Repositório Digital",
-          "titulo": "Explore os Documentos da Netline",
-         "documentosDisponiveis_one": "{{count}} documento disponível",
-         "documentosDisponiveis_other": "{{count}} documentos disponíveis",
-         "sistemasIntegrados_one": "{{count}} sistema integrado",
-         "sistemasIntegrados_other": "{{count}} sistemas integrados",
-         "verTodos": "Ver Todos Documentos"
-   }
-
-
+    "carregandoPainel": "A carregar o painel...",
+    "erroOcorreu": "Ocorreu um erro: {{erro}}",
+    "erroApagarConta": "Erro ao eliminar a conta.",
+    "modalApagarConta": {
+      "titulo": "Eliminar conta",
+      "mensagem": "Atenção: tem a certeza de que pretende terminar a sessão e ELIMINAR permanentemente a sua conta? Esta ação não pode ser anulada.",
+      "confirmar": "Eliminar conta"
+    }
   },
+
+  "dashboard": {
+    "acoesRapidas": {
+      "label": "Ações rápidas:",
+      "gerirAprovacoes": "Gerir aprovações",
+      "verCategorias": "Ver categorias",
+      "gerirSistemas": "Gerir sistemas",
+      "gerirPlataformas": "Gerir plataformas",
+      "verDocumentos": "Ver documentos",
+      "verSistemas": "Ver sistemas",
+      "verPlataformas": "Ver plataformas"
+    },
+    "atividadeRecente": {
+      "titulo": "Atividade recente",
+      "tituloAdmin": "Atividade recente do sistema",
+      "minhasAtividades": "As minhas atividades",
+      "subtituloAdmin": "Ações de todos os funcionários e administradores",
+      "subtituloProprio": "Apenas as ações realizadas pela sua conta",
+      "filtroTodos": "Todos",
+      "filtroFuncionarios": "Funcionários",
+      "filtroAdmins": "Administradores",
+      "perfilAdmin": "Admin",
+      "perfilFuncionario": "Funcionário",
+      "semAtividade": "Sem atividade recente.",
+      "indisponivel": "Atividade recente indisponível"
+    },
+    "documentosRecentes": {
+      "titulo": "Documentos recentes",
+      "verTodos": "Ver todos",
+      "nome": "Nome",
+      "categoria": "Categoria",
+      "data": "Data",
+      "statusHeader": "Estado",
+      "semNome": "Documento sem nome",
+      "geral": "Geral",
+      "nenhumDocumento": "Nenhum documento registado no repositório.",
+      "indisponivel": "Documentos recentes indisponíveis"
+    },
+    "heroBanner": {
+      "eyebrow": "Repositório digital",
+      "titulo": "Explore os documentos da Netline",
+      "documentosDisponiveis_one": "{{count}} documento disponível",
+      "documentosDisponiveis_other": "{{count}} documentos disponíveis",
+      "sistemasIntegrados_one": "{{count}} sistema integrado",
+      "sistemasIntegrados_other": "{{count}} sistemas integrados",
+      "verTodos": "Ver todos os documentos"
+    },
+    "metricas": {
+      "totalDocumentos": "Total de documentos",
+      "pendentesAprovacao": "Pendentes de aprovação",
+      "aprovados": "Aprovados",
+      "totalSistemas": "Total de sistemas",
+      "plataformas": "Plataformas",
+      "categorias": "Categorias"
+    }
+  },
+
   "auth": {
-  "marca": "Netline Serv",
-  "heroTitulo": "Ligar Pessoas, Partilhar Conhecimento.",
-  "heroTexto": "Bem-vindo ao Repositório Interno da Netline. Este é o seu portal centralizado para aceder a documentos técnicos, recursos partilhados e ferramentas exclusivas. Autentique-se para aceder ao sistema com segurança.",
-  "painelAcesso": "Painel de Acesso",
-  "acederConta": "Aceda à Sua Conta",
-  "emailLabel": "E-mail Profissional",
-  "emailPlaceholder": "nome@netline.co.mz",
-  "senhaLabel": "Palavra-passe",
-  "processando": "A processar...",
-  "entrar": "Entrar",
-  "erroPadrao": "Ocorreu um erro ao tentar entrar.",
-  "erroCredenciais": "E-mail ou senha incorretos",
-  "sessaoExpirada": "A sua sessão expirou. Entre novamente para continuar.",
-  "direitosReservados": "© {{ano}} Netline.Serv,Lda. Todos os direitos reservados."
-   },
-   "sidebar": {
-   "marca": "Netline Serv",
-   "seccoes": {
-     "principal": "PRINCIPAL",
-     "sistemasNetline": "SISTEMAS DA NETLINE",
-     "configuracoes": "CONFIGURAÇÕES"
-   },
-   "itens": {
-    "dashboard": "Dashboard",
-    "documentos": "Documentos",
-    "categorias": "Categorias",
-    "aprovacoes": "Aprovações",
-    "lixeira": "Lixeira",
-    "sistemasDesenvolvidos": "Sistemas Desenvolvidos",
-    "plataformas": "Plataformas",
-    "usuarios": "Usuários",
-    "configuracoes": "Configurações"
-   }
- }
+    "marca": "Netline Serv",
+    "heroTitulo": "Ligar pessoas, partilhar conhecimento.",
+    "heroTexto": "Bem-vindo ao repositório interno da Netline. Este é o seu portal centralizado para aceder a documentos técnicos, recursos partilhados e ferramentas exclusivas. Inicie sessão para aceder ao sistema com segurança.",
+    "painelAcesso": "Painel de acesso",
+    "acederConta": "Aceda à sua conta",
+    "emailLabel": "E-mail profissional",
+    "emailPlaceholder": "nome@netline.co.mz",
+    "senhaLabel": "Palavra-passe",
+    "processando": "A processar...",
+    "entrar": "Iniciar sessão",
+    "erroPadrao": "Ocorreu um erro ao tentar iniciar sessão.",
+    "erroCredenciais": "E-mail ou palavra-passe incorretos",
+    "sessaoExpirada": "A sua sessão expirou. Inicie sessão novamente para continuar.",
+    "direitosReservados": "© {{ano}} Netline.Serv,Lda. Todos os direitos reservados."
+  },
 
-
+  "sidebar": {
+    "marca": "Netline Serv",
+    "logotipo": "Logótipo Netline",
+    "seccoes": {
+      "principal": "PRINCIPAL",
+      "sistemasNetline": "SISTEMAS",
+      "configuracoes": "CONFIGURAÇÕES"
+    },
+    "itens": {
+      "dashboard": "Dashboard",
+      "documentos": "Documentos",
+      "categorias": "Categorias",
+      "aprovacoes": "Aprovações",
+      "lixeira": "Lixeira",
+      "sistemasDesenvolvidos": "Sistemas desenvolvidos",
+      "plataformas": "Plataformas",
+      "usuarios": "Utilizadores",
+      "configuracoes": "Configurações"
+    }
+  }
 }

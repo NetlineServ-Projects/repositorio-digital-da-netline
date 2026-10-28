@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface PainelFiltrosProps {
   children: ReactNode;
@@ -11,6 +12,7 @@ interface PainelFiltrosProps {
 // Em ecrãs pequenos os filtros ficam recolhidos atrás de um botão "Filtros",
 // para não ocuparem o ecrã inteiro antes da lista; nos maiores ficam sempre visíveis
 export default function PainelFiltros({ children, ativos = 0, abertoDesde = "md", className = "" }: PainelFiltrosProps) {
+  const { t } = useTranslation();
   const [aberto, setAberto] = useState(false);
   const esconderBotao = abertoDesde === "lg" ? "lg:hidden" : "md:hidden";
   const mostrarSempre = abertoDesde === "lg" ? "lg:block" : "md:block";
@@ -27,9 +29,9 @@ export default function PainelFiltros({ children, ativos = 0, abertoDesde = "md"
           <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18l-7 8v6l-4 2v-8L3 4z" />
           </svg>
-          Filtros
+          {t("componentes.filtros.titulo")}
           {ativos > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-[#d99b26]/15 text-[#8a5f0e] text-[10px] font-bold">{ativos}</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-netline-dourado/15 text-[#8a5f0e] text-[10px] font-bold">{ativos}</span>
           )}
         </span>
         <svg

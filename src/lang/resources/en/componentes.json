@@ -1,0 +1,70 @@
+{
+  "confirmacao": {
+    "cancelar": "Cancel",
+    "confirmar": "Confirm",
+    "aProcessar": "Processing..."
+  },
+  "filtros": {
+    "titulo": "Filters"
+  },
+  "select": {
+    "selecionar": "Select...",
+    "pesquisar": "Search...",
+    "pesquisarOpcoes": "Search options",
+    "semResultados": "No results",
+    "semOpcoes": "No options available",
+    "selecionados_one": "{{count}} selected",
+    "selecionados_other": "{{count}} selected"
+  },
+  "segredo": {
+    "mostrar": "Show",
+    "aObter": "Fetching...",
+    "copiar": "Copy",
+    "copiado": "Copied!",
+    "ocultar": "Hide",
+    "vazio": "(empty)",
+    "mostrarAria": "Show {{descricao}}",
+    "copiarAria": "Copy {{descricao}}",
+    "ocultarAria": "Hide {{descricao}}",
+    "erroObter": "Could not fetch the value.",
+    "copiadoSucesso": "Value copied to the clipboard.",
+    "erroCopiar": "Could not copy the value."
+  },
+  "reautenticacao": {
+    "titulo": "Confirm your password",
+    "descricao": "For security, confirm your password to access protected data (passwords, tokens and credentials). The confirmation is valid for 3 minutes.",
+    "label": "Password",
+    "placeholder": "Your password",
+    "aConfirmar": "Confirming...",
+    "erro": "Error confirming the password.",
+    "expirou": "Access has expired. Confirm your password again to continue."
+  },
+  "header": {
+    "utilizador": "User",
+    "perfilAdmin": "Admin",
+    "expandirMenu": "Expand menu",
+    "recolherMenu": "Collapse menu",
+    "repositorioInterno": "Netline internal repository",
+    "meuPerfil": "My profile",
+    "terminarSessao": "Sign out"
+  },
+  "documento": {
+    "submetidoPor": "Submitted by",
+    "categoria": "Category",
+    "tamanho": "Size",
+    "semCategoria": "No category",
+    "sistema": "System",
+    "semData": "N/A",
+    "transferir": "Download",
+    "transferirFicheiro": "Download file",
+    "pertenceSistema": "System",
+    "verSistema": "Open the system {{nome}}",
+    "semSistema": "No system",
+    "filtroSistema": "System",
+    "todosSistemas": "All systems"
+  },
+  "vista": {
+    "tabela": "Table",
+    "grelha": "Grid"
+  }
+}

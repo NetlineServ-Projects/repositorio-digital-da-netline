@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
 import type { Documento } from "../types/documento";
+import { useCarregamento } from "./useCarregamento";
+import i18n from "../lang/i18n";
 
 interface AtualizacaoDocumento {
   titulo?: string;
@@ -13,21 +15,12 @@ interface AtualizacaoDocumento {
 
 export function useDocumentoDetalhe(id: string | number) {
   const [documento, setDocumento] = useState<Documento | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
+  const { carregando: loading, aAtualizar, erro, executar } = useCarregamento(
+    i18n.t("comum.erros.carregarDocumento"),
+  );
 
-  const carregar = async () => {
-    setLoading(true);
-    setErro(null);
-    try {
-      const doc = await fetchComToken(API_ENDPOINTS.DOCUMENTO_BY_ID(id));
-      setDocumento(doc);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Não foi possível carregar o documento.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const carregar = () =>
+    executar(() => fetchComToken(API_ENDPOINTS.DOCUMENTO_BY_ID(id)), setDocumento);
 
   useEffect(() => {
     carregar();
@@ -45,5 +38,5 @@ export function useDocumentoDetalhe(id: string | number) {
     await atualizar({ estado: novoEstado, ...(motivo && { motivo }) });
   };
 
-  return { documento, loading, erro, recarregar: carregar, atualizar, alterarEstado };
+  return { documento, loading, aAtualizar, erro, recarregar: carregar, atualizar, alterarEstado };
 }

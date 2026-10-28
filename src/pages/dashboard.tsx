@@ -3,7 +3,8 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Sidebar from "../components/sidebar";
 import HeaderDashboard from "../components/headerDashboard";
-import { useDashboardData } from "../hooks/useDashboardData";
+import { useUsuarioAtual } from "../hooks/useUsuarioAtual";
+import { EstadoCarregando, EstadoErro } from "../components/estados";
 import { fetchComToken } from "../utils/api";
 import { toast } from "sonner";
 import ModalConfirmacao from "../components/modalConfirmacaoprops";
@@ -22,21 +23,8 @@ export default function Dashboard() {
 
   const [modalApagarContaAberto, setModalApagarContaAberto] = useState(false);
 
-  const {
-    usuario,
-    totalCategorias,
-    totalSistemas,
-    totalPlataformas,
-    totalDocumentos,
-    pendentesAprovacao,
-    totalAprovados,
-    documentosRecentes,
-    atividades,
-    ehAdmin,
-    loading,
-    erro,
-    recarregar,
-  } = useDashboardData();
+  // Só o perfil: o menu e o cabeçalho aparecem logo, e cada página carrega os seus dados
+  const { usuario, ehAdmin, carregando, erro, recarregar } = useUsuarioAtual();
 
   // Redimensionamento do ecrã ajusta automaticamente a barra lateral
   useEffect(() => {
@@ -69,32 +57,6 @@ export default function Dashboard() {
       );
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-        <p className="text-slate-600 text-sm sm:text-base font-medium animate-pulse">
-          {t("layout.carregandoPainel")}
-        </p>
-      </div>
-    );
-  }
-
-  if (erro) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 gap-4 p-4 text-center">
-        <p className="text-red-600 text-sm sm:text-base font-medium">
-          {t("layout.erroOcorreu", { erro })}
-        </p>
-        <button
-          onClick={recarregar}
-          className="px-4 py-2 bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors cursor-pointer"
-        >
-          {t("comum.tentarNovamente")}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden">
@@ -129,21 +91,14 @@ export default function Dashboard() {
 
         {/* Main com p-4 no Mobile e p-8 a partir de ecrãs médios (md) */}
         <main className="p-4 sm:p-6 md:p-8 flex-1 max-w-full overflow-x-hidden">
-          <Outlet
-            context={{
-              usuario,
-              ehAdmin,
-              totalCategorias,
-              totalSistemas,
-              totalPlataformas,
-              totalDocumentos,
-              pendentesAprovacao,
-              totalAprovados,
-              documentosRecentes,
-              atividades,
-              recarregarDashboard: recarregar,
-            }}
-          />
+          {/* As páginas dependem do perfil (permissões): esperam por ele dentro do layout */}
+          {carregando ? (
+            <EstadoCarregando mensagem={t("layout.carregandoPainel")} />
+          ) : erro ? (
+            <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />
+          ) : (
+            <Outlet context={{ usuario, ehAdmin, recarregarDashboard: recarregar }} />
+          )}
         </main>
       </div>
 

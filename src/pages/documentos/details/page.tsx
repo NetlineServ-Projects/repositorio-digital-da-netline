@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import EtiquetaSistema from "../../../components/etiquetaSistema";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDocumentoDetalhe } from "../../../hooks/useDocumentoDetalhe";
@@ -12,11 +13,12 @@ import {
 } from "../../../utils/documentos";
 import { API_URL } from "../../../utils/api";
 import { IconDownload } from "../../../components/icons";
+import { EstadoCarregando, EstadoErro } from "../../../components/estados";
 
 export default function DocumentoDetalhesPage() {
   const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const { documento, loading, erro } = useDocumentoDetalhe(id ?? "");
+  const { documento, loading, erro, recarregar } = useDocumentoDetalhe(id ?? "");
 
   // Se o documento pertence a um sistema, "voltar" deve regressar ao sistema
   // em vez da listagem geral de Documentos
@@ -38,22 +40,18 @@ export default function DocumentoDetalhesPage() {
   }, [documento, i18n.language]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">
-          {t("documentos.detalhes.carregando")}
-        </p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("documentos.detalhes.carregando")} />;
   }
 
   if (erro || !documento || !dados) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3 max-w-lg">
-        <p className="text-red-600 text-sm font-medium">
-          {erro || t("documentos.detalhes.naoEncontrado")}
-        </p>
-        <Link to="/dashboard/documentos" className="text-sm text-[#18357a] font-semibold hover:underline">
+      <div className="space-y-3 text-center">
+        {erro ? (
+          <EstadoErro mensagem={erro} onTentarNovamente={recarregar} />
+        ) : (
+          <EstadoErro mensagem={t("documentos.detalhes.naoEncontrado")} />
+        )}
+        <Link to="/dashboard/documentos" className="text-sm text-netline-azul font-semibold hover:underline">
           {t("documentos.detalhes.voltar")}
         </Link>
       </div>
@@ -79,7 +77,7 @@ export default function DocumentoDetalhesPage() {
 
         <div className="lg:col-span-2 bg-white p-5 sm:p-6 rounded-xl border border-slate-100 shadow-sm space-y-5 h-fit">
           <div className="flex items-start gap-3">
-            <span className="p-2.5 bg-blue-50 text-[#18357a] rounded-lg text-xs font-extrabold uppercase border border-blue-100/50 shrink-0">
+            <span className="p-2.5 bg-blue-50 text-netline-azul rounded-lg text-xs font-extrabold uppercase border border-blue-100/50 shrink-0">
               {dados.extensao}
             </span>
             <div className="space-y-1 min-w-0">
@@ -106,6 +104,12 @@ export default function DocumentoDetalhesPage() {
               </dd>
             </div>
             <div>
+              <dt className="text-slate-400 text-xs uppercase font-semibold">{t("componentes.documento.pertenceSistema")}</dt>
+              <dd className="text-slate-700 mt-0.5 font-medium">
+                {documento.sistema ? <EtiquetaSistema sistema={documento.sistema} /> : t("componentes.documento.semSistema")}
+              </dd>
+            </div>
+              <div>
               <dt className="text-slate-400 text-xs uppercase font-semibold">{t("documentos.detalhes.submetidoPor")}</dt>
               <dd className="text-slate-700 mt-0.5 font-medium wrap-break-word">
                 {documento.usuario?.nome || t("documentos.detalhes.sistema")}
@@ -126,7 +130,7 @@ export default function DocumentoDetalhesPage() {
           <a
             href={dados.urlFicheiro}
             download={documento.nomeArquivo}
-            className="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-[#18357a] text-sm font-semibold rounded-lg transition-colors border border-blue-100/80 mt-2"
+            className="flex items-center justify-center gap-2 w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-netline-azul text-sm font-semibold rounded-lg transition-colors border border-blue-100/80 mt-2"
           >
             <IconDownload /> {t("documentos.detalhes.baixarFicheiro")}
           </a>

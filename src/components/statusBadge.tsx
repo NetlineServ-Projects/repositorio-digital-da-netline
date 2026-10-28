@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { Documento } from "../types/documento";
 
 const ESTILOS: Record<Documento["estado"], string> = {
@@ -6,16 +7,11 @@ const ESTILOS: Record<Documento["estado"], string> = {
   REJEITADO: "bg-rose-50 text-rose-700 border border-rose-200",
 };
 
-const LABELS: Record<Documento["estado"], string> = {
-  APROVADO: "Aprovado",
-  PENDENTE: "Pendente",
-  REJEITADO: "Rejeitado",
-};
-
 export default function StatusBadge({ estado }: { estado: Documento["estado"] }) {
+  const { t } = useTranslation();
   return (
     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${ESTILOS[estado]}`}>
-      {LABELS[estado]}
+      {t(`comum.status.${estado}`)}
     </span>
   );
 }

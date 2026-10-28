@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { Trans, useTranslation } from "react-i18next";
+import i18n from "../../../lang/i18n";
 import {
   apagarCredencial,
   buscarInfraestrutura,
@@ -22,6 +24,7 @@ import CartaoBackend from "./cartaoBackend";
 import ListaCredenciais from "./listarCredenciais";
 import LinhaFrontend from "./linhaFrontend";
 import CartaoSubdominio from "./cartaoSubdominio";
+import { useConfirmacao } from "../../../components/confirmacao";
 import CartaoInfra from "./cartaoInfra";
 import { Secao } from "../../../components/secaoDetalhe";
 import { IconCadeado, IconServer } from "../../../components/icons";
@@ -39,8 +42,10 @@ export default function InfraestruturaTab({
   ehAdmin,
 }: InfraestruturaTabProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { comAcesso, temAcesso } = useAcessoInfraestrutura();
+  const confirmar = useConfirmacao();
 
   // O ambiente vive no endereço, para se voltar ao mesmo depois de um formulário
   const ambiente: TipoAmbiente =
@@ -73,7 +78,7 @@ export default function InfraestruturaTab({
       toast.error(
         erro instanceof Error
           ? erro.message
-          : "Erro ao carregar a infraestrutura.",
+          : i18n.t("sistemas.infraestrutura.erroCarregarToast"), // i18n.t: evita voltar a pedir os dados ao mudar de idioma
       );
       setEstado("erro");
     }
@@ -97,30 +102,31 @@ export default function InfraestruturaTab({
       { replace: true },
     );
 
-  const handleApagarCredencial = (credencial: Credencial) => {
-    toast(`Apagar a credencial "${credencial.label}"?`, {
-      description: "Esta ação não pode ser desfeita.",
-      action: {
-        label: "Apagar",
-        onClick: async () => {
-          try {
-            await comAcesso((token) =>
-              apagarCredencial(sistema.id, ambiente, credencial.id, token),
-            );
-            toast.success("Credencial apagada.");
-            await carregar();
-          } catch (erro) {
-            if (erro instanceof AcessoCancelado) return;
-            toast.error(
-              erro instanceof Error
-                ? erro.message
-                : "Erro ao apagar a credencial.",
-            );
-          }
-        },
-      },
-      cancel: { label: "Cancelar", onClick: () => {} },
+  const handleApagarCredencial = async (credencial: Credencial) => {
+    // Confirma-se primeiro e só depois se apaga: o apagar pode abrir a reautenticação,
+    // que ficaria por trás da janela de confirmação se corresse lá dentro
+    const confirmado = await confirmar({
+      titulo: t("sistemas.infraestrutura.apagarCredencial.titulo"),
+      mensagem: (
+        <Trans
+          i18nKey="sistemas.infraestrutura.apagarCredencial.mensagem"
+          values={{ nome: credencial.label }}
+          components={{ destaque: <span className="font-semibold text-slate-800" /> }}
+        />
+      ),
+      textoConfirmar: t("sistemas.infraestrutura.apagarCredencial.confirmar"),
+      perigoso: true,
     });
+    if (!confirmado) return;
+
+    try {
+      await comAcesso((token) => apagarCredencial(sistema.id, ambiente, credencial.id, token));
+      toast.success(t("sistemas.infraestrutura.credencialApagada"));
+      await carregar();
+    } catch (erro) {
+      if (erro instanceof AcessoCancelado) return;
+      toast.error(erro instanceof Error ? erro.message : t("sistemas.infraestrutura.erroApagarCredencial"));
+    }
   };
 
   const subdominio = sistema.subdominios?.find((s) => s.ambiente === ambiente);
@@ -132,34 +138,34 @@ export default function InfraestruturaTab({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div
           role="group"
-          aria-label="Ambiente"
+          aria-label={t("sistemas.infraestrutura.ambienteAria")}
           className="inline-flex p-1 bg-slate-100 rounded-xl self-start"
         >
-          {AMBIENTES.map((a) => {
-            const ativo = a.valor === ambiente;
+          {AMBIENTES.map((valorAmbiente) => {
+            const ativo = valorAmbiente === ambiente;
             return (
               <button
-                key={a.valor}
+                key={valorAmbiente}
                 type="button"
-                onClick={() => mudarAmbiente(a.valor)}
+                onClick={() => mudarAmbiente(valorAmbiente)}
                 aria-pressed={ativo}
                 className={`px-4 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40 ${
                   ativo ? "bg-white text-blue-900 shadow-xs" : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                {a.label}
+                {rotuloAmbiente(valorAmbiente)}
               </button>
             );
           })}
         </div>
         <p className="flex items-center gap-1.5 text-[11px] text-slate-400">
           <IconCadeado className="w-3 h-3" />
-          Dados protegidos: o acesso pede a palavra-passe e expira passados 3 minutos.
+          {t("sistemas.infraestrutura.dadosProtegidos")}
         </p>
       </div>
 
       {/* ================= ESTRUTURA ================= */}
-      <Secao titulo={`Estrutura — ${rotuloAmbiente(ambiente)}`}>
+      <Secao titulo={t("sistemas.infraestrutura.estrutura", { ambiente: rotuloAmbiente(ambiente) })}>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
           <CartaoSubdominio ambiente={ambiente} subdominio={subdominio} ehAdmin={ehAdmin} />
 
@@ -171,16 +177,16 @@ export default function InfraestruturaTab({
               onEditar={() => navigate(caminhos.editar)}
             />
           ) : (
-            <CartaoInfra titulo="Backend" subtitulo={rotuloAmbiente(ambiente)} Icone={IconServer}>
+            <CartaoInfra titulo={t("sistemas.infraestrutura.backend.titulo")} subtitulo={rotuloAmbiente(ambiente)} Icone={IconServer}>
               {estado === "carregando" ? (
-                <div className="space-y-2.5 animate-pulse" aria-label="A carregar a infraestrutura">
+                <div className="space-y-2.5 animate-pulse" aria-label={t("sistemas.infraestrutura.aCarregar")}>
                   <div className="h-3 bg-slate-100 rounded w-3/4" />
                   <div className="h-3 bg-slate-100 rounded w-1/2" />
                   <div className="h-3 bg-slate-100 rounded w-2/3" />
                 </div>
               ) : (
                 <p className="text-xs text-slate-400 italic">
-                  {estado === "bloqueado" ? "Protegido. Desbloqueie para ver." : "Não foi possível carregar."}
+                  {estado === "bloqueado" ? t("sistemas.infraestrutura.protegido") : t("sistemas.infraestrutura.naoCarregou")}
                 </p>
               )}
             </CartaoInfra>
@@ -192,7 +198,11 @@ export default function InfraestruturaTab({
 
       {/* ================= CREDENCIAIS ================= */}
       <Secao
-        titulo={`Credenciais do backend${estado === "pronto" && infraestrutura ? ` (${credenciais.length})` : ""}`}
+        titulo={
+          estado === "pronto" && infraestrutura
+            ? t("sistemas.infraestrutura.credenciaisContagem", { count: credenciais.length })
+            : t("sistemas.infraestrutura.credenciais")
+        }
         acao={
           estado === "pronto" &&
           infraestrutura &&
@@ -202,7 +212,7 @@ export default function InfraestruturaTab({
               onClick={() => navigate(caminhos.novaCredencial)}
               className="px-3 py-1.5 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
             >
-              + Adicionar credencial
+              {t("sistemas.infraestrutura.adicionarCredencial")}
             </button>
           )
         }
@@ -217,9 +227,9 @@ export default function InfraestruturaTab({
               <IconCadeado className="w-5 h-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-slate-800">Acesso protegido</p>
+              <p className="text-sm font-semibold text-slate-800">{t("sistemas.infraestrutura.acessoProtegido")}</p>
               <p className="text-xs text-slate-500 mt-1">
-                Introduza a sua palavra-passe para ver o backend e as credenciais deste ambiente.
+                {t("sistemas.infraestrutura.acessoProtegidoTexto")}
               </p>
             </div>
             <button
@@ -227,20 +237,20 @@ export default function InfraestruturaTab({
               onClick={carregar}
               className="px-4 py-2 text-xs font-semibold text-white bg-blue-900 hover:bg-blue-800 rounded-lg transition-colors cursor-pointer"
             >
-              Desbloquear
+              {t("sistemas.infraestrutura.desbloquear")}
             </button>
           </div>
         )}
 
         {estado === "erro" && (
           <div className="bg-white rounded-2xl border border-slate-200/70 shadow-xs p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <p className="text-xs text-slate-600">Não foi possível carregar a infraestrutura.</p>
+            <p className="text-xs text-slate-600">{t("sistemas.infraestrutura.erroCarregar")}</p>
             <button
               type="button"
               onClick={carregar}
               className="px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
             >
-              Tentar de novo
+              {t("sistemas.infraestrutura.tentarDeNovo")}
             </button>
           </div>
         )}
@@ -256,7 +266,7 @@ export default function InfraestruturaTab({
           ) : (
             <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-200">
               <p className="text-xs text-slate-400 italic">
-                Registe primeiro a infraestrutura do backend para poder adicionar credenciais.
+                {t("sistemas.infraestrutura.semInfraParaCredenciais")}
               </p>
             </div>
           ))}

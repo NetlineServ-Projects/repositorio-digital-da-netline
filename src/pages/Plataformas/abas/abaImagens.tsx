@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import AcoesItem from "../../../components/plataformas/acoesItem";
 import EstadoVazio from "../../../components/plataformas/estadoVazio";
 import type { AoEditarItem, AoEliminarItem } from "../../../types/plataformaTipos";
@@ -5,6 +6,7 @@ import type { ImagemContainer } from "../../../types/plataforma";
 import {
   ROTULOS_VISIBILIDADE_IMAGEM,
   ROTULOS_ORIGEM_IMAGEM,
+  localeDatas,
 } from "../../../types/plataformaConstantes";
 
 interface AbaImagensProps {
@@ -15,7 +17,7 @@ interface AbaImagensProps {
 }
 
 function formatarData(data: string | null): string {
-  return data ? new Date(data).toLocaleDateString("pt-PT") : "-";
+  return data ? new Date(data).toLocaleDateString(localeDatas()) : "-";
 }
 
 function SeloVisibilidade({ imagem }: { imagem: ImagemContainer }) {
@@ -33,6 +35,7 @@ function SeloVisibilidade({ imagem }: { imagem: ImagemContainer }) {
 }
 
 function SeloEstado({ imagem }: { imagem: ImagemContainer }) {
+  const { t } = useTranslation();
   return (
     <span
       className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
@@ -41,7 +44,7 @@ function SeloEstado({ imagem }: { imagem: ImagemContainer }) {
           : "bg-slate-100 text-slate-500 border-slate-200"
       }`}
     >
-      {imagem.ativo ? "Ativa" : "Inativa"}
+      {imagem.ativo ? t("plataformas.comum.ativa") : t("plataformas.comum.inativa")}
     </span>
   );
 }
@@ -52,16 +55,17 @@ export default function AbaImagens({
   aoEditar,
   aoEliminar,
 }: AbaImagensProps) {
+  const { t } = useTranslation();
   if (imagens.length === 0) {
-    return <EstadoVazio mensagem="Nenhuma imagem registada." />;
+    return <EstadoVazio mensagem={t("plataformas.abas.imagens.vazio")} />;
   }
 
   // As mesmas ações na tabela e nos cartões do telemóvel
   const acoes = (imagem: ImagemContainer) =>
     ehAdmin && (
       <AcoesItem
-        tituloEditar="Editar imagem"
-        tituloEliminar="Eliminar imagem"
+        tituloEditar={t("plataformas.abas.imagens.editar")}
+        tituloEliminar={t("plataformas.abas.imagens.eliminar")}
         onEditar={() => aoEditar("imagem", imagem)}
         onEliminar={() =>
           aoEliminar("imagem", imagem.id, `${imagem.nome}:${imagem.tag}`)
@@ -87,8 +91,8 @@ export default function AbaImagens({
               </div>
               <p className="text-[11px] text-slate-500">
                 {ROTULOS_ORIGEM_IMAGEM[imagem.origem]}
-                {imagem.portaExposta != null && <> · Porta <span className="font-mono">{imagem.portaExposta}</span></>}
-                {" · "}Último push: {formatarData(imagem.ultimoPushEm)}
+                {imagem.portaExposta != null && <> · {t("plataformas.abas.imagens.porta")} <span className="font-mono">{imagem.portaExposta}</span></>}
+                {" · "}{t("plataformas.abas.imagens.ultimoPush", { data: formatarData(imagem.ultimoPushEm) })}
               </p>
             </div>
             {ehAdmin && <div className="shrink-0 -mr-1">{acoes(imagem)}</div>}
@@ -100,13 +104,13 @@ export default function AbaImagens({
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase tracking-wider font-semibold">
             <tr>
-              <th className="px-5 py-3.5">Imagem</th>
-              <th className="px-5 py-3.5">Origem</th>
-              <th className="px-5 py-3.5">Visibilidade</th>
-              <th className="px-5 py-3.5">Porta</th>
-              <th className="px-5 py-3.5">Último Push</th>
-              <th className="px-5 py-3.5">Estado</th>
-              {ehAdmin && <th className="px-5 py-3.5 text-right">Ações</th>}
+              <th className="px-5 py-3.5">{t("plataformas.abas.imagens.colunas.imagem")}</th>
+              <th className="px-5 py-3.5">{t("plataformas.abas.imagens.colunas.origem")}</th>
+              <th className="px-5 py-3.5">{t("plataformas.abas.imagens.colunas.visibilidade")}</th>
+              <th className="px-5 py-3.5">{t("plataformas.abas.imagens.colunas.porta")}</th>
+              <th className="px-5 py-3.5">{t("plataformas.abas.imagens.colunas.ultimoPush")}</th>
+              <th className="px-5 py-3.5">{t("plataformas.abas.imagens.colunas.estado")}</th>
+              {ehAdmin && <th className="px-5 py-3.5 text-right">{t("plataformas.abas.imagens.colunas.acoes")}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { IconServer } from "../icons";
 import type { Servidor } from "../../types/plataforma";
 import {
@@ -11,12 +12,13 @@ import {
 
 // Resumo de um servidor; o cartão inteiro leva à página de detalhes
 export default function CartaoServidor({ servidor }: { servidor: Servidor }) {
+  const { t } = useTranslation();
   const totalSistemas = servidor.totais?.sistemas ?? 0;
 
   return (
     <Link
       to={caminhoDetalheServidor(servidor.id)}
-      aria-label={`Ver detalhes do servidor ${servidor.nome}`}
+      aria-label={t("plataformas.cartoes.verDetalhesServidor", { nome: servidor.nome })}
       className="group bg-white rounded-2xl border border-slate-200/70 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all flex flex-col gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900/40"
     >
       <div className="flex items-start justify-between gap-3">
@@ -42,7 +44,7 @@ export default function CartaoServidor({ servidor }: { servidor: Servidor }) {
         {[
           ["CPU", `${servidor.numeroCpu} vCPU`],
           ["RAM", formatarRam(servidor)],
-          ["Disco", formatarDisco(servidor)],
+          [t("plataformas.comum.disco"), formatarDisco(servidor)],
         ].map(([rotulo, valor]) => (
           <div key={rotulo} className="bg-slate-50 rounded-lg py-2">
             <dt className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{rotulo}</dt>
@@ -54,7 +56,7 @@ export default function CartaoServidor({ servidor }: { servidor: Servidor }) {
       <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 text-[11px]">
         <span className="font-mono text-slate-500 truncate">{servidor.ip || "-"}</span>
         <span className={`font-semibold shrink-0 ${totalSistemas > 0 ? "text-blue-900" : "text-slate-400"}`}>
-          {totalSistemas} {totalSistemas === 1 ? "sistema" : "sistemas"}
+          {t("plataformas.comum.totalSistemas", { count: totalSistemas })}
         </span>
       </div>
     </Link>

@@ -1,0 +1,106 @@
+{
+  "logotipo": "Netline logo",
+  "iniciarSessao": "Sign in",
+  "navegacao": {
+    "seccoes": "Sections",
+    "inicio": "Home",
+    "plataforma": "The platform",
+    "comoFunciona": "How it works",
+    "suporte": "Support",
+    "abrirMenu": "Open menu",
+    "fecharMenu": "Close menu"
+  },
+  "hero": {
+    "etiqueta": "Netline Serv internal repository",
+    "titulo": "<destaque>Netline</destaque> knowledge, organised and secure.",
+    "texto": "The company's documentation, developed systems and infrastructure brought together in a single platform, to browse, preserve and share with the team.",
+    "entrar": "Enter the repository",
+    "conhecer": "Discover the platform",
+    "logotipo": "Netline Serv, Lda logo",
+    "etiquetaDocumentos": "Documents",
+    "etiquetaSistemas": "Systems",
+    "etiquetaPlataformas": "Platforms"
+  },
+  "pilares": {
+    "centralizado": { "titulo": "Centralised", "texto": "Everything in one place" },
+    "seguro": { "titulo": "Secure", "texto": "Internal, audited access" },
+    "sempreAMao": { "titulo": "Always at hand", "texto": "Browse at any time" }
+  },
+  "plataforma": {
+    "etiqueta": "The platform",
+    "titulo": "One place for the company's memory",
+    "texto": "Developed applications, technical documentation, manuals and event records, always accessible and organised.",
+    "cartoes": {
+      "aplicacoes": {
+        "titulo": "Applications and documentation",
+        "texto": "Browse the catalogue of solutions developed by Netline, with their manuals and technical specifications."
+      },
+      "conhecimento": {
+        "titulo": "Centralised knowledge",
+        "texto": "Applications, operating procedures and essential documents gathered in a single place."
+      },
+      "memoria": {
+        "titulo": "Institutional memory",
+        "texto": "The company's history preserved: key milestones, achievements and corporate events."
+      }
+    }
+  },
+  "modulos": {
+    "etiqueta": "Modules",
+    "titulo": "Everything the team needs, connected",
+    "ilustracao": "Illustration of documents organised in a folder shared by the team",
+    "documentos": {
+      "titulo": "Documents",
+      "texto": "Manuals, contracts and specifications organised by category, with search and preview."
+    },
+    "sistemas": {
+      "titulo": "Developed systems",
+      "texto": "A technical sheet for each solution: team, technologies, environments and related documentation."
+    },
+    "plataformas": {
+      "titulo": "Platforms and servers",
+      "texto": "Where each system runs: clouds, servers, container images and domains."
+    },
+    "aprovacoes": {
+      "titulo": "Approvals",
+      "texto": "Every submitted document is reviewed before it becomes visible to the whole team."
+    }
+  },
+  "comoFunciona": {
+    "etiqueta": "How it works",
+    "titulo": "From submission to browsing, with a review in between",
+    "texto": "Nothing is published without going through an administrator, so the shared information is always reliable.",
+    "passo": "Step {{numero}}",
+    "submeter": { "titulo": "Submit", "texto": "The employee uploads the document and chooses the category." },
+    "rever": { "titulo": "Review", "texto": "An administrator approves or rejects it, giving the reason for the decision." },
+    "consultar": { "titulo": "Browse", "texto": "Once approved, it becomes available to the whole team." }
+  },
+  "suporte": {
+    "etiqueta": "Help channels",
+    "titulo": "Technical support",
+    "texto": "Questions about uploading manuals or using the system? The support team helps you directly.",
+    "faleConnosco": "Talk to the team",
+    "horario": "We reply on working days, during office hours.",
+    "telefone": "Phone",
+    "email": "Email",
+    "localizacao": "Location",
+    "imagem": "Netline support technician at the computer",
+    "disponivel": "Internal technical support available"
+  },
+  "chamada": {
+    "titulo": "Ready to start?",
+    "texto": "Sign in with your Netline account and access the repository."
+  },
+  "rodape": {
+    "subtitulo": "Internal digital repository",
+    "texto": "Preserving the company's knowledge, applications and institutional memory in a single place.",
+    "navegacaoAria": "Footer navigation",
+    "navegacao": "Navigation",
+    "acesso": "System access",
+    "suporteInterno": "Internal support",
+    "precisaAjuda": "Need help or want to register new files?",
+    "local": "Maputo, Mozambique",
+    "direitos": "© {{ano}} Netline Serv, Lda. All rights reserved.",
+    "usoInterno": "Internal use only"
+  }
+}

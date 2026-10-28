@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Secao, Campo } from "../../../components/secaoDetalhe";
 import CartaoIndicador, { type CartaoIndicadorProps } from "../../../components/plataformas/cartaoIndicador";
 import BotaoIconeCabecalho from "../../../components/plataformas/botaoIconeCabecalho";
@@ -19,7 +20,7 @@ import {
   IconSistemas,
   IconEstado,
 } from "../../../components/icons";
-import { ROTULOS_TIPO_PLATAFORMA } from "../../../types/plataformaConstantes";
+import { ROTULOS_TIPO_PLATAFORMA, localeDatas } from "../../../types/plataformaConstantes";
 import type {
   AoEditarItem,
   AoEliminarItem,
@@ -50,7 +51,7 @@ interface DetalhesPlataformaProps {
 
 
 function formatarData(iso?: string) {
-  return iso ? new Date(iso).toLocaleDateString("pt-PT") : "-";
+  return iso ? new Date(iso).toLocaleDateString(localeDatas()) : "-";
 }
 
 /* -------------------------------------------------------------------------- */
@@ -68,6 +69,7 @@ export default function DetalhesPlataforma({
   aoEditar,
   aoEliminar,
 }: DetalhesPlataformaProps) {
+  const { t } = useTranslation();
   const ehContainerizacao = plataforma.tipo === "CONTAINERIZACAO";
   const ehGestaoDominio = plataforma.tipo === "GESTAO_DOMINIO";
 
@@ -87,22 +89,22 @@ export default function DetalhesPlataforma({
   const indicadores: CartaoIndicadorProps[] = [
     ...(ehGestaoDominio
       ? [
-          { valor: dominiosDaPlataforma.length, rotulo: "Domínios", Icone: IconDominio },
-          { valor: totalRegistosDns, rotulo: "Registos DNS", Icone: IconRede },
+          { valor: dominiosDaPlataforma.length, rotulo: t("plataformas.detalhe.indicadores.dominios"), Icone: IconDominio },
+          { valor: totalRegistosDns, rotulo: t("plataformas.detalhe.indicadores.registosDns"), Icone: IconRede },
         ]
       : [
           ...(ehContainerizacao
-            ? [{ valor: imagensDaPlataforma.length, rotulo: "Imagens", Icone: IconImagem }]
+            ? [{ valor: imagensDaPlataforma.length, rotulo: t("plataformas.detalhe.indicadores.imagens"), Icone: IconImagem }]
             : []),
           ...(mostraServidores
-            ? [{ valor: servidoresDaPlataforma.length, rotulo: "Servidores", Icone: IconServer }]
+            ? [{ valor: servidoresDaPlataforma.length, rotulo: t("plataformas.detalhe.indicadores.servidores"), Icone: IconServer }]
             : []),
-          { valor: plataforma.totais?.sistemas ?? sistemasHospedados.length, rotulo: "Sistemas", Icone: IconSistemas },
+          { valor: plataforma.totais?.sistemas ?? sistemasHospedados.length, rotulo: t("plataformas.detalhe.indicadores.sistemas"), Icone: IconSistemas },
         ]),
     // O estado fica num cartão, junto dos números, e não no cabeçalho
     {
-      valor: plataforma.ativo ? "Ativa" : "Desativada",
-      rotulo: "Estado",
+      valor: plataforma.ativo ? t("plataformas.detalhe.ativa") : t("plataformas.detalhe.desativada"),
+      rotulo: t("plataformas.detalhe.indicadores.estado"),
       Icone: IconEstado,
       classeIcone: plataforma.ativo ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500",
     },
@@ -119,13 +121,13 @@ export default function DetalhesPlataforma({
   return (
     <div className="space-y-8 pb-12">
       {/* ================= CABEÇALHO ================= */}
-      <div className="bg-[#18357a] text-white rounded-2xl shadow-sm">
+      <div className="bg-netline-azul text-white rounded-2xl shadow-sm">
         <div className="p-5 sm:p-8 space-y-5">
           <button
             onClick={aoVoltar}
             className="text-xs font-semibold text-blue-100/80 hover:text-white transition-colors cursor-pointer"
           >
-            ← Voltar às plataformas
+            {t("plataformas.detalhe.voltar")}
           </button>
 
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
@@ -141,17 +143,17 @@ export default function DetalhesPlataforma({
 
             <div className="flex items-center gap-2">
               {plataforma.urlPainel && (
-                <BotaoIconeCabecalho rotulo="Abrir painel" Icone={IconLinkExterno} href={plataforma.urlPainel} />
+                <BotaoIconeCabecalho rotulo={t("plataformas.detalhe.abrirPainel")} Icone={IconLinkExterno} href={plataforma.urlPainel} />
               )}
               {ehAdmin && (
                 <>
                   <BotaoIconeCabecalho
-                    rotulo="Editar plataforma"
+                    rotulo={t("plataformas.detalhe.editar")}
                     Icone={IconCaneta}
                     onClick={() => aoEditar("plataforma", plataforma)}
                   />
                   <BotaoIconeCabecalho
-                    rotulo="Eliminar plataforma"
+                    rotulo={t("plataformas.detalhe.eliminar")}
                     Icone={IconLixeira}
                     perigoso
                     onClick={() => aoEliminar("plataforma", plataforma.id, plataforma.nome)}
@@ -171,9 +173,9 @@ export default function DetalhesPlataforma({
       </div>
 
       {/* ================= ACESSO E CONFIGURAÇÃO ================= */}
-      <Secao titulo="Acesso e configuração">
+      <Secao titulo={t("plataformas.detalhe.acessoConfiguracao")}>
         <dl className="bg-white rounded-2xl border border-slate-200/70 shadow-xs p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <Campo rotulo="Painel de controlo">
+          <Campo rotulo={t("plataformas.detalhe.painelControlo")}>
             {plataforma.urlPainel ? (
               <a
                 href={plataforma.urlPainel}
@@ -184,43 +186,43 @@ export default function DetalhesPlataforma({
                 {plataforma.urlPainel}
               </a>
             ) : (
-              <span className="text-slate-400 font-normal">Sem URL de painel</span>
+              <span className="text-slate-400 font-normal">{t("plataformas.detalhe.semUrlPainel")}</span>
             )}
           </Campo>
-          <Campo rotulo="Utilizador">
+          <Campo rotulo={t("plataformas.detalhe.utilizador")}>
             {plataforma.utilizador ? (
               <span className="font-mono">{plataforma.utilizador}</span>
             ) : (
-              <span className="text-slate-400 font-normal">Não definido</span>
+              <span className="text-slate-400 font-normal">{t("plataformas.detalhe.naoDefinido")}</span>
             )}
           </Campo>
-          <Campo rotulo="Token">
+          <Campo rotulo={t("plataformas.detalhe.token")}>
             {plataforma.temToken ? (
               <SegredoRevelavel
-                descricao={`token da plataforma ${plataforma.nome}`}
+                descricao={t("plataformas.detalhe.tokenDescricao", { nome: plataforma.nome })}
                 obter={(tokenElevado) => revelarTokenPlataforma(plataforma.id, tokenElevado)}
               />
             ) : (
-              <span className="text-slate-400 font-normal">Não definido</span>
+              <span className="text-slate-400 font-normal">{t("plataformas.detalhe.naoDefinido")}</span>
             )}
           </Campo>
           {ehContainerizacao && (
             <>
-              <Campo rotulo="URL do registry">
+              <Campo rotulo={t("plataformas.detalhe.urlRegistry")}>
                 <span className="font-mono break-all">{plataforma.registryUrl ?? "-"}</span>
               </Campo>
-              <Campo rotulo="Namespace">
+              <Campo rotulo={t("plataformas.detalhe.namespace")}>
                 <span className="font-mono">{plataforma.namespace ?? "-"}</span>
               </Campo>
             </>
           )}
-          <Campo rotulo="Registada em">{formatarData(plataforma.criadoEm)}</Campo>
+          <Campo rotulo={t("plataformas.detalhe.registadaEm")}>{formatarData(plataforma.criadoEm)}</Campo>
         </dl>
       </Secao>
 
       {/* ================= SERVIDORES (só se existirem) ================= */}
       {mostraServidores && (
-        <Secao titulo={`Servidores (${servidoresDaPlataforma.length})`}>
+        <Secao titulo={t("plataformas.detalhe.servidores", { total: servidoresDaPlataforma.length })}>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-4">
             {servidoresDaPlataforma.map((servidor) => (
               <CartaoServidor key={servidor.id} servidor={servidor} />
@@ -230,10 +232,9 @@ export default function DetalhesPlataforma({
       )}
 
       {servidoresForaDoLugar.length > 0 && (
-        <Secao titulo={`Servidores a mover (${servidoresForaDoLugar.length})`}>
+        <Secao titulo={t("plataformas.detalhe.servidoresAMover", { total: servidoresForaDoLugar.length })}>
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800">
-            Plataformas de containerização são registos de imagens e não alojam servidores. Edite estes
-            servidores e associe-os à plataforma Cloud onde realmente correm.
+            {t("plataformas.detalhe.avisoServidoresAMover")}
           </div>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(260px,100%),1fr))] gap-4">
             {servidoresForaDoLugar.map((servidor) => (
@@ -246,14 +247,17 @@ export default function DetalhesPlataforma({
       {/* ======== SISTEMAS HOSPEDADOS (num registo: containerizados, correm das suas imagens) ======== */}
       {!ehGestaoDominio && (
         <Secao
-          titulo={`${ehContainerizacao ? "Sistemas containerizados" : "Sistemas hospedados"} (${sistemasHospedados.length})`}
+          titulo={t(
+            ehContainerizacao ? "plataformas.detalhe.sistemasContainerizados" : "plataformas.detalhe.sistemasHospedados",
+            { total: sistemasHospedados.length },
+          )}
         >
           {sistemasHospedados.length === 0 ? (
             <div className="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-200">
               <p className="text-xs text-slate-400 italic">
                 {ehContainerizacao
-                  ? "Nenhum sistema usa imagens deste registo. Escolha a imagem na infraestrutura do backend do sistema."
-                  : "Nenhum sistema usa esta plataforma. Associe-a no formulário do sistema (frontend) ou na infraestrutura do backend."}
+                  ? t("plataformas.detalhe.semSistemasContainerizados")
+                  : t("plataformas.detalhe.semSistemasHospedados")}
               </p>
             </div>
           ) : (
@@ -268,7 +272,7 @@ export default function DetalhesPlataforma({
 
       {/* ================= IMAGENS (só containerização) ================= */}
       {ehContainerizacao && (
-        <Secao titulo={`Imagens (${imagensDaPlataforma.length})`}>
+        <Secao titulo={t("plataformas.detalhe.imagens", { total: imagensDaPlataforma.length })}>
           <div className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200/70 shadow-xs">
             <AbaImagens
               imagens={imagensDaPlataforma}
@@ -282,7 +286,7 @@ export default function DetalhesPlataforma({
 
       {/* ================= DOMÍNIOS (só gestão de domínio) ================= */}
       {ehGestaoDominio && (
-        <Secao titulo="Domínios & DNS">
+        <Secao titulo={t("plataformas.detalhe.dominiosDns")}>
           <AbaDominios
             dominios={dominiosDaPlataforma}
             subdominios={subdominios}

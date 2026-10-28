@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 export interface OpcaoSelect {
   valor: string;
@@ -32,7 +33,7 @@ export default function SelectPesquisavel({
   valor,
   onChange,
   opcoes,
-  placeholder = "Selecionar...",
+  placeholder,
   opcaoVazia,
   comBusca = true,
   disabled = false,
@@ -42,6 +43,7 @@ export default function SelectPesquisavel({
   className = "w-full",
   "aria-label": ariaLabel,
 }: SelectPesquisavelProps) {
+  const { t } = useTranslation();
   const [aberto, setAberto] = useState(false);
   const [busca, setBusca] = useState("");
   const [destacado, setDestacado] = useState(0);
@@ -176,12 +178,12 @@ export default function SelectPesquisavel({
         aria-expanded={aberto}
         aria-controls={aberto ? idLista : undefined}
         aria-label={ariaLabel}
-        className={`w-full flex items-center justify-between gap-2 bg-slate-50 border rounded-xl text-left transition-all cursor-pointer hover:bg-slate-100/80 focus:outline-none focus:ring-2 focus:ring-[#18357a]/20 focus:border-[#18357a] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-50 ${
-          aberto ? "border-[#18357a] ring-2 ring-[#18357a]/20" : "border-slate-200"
+        className={`w-full flex items-center justify-between gap-2 bg-slate-50 border rounded-xl text-left transition-all cursor-pointer hover:bg-slate-100/80 focus:outline-none focus:ring-2 focus:ring-netline-azul/20 focus:border-netline-azul disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-50 ${
+          aberto ? "border-netline-azul ring-2 ring-netline-azul/20" : "border-slate-200"
         } ${pequeno ? "px-3 py-2 text-xs" : "px-3.5 py-2.5 text-sm"}`}
       >
         <span className={`truncate ${selecionada && selecionada.valor !== "" ? "font-medium text-slate-800" : "text-slate-400"}`}>
-          {selecionada?.label ?? placeholder}
+          {selecionada?.label ?? placeholder ?? t("componentes.select.selecionar")}
         </span>
         <svg
           className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${aberto ? "rotate-180" : ""}`}
@@ -237,13 +239,13 @@ export default function SelectPesquisavel({
                 <input
                   ref={buscaRef}
                   type="text"
-                  placeholder="Pesquisar..."
+                  placeholder={t("componentes.select.pesquisar")}
                   value={busca}
                   onChange={(e) => {
                     setBusca(e.target.value);
                     setDestacado(0);
                   }}
-                  aria-label="Pesquisar opções"
+                  aria-label={t("componentes.select.pesquisarOpcoes")}
                   aria-controls={idLista}
                   className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-slate-300"
                 />
@@ -259,7 +261,7 @@ export default function SelectPesquisavel({
               className="max-h-60 overflow-y-auto space-y-0.5 focus:outline-none"
             >
               {filtradas.length === 0 ? (
-                <li className="p-2 text-xs text-center text-slate-400">Sem resultados</li>
+                <li className="p-2 text-xs text-center text-slate-400">{t("componentes.select.semResultados")}</li>
               ) : (
                 filtradas.map((opcao, indice) => {
                   const marcada = opcao.valor === valor;
@@ -279,7 +281,7 @@ export default function SelectPesquisavel({
                         opcao.desativada
                           ? "text-slate-300 cursor-not-allowed"
                           : marcada
-                            ? "bg-[#d99b26]/10 text-[#b07a14] font-semibold cursor-pointer"
+                            ? "bg-netline-dourado/10 text-[#b07a14] font-semibold cursor-pointer"
                             : emFoco
                               ? "bg-slate-100 text-slate-800 cursor-pointer"
                               : "text-slate-600 cursor-pointer"

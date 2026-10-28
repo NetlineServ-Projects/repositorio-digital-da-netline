@@ -1,3 +1,5 @@
+import i18n from "../lang/i18n";
+
 export type GrupoTipo = "PDF" | "WORD" | "IMAGEM" | "OUTRO";
 
 export function classificarTipo(tipoArquivo: string): GrupoTipo {
@@ -10,10 +12,18 @@ export function classificarTipo(tipoArquivo: string): GrupoTipo {
   return "OUTRO";
 }
 
+// "label" é um getter para seguir o idioma atual sempre que é lido
+const opcaoTipo = (valor: GrupoTipo | "TODOS", chave: string) => ({
+  valor,
+  get label() {
+    return i18n.t(`comum.tiposFicheiro.${chave}`);
+  },
+});
+
 export const OPCOES_TIPO: { valor: GrupoTipo | "TODOS"; label: string }[] = [
-  { valor: "TODOS", label: "Todos os Tipos" },
-  { valor: "WORD", label: "Word" },
-  { valor: "PDF", label: "PDF" },
-  { valor: "IMAGEM", label: "Imagem" },
-  { valor: "OUTRO", label: "Outro" },
+  opcaoTipo("TODOS", "todos"),
+  opcaoTipo("WORD", "word"),
+  opcaoTipo("PDF", "pdf"),
+  opcaoTipo("IMAGEM", "imagem"),
+  opcaoTipo("OUTRO", "outro"),
 ];

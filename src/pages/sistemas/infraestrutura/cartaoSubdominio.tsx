@@ -2,6 +2,7 @@ import type { SubdominioDoSistema, TipoAmbiente } from "../../../hooks/useSistem
 import { IconDominio } from "../../../components/icons";
 import CartaoInfra, { LinhaInfra } from "./cartaoInfra";
 import { rotuloAmbiente } from "./constantes";
+import { useTranslation } from "react-i18next";
 
 interface CartaoSubdominioProps {
   ambiente: TipoAmbiente;
@@ -11,10 +12,11 @@ interface CartaoSubdominioProps {
 
 // O subdomínio é do sistema (regista-se no formulário do sistema): aqui só se mostra
 export default function CartaoSubdominio({ ambiente, subdominio, ehAdmin }: CartaoSubdominioProps) {
+  const { t } = useTranslation();
   return (
     <CartaoInfra
-      titulo="Endereço público"
-      subtitulo={`DNS · ${rotuloAmbiente(ambiente)}`}
+      titulo={t("sistemas.infraestrutura.subdominio.titulo")}
+      subtitulo={t("sistemas.infraestrutura.subdominio.subtitulo", { ambiente: rotuloAmbiente(ambiente) })}
       Icone={IconDominio}
       classeIcone="bg-emerald-50 text-emerald-700"
     >
@@ -29,10 +31,10 @@ export default function CartaoSubdominio({ ambiente, subdominio, ehAdmin }: Cart
             {subdominio.nomeCompleto}
           </a>
           <dl className="divide-y divide-slate-100 border-t border-slate-100 pt-2">
-            <LinhaInfra rotulo="Domínio">{subdominio.dominio.nome}</LinhaInfra>
-            <LinhaInfra rotulo="Registo">{subdominio.tipoDns}</LinhaInfra>
+            <LinhaInfra rotulo={t("sistemas.infraestrutura.subdominio.dominio")}>{subdominio.dominio.nome}</LinhaInfra>
+            <LinhaInfra rotulo={t("sistemas.infraestrutura.subdominio.registo")}>{subdominio.tipoDns}</LinhaInfra>
             {subdominio.destino && (
-              <LinhaInfra rotulo="Destino">
+              <LinhaInfra rotulo={t("sistemas.infraestrutura.subdominio.destino")}>
                 <span className="font-mono text-xs">{subdominio.destino}</span>
               </LinhaInfra>
             )}
@@ -40,8 +42,8 @@ export default function CartaoSubdominio({ ambiente, subdominio, ehAdmin }: Cart
         </div>
       ) : (
         <p className="text-xs text-slate-400 italic">
-          Este ambiente ainda não tem subdomínio.
-          {ehAdmin ? " Defina-o ao editar o sistema." : ""}
+          {t("sistemas.infraestrutura.subdominio.semSubdominio")}
+          {ehAdmin ? t("sistemas.infraestrutura.subdominio.definirAoEditar") : ""}
         </p>
       )}
     </CartaoInfra>

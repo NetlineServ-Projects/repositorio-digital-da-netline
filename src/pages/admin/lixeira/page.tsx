@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { Trans, useTranslation } from "react-i18next";
 import { useLixeiraData } from "../../../hooks/useLixeiraData";
+import { useConfirmacao } from "../../../components/confirmacao";
+import { useAcoesEmCurso } from "../../../hooks/useAcoesEmCurso";
+import { EstadoCarregando, EstadoErro, EstadoVazio, IndicadorAtualizar } from "../../../components/estados";
 
 // Dias até à exclusão definitiva (vermelho quando faltam 5 ou menos)
 function BadgeDiasRestantes({ dias }: { dias: number }) {
+  const { t } = useTranslation();
   return (
     <span
       className={`inline-flex items-center shrink-0 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -12,22 +17,27 @@ function BadgeDiasRestantes({ dias }: { dias: number }) {
           : "bg-amber-50 text-amber-700 border border-amber-200"
       }`}
     >
-      {dias === 0 ? "Expira hoje" : `${dias} ${dias === 1 ? "dia" : "dias"}`}
+      {dias === 0 ? t("admin.lixeira.expiraHoje") : t("admin.lixeira.dias", { count: dias })}
     </span>
   );
 }
 
 export default function LixeiraPage() {
+  const { t } = useTranslation();
   const {
     documentos,
     loading,
+    aAtualizar,
     erro,
+    refetch,
     restaurar,
     excluirDefinitivo,
     esvaziar,
   } = useLixeiraData();
 
   const [termoPesquisa, setTermoPesquisa] = useState("");
+  const confirmar = useConfirmacao();
+  const { executar, estaEmCurso } = useAcoesEmCurso();
 
   // =========================================================
   // FORMATAR TAMANHO
@@ -37,13 +47,13 @@ export default function LixeiraPage() {
     bytes?: string | number | null,
   ): string => {
     if (bytes === undefined || bytes === null || bytes === "") {
-      return "N/D";
+      return t("admin.lixeira.semTamanho");
     }
 
     const numBytes = Number(bytes);
 
     if (Number.isNaN(numBytes)) {
-      return "N/D";
+      return t("admin.lixeira.semTamanho");
     }
 
     if (numBytes === 0) {
@@ -102,103 +112,65 @@ export default function LixeiraPage() {
   // RESTAURAR DOCUMENTO
   // =========================================================
 
-  const handleRestaurar = async (
-    id: number,
-    titulo: string,
-  ) => {
+  const handleRestaurar = (id: number, titulo: string) =>
+    executar(id, async () => {
+      try {
+        await restaurar(id);
+        toast.success(t("admin.lixeira.restaurado", { titulo }));
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : t("comum.erros.restaurarDocumento"));
+      }
+    });
+
+  // =========================================================
+  // ELIMINAR DEFINITIVAMENTE
+  // =========================================================
+
+  const handleExcluirDefinitivo = async (id: number, titulo: string) => {
     try {
-      await restaurar(id);
-      toast.success(`O documento "${titulo}" foi restaurado com sucesso.`);
+      const apagado = await confirmar({
+        titulo: t("admin.lixeira.modalEliminar.titulo"),
+        mensagem: (
+          <Trans
+            i18nKey="admin.lixeira.modalEliminar.mensagem"
+            values={{ titulo }}
+            components={{ destaque: <span className="font-semibold text-slate-800" /> }}
+          />
+        ),
+        textoConfirmar: t("admin.lixeira.modalEliminar.confirmar"),
+        textoCarregando: t("admin.lixeira.modalEliminar.aEliminar"),
+        perigoso: true,
+        acao: () => excluirDefinitivo(id),
+      });
+      if (apagado) toast.success(t("admin.lixeira.eliminado", { titulo }));
     } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Erro ao restaurar o documento.",
-      );
+      toast.error(error instanceof Error ? error.message : t("comum.erros.eliminarDocumento"));
     }
   };
 
   // =========================================================
-  // ELIMINAR DEFINITIVAMENTE (CONFIRMAÇÃO COM SONNER)
+  // ESVAZIAR LIXEIRA
   // =========================================================
 
-  const handleExcluirDefinitivo = (
-    id: number,
-    titulo: string,
-  ) => {
-    toast.custom((t) => (
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg max-w-sm w-full space-y-3">
-        <p className="text-sm font-medium text-slate-800">
-          Deseja apagar <span className="font-bold">"{titulo}"</span> definitivamente?
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={() => toast.dismiss(t)}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={async () => {
-              toast.dismiss(t);
-              try {
-                await excluirDefinitivo(id);
-                toast.success(`O documento "${titulo}" foi eliminado.`);
-              } catch (error) {
-                toast.error(
-                  error instanceof Error
-                    ? error.message
-                    : "Erro ao eliminar o documento.",
-                );
-              }
-            }}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-          >
-            Apagar
-          </button>
-        </div>
-      </div>
-    ));
-  };
-
-  // =========================================================
-  // ESVAZIAR LIXEIRA (CONFIRMAÇÃO COM SONNER)
-  // =========================================================
-
-  const handleEsvaziar = () => {
-    toast.custom((t) => (
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg max-w-sm w-full space-y-3">
-        <p className="text-sm font-medium text-slate-800">
-          Tem certeza que deseja apagar <span className="font-bold">todos os itens</span> da lixeira definitivamente?
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={() => toast.dismiss(t)}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={async () => {
-              toast.dismiss(t);
-              try {
-                await esvaziar();
-                toast.success("A lixeira foi esvaziada completamente.");
-              } catch (error) {
-                toast.error(
-                  error instanceof Error
-                    ? error.message
-                    : "Erro ao esvaziar a lixeira.",
-                );
-              }
-            }}
-            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-          >
-            Esvaziar Tudo
-          </button>
-        </div>
-      </div>
-    ));
+  const handleEsvaziar = async () => {
+    try {
+      const esvaziada = await confirmar({
+        titulo: t("admin.lixeira.modalEsvaziar.titulo"),
+        mensagem: (
+          <Trans
+            i18nKey="admin.lixeira.modalEsvaziar.mensagem"
+            components={{ destaque: <span className="font-semibold text-slate-800" /> }}
+          />
+        ),
+        textoConfirmar: t("admin.lixeira.modalEsvaziar.confirmar"),
+        textoCarregando: t("admin.lixeira.modalEsvaziar.aEsvaziar"),
+        perigoso: true,
+        acao: esvaziar,
+      });
+      if (esvaziada) toast.success(t("admin.lixeira.esvaziada"));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("comum.erros.esvaziarLixeira"));
+    }
   };
 
   // =========================================================
@@ -218,13 +190,7 @@ export default function LixeiraPage() {
   // =========================================================
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-12">
-        <p className="text-slate-500 font-medium text-sm animate-pulse">
-          A carregar itens da lixeira...
-        </p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("admin.lixeira.carregando")} />;
   }
 
   // =========================================================
@@ -233,21 +199,11 @@ export default function LixeiraPage() {
 
   if (erro) {
     return (
-      <div className="w-full bg-white rounded-2xl border border-red-100 shadow-sm p-8">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-            !
-          </div>
-
-          <h3 className="text-base font-bold text-slate-700">
-            Não foi possível carregar a lixeira
-          </h3>
-
-          <p className="text-sm text-slate-500 mt-2">
-            {erro}
-          </p>
-        </div>
-      </div>
+      <EstadoErro
+        titulo={t("admin.lixeira.erroTitulo")}
+        mensagem={erro}
+        onTentarNovamente={refetch}
+      />
     );
   }
 
@@ -259,14 +215,14 @@ export default function LixeiraPage() {
     <div className="w-full space-y-6">
 
       {/* BANNER SUPERIOR */}
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
         <div>
           <span className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
-            REPOSITÓRIO
+            {t("documentos.repositorio")}
           </span>
-          <h1 className="text-2xl sm:text-3xl font-bold mt-1">Lixeira do Repositório</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mt-1">{t("admin.lixeira.titulo")}</h1>
           <p className="text-sm text-blue-100/90 mt-1">
-            Os itens descartados são mantidos por até 30 dias antes de serem apagados definitivamente.
+            {t("admin.lixeira.subtitulo")}
           </p>
         </div>
 
@@ -276,20 +232,20 @@ export default function LixeiraPage() {
             onClick={handleEsvaziar}
             className="px-4 py-2.5 bg-red-50/10 hover:bg-red-500/20 text-red-200 font-medium rounded-xl text-sm transition-colors border border-red-400/30 w-full sm:w-auto sm:self-auto cursor-pointer whitespace-nowrap backdrop-blur-sm"
           >
-            Esvaziar Lixeira
+            {t("admin.lixeira.esvaziar")}
           </button>
         )}
       </div>
 
       {/* BARRA DE PESQUISA */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-        <div className="relative max-w-md">
+      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex items-center justify-between gap-3">
+        <div className="relative max-w-md w-full">
           <input
             type="text"
             value={termoPesquisa}
             onChange={(e) => setTermoPesquisa(e.target.value)}
-            placeholder="Pesquisar por documento ou autor..."
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1b365d]/20 focus:border-[#1b365d] transition-all"
+            placeholder={t("documentos.pesquisarPlaceholder")}
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-netline-azul/20 focus:border-netline-azul transition-all"
           />
           <svg
             className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"
@@ -305,16 +261,17 @@ export default function LixeiraPage() {
             />
           </svg>
         </div>
+        <IndicadorAtualizar ativo={aAtualizar} />
       </div>
 
       {/* CONTAINER DA TABELA */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
-        {documentosFiltrados.length > 0 ? (
+      {documentosFiltrados.length > 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6">
           <>
           {/* Telemóvel: um cartão por documento, com as mesmas ações da tabela */}
           <ul className="xl:hidden divide-y divide-slate-100">
             {documentosFiltrados.map((documento) => {
-              const titulo = documento.titulo || "Documento sem título";
+              const titulo = documento.titulo || t("comum.documentoSemTitulo");
               const diasRestantes = calcularDiasRestantes(documento.apagadoEm);
 
               return (
@@ -325,28 +282,29 @@ export default function LixeiraPage() {
                         {titulo}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5 truncate">
-                        Por: {documento.usuario?.nome || "Sistema"} · {formatarTamanho(documento.tamanho)}
+                        {t("admin.lixeira.por", { autor: documento.usuario?.nome || t("componentes.documento.sistema") })} · {formatarTamanho(documento.tamanho)}
                       </p>
                     </div>
                     <BadgeDiasRestantes dias={diasRestantes} />
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="bg-slate-100 px-2.5 py-1 rounded-md text-xs text-slate-600 font-medium mr-auto">
-                      {documento.categoria?.nome || "Geral"}
+                      {documento.categoria?.nome || t("dashboard.documentosRecentes.geral")}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleRestaurar(documento.id, titulo)}
-                      className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer"
+                      disabled={estaEmCurso(documento.id)}
+                      className="disabled:opacity-50 disabled:cursor-wait px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer"
                     >
-                      Restaurar
+                      {t("admin.lixeira.restaurar")}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleExcluirDefinitivo(documento.id, titulo)}
                       className="px-3 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200 cursor-pointer"
                     >
-                      Apagar
+                      {t("comum.apagar")}
                     </button>
                   </div>
                 </li>
@@ -358,24 +316,24 @@ export default function LixeiraPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 text-xs uppercase font-semibold">
-                  <th className="py-3 px-4">Documento</th>
-                  <th className="py-3 px-4">Categoria</th>
-                  <th className="py-3 px-4">Tamanho</th>
-                  <th className="py-3 px-4">Exclusão definitiva em</th>
-                  <th className="py-3 px-4 text-right">Ações</th>
+                  <th className="py-3 px-4">{t("documentos.tabela.documento")}</th>
+                  <th className="py-3 px-4">{t("documentos.tabela.categoria")}</th>
+                  <th className="py-3 px-4">{t("documentos.detalhes.tamanho")}</th>
+                  <th className="py-3 px-4">{t("admin.lixeira.eliminacaoEm")}</th>
+                  <th className="py-3 px-4 text-right">{t("comum.acoes")}</th>
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100 text-sm">
                 {documentosFiltrados.map((documento) => {
                   const titulo =
-                    documento.titulo || "Documento sem título";
+                    documento.titulo || t("comum.documentoSemTitulo");
 
                   const categoria =
-                    documento.categoria?.nome || "Geral";
+                    documento.categoria?.nome || t("dashboard.documentosRecentes.geral");
 
                   const autor =
-                    documento.usuario?.nome || "Sistema";
+                    documento.usuario?.nome || t("componentes.documento.sistema");
 
                   const diasRestantes =
                     calcularDiasRestantes(documento.apagadoEm);
@@ -393,7 +351,7 @@ export default function LixeiraPage() {
                           {titulo}
                         </div>
                         <span className="text-xs text-slate-400">
-                          Por: {autor}
+                          {t("admin.lixeira.por", { autor })}
                         </span>
                       </td>
 
@@ -417,9 +375,10 @@ export default function LixeiraPage() {
                           onClick={() =>
                             handleRestaurar(documento.id, titulo)
                           }
-                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer mr-2"
+                          disabled={estaEmCurso(documento.id)}
+                          className="disabled:opacity-50 disabled:cursor-wait px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium rounded-lg text-xs transition-colors border border-emerald-200 cursor-pointer mr-2"
                         >
-                          Restaurar
+                          {t("admin.lixeira.restaurar")}
                         </button>
 
                         <button
@@ -429,7 +388,7 @@ export default function LixeiraPage() {
                           }
                           className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200 cursor-pointer"
                         >
-                          Apagar
+                          {t("comum.apagar")}
                         </button>
                       </td>
                     </tr>
@@ -439,24 +398,17 @@ export default function LixeiraPage() {
             </table>
           </div>
           </>
-        ) : (
-          <div className="py-16 text-center">
-            <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-              {termoPesquisa ? "🔍" : "✓"}
-            </div>
-            <h3 className="text-base font-bold text-slate-700">
-              {termoPesquisa
-                ? "Nenhum resultado encontrado"
-                : "A lixeira está vazia"}
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              {termoPesquisa
-                ? `Não foram encontrados documentos correspondentes a "${termoPesquisa}".`
-                : "Nenhum documento descartado recentemente no repositório."}
-            </p>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <EstadoVazio
+          mensagem={termoPesquisa ? t("admin.lixeira.semResultados") : t("admin.lixeira.vazia")}
+          descricao={
+            termoPesquisa
+              ? t("admin.lixeira.semResultadosDescricao", { termo: termoPesquisa })
+              : t("admin.lixeira.vaziaDescricao")
+          }
+        />
+      )}
 
     </div>
   );

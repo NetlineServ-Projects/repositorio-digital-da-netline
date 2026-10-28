@@ -22,7 +22,7 @@ const ESTILOS: Record<
 > = {
   raiz: {
     Icone: IconCloud,
-    caixa: "bg-[#18357a] border-[#18357a] text-white",
+    caixa: "bg-netline-azul border-netline-azul text-white",
     icone: "bg-white/15 text-white",
   },
   plataforma: {

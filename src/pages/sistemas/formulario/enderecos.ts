@@ -4,6 +4,7 @@ import type {
   TipoDns,
 } from "../../../hooks/useSistemasData";
 import { TIPO_DNS_PADRAO, registoUsaServidor } from "../infraestrutura/constantes";
+import i18n from "../../../lang/i18n";
 
 // O que o formulário guarda de cada ambiente (Produção ou Testes)
 export interface EstadoEndereco {
@@ -51,18 +52,18 @@ export function estadoInicialEndereco(
   };
 }
 
-// Devolve a mensagem de erro, ou null se estiver tudo preenchido
+// Devolve a mensagem de erro (traduzida), ou null se estiver tudo preenchido. "titulo" é o nome do ambiente
 export function validarEndereco(titulo: string, estado: EstadoEndereco): string | null {
   if (!estado.temSubdominio) return null;
 
-  if (!estado.dominioId) return `${titulo}: escolha o domínio do subdomínio.`;
+  if (!estado.dominioId) return i18n.t("sistemas.endereco.erros.dominio", { ambiente: titulo });
   if (!estado.nome.trim()) {
-    return `${titulo}: indique o nome do subdomínio (ou "@" para a raiz do domínio).`;
+    return i18n.t("sistemas.endereco.erros.nome", { ambiente: titulo });
   }
   if (registoUsaServidor(estado.tipoDns)) {
-    if (!estado.servidorId) return `${titulo}: escolha o servidor do registo.`;
+    if (!estado.servidorId) return i18n.t("sistemas.endereco.erros.servidor", { ambiente: titulo });
   } else if (!estado.destino.trim()) {
-    return `${titulo}: indique o destino do registo.`;
+    return i18n.t("sistemas.endereco.erros.destino", { ambiente: titulo });
   }
   return null;
 }

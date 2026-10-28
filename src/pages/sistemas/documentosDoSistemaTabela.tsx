@@ -9,6 +9,8 @@ import type { Categoria } from "../../types/documento";
 import { formatarTamanho, obterUrlFicheiro } from "../../utils/documentos";
 import { classificarTipo, OPCOES_TIPO } from "../../utils/tipoDocumento";
 import { API_URL } from "../../utils/api";
+import { useTranslation } from "react-i18next";
+import i18n from "../../lang/i18n";
 
 interface DocumentosDoSistemaTabelaProps {
   documentos: Documento[];
@@ -33,13 +35,14 @@ function AcoesDocumento({
   onApagar: (id: number) => void;
   ehAdmin: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-end gap-2">
       <Link
         to={`/dashboard/documentos/${doc.id}`}
         className="p-2 lg:p-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors border border-slate-200/60"
-        title="Ver documento"
-        aria-label="Ver documento"
+        title={t("comum.verDocumento")}
+        aria-label={t("comum.verDocumento")}
       >
         <IconVer />
       </Link>
@@ -47,8 +50,8 @@ function AcoesDocumento({
         href={obterUrlFicheiro(doc.caminho, API_URL)}
         download={doc.nomeArquivo}
         className="p-2 lg:p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 rounded-lg transition-colors border border-blue-100"
-        title="Descarregar ficheiro"
-        aria-label="Descarregar ficheiro"
+        title={t("sistemas.documentos.descarregar")}
+        aria-label={t("sistemas.documentos.descarregar")}
       >
         <IconDownload />
       </a>
@@ -56,14 +59,14 @@ function AcoesDocumento({
         onClick={() => onEditar(doc)}
         className="px-3 py-2 lg:py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-900 text-xs font-semibold rounded-lg transition-colors border border-blue-100"
       >
-        Editar
+        {t("comum.editar")}
       </button>
       {ehAdmin && (
         <button
           onClick={() => onApagar(doc.id)}
           className="px-3 py-2 lg:py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-semibold rounded-lg transition-colors"
         >
-          Apagar
+          {t("comum.apagar")}
         </button>
       )}
     </div>
@@ -71,7 +74,7 @@ function AcoesDocumento({
 }
 
 function dataDoc(doc: Documento) {
-  return doc.dataSubmissao ? new Date(doc.dataSubmissao).toLocaleDateString("pt-PT") : "-";
+  return doc.dataSubmissao ? new Date(doc.dataSubmissao).toLocaleDateString(i18n.language === "en" ? "en-GB" : "pt-PT") : "-";
 }
 
 export default function DocumentosDoSistemaTabela({
@@ -83,6 +86,7 @@ export default function DocumentosDoSistemaTabela({
   onApagar,
   ehAdmin,
 }: DocumentosDoSistemaTabelaProps) {
+  const { t } = useTranslation();
   const [categoriaFiltro, setCategoriaFiltro] = useState<string[]>([]);
   const [autorFiltro, setAutorFiltro] = useState<string[]>([]);
   const [tipoFiltro, setTipoFiltro] = useState<string[]>([]);
@@ -104,11 +108,11 @@ export default function DocumentosDoSistemaTabela({
 
   const opcoesTipos = useMemo(
     () =>
-      OPCOES_TIPO.filter((t) => t.valor !== "TODOS").map((t) => ({
-        valor: t.valor,
-        label: t.label,
+      OPCOES_TIPO.filter((o) => o.valor !== "TODOS").map((o) => ({
+        valor: o.valor,
+        label: t(`sistemas.documentos.tipos.${o.valor}`),
       })),
-    [],
+    [t],
   );
 
   const documentosFiltrados = useMemo(() => {
@@ -145,13 +149,13 @@ export default function DocumentosDoSistemaTabela({
       <div className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h3 className="font-bold text-slate-800 text-sm">
-            Documentos do Sistema ({documentosFiltrados.length})
+            {t("sistemas.documentos.titulo", { count: documentosFiltrados.length })}
           </h3>
 
           <div className="w-full sm:w-64 relative">
             <input
               type="text"
-              placeholder="Pesquisar ficheiro..."
+              placeholder={t("sistemas.documentos.pesquisarPlaceholder")}
               value={busca}
               onChange={(e) => onBuscaChange(e.target.value)}
               className="w-full pl-3 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900/20 text-slate-800 placeholder-slate-400 transition-all"
@@ -163,8 +167,8 @@ export default function DocumentosDoSistemaTabela({
         <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-2 lg:flex lg:flex-wrap lg:items-center gap-3 pt-1">
           <div className="lg:w-48">
             <FilterSelect
-              label="Categoria"
-              placeholder="Todas as Categorias"
+              label={t("documentos.categoria")}
+              placeholder={t("documentos.todasCategorias")}
               opcoes={opcoesCategorias}
               selecionados={categoriaFiltro}
               onChange={setCategoriaFiltro}
@@ -173,8 +177,8 @@ export default function DocumentosDoSistemaTabela({
 
           <div className="lg:w-48">
             <FilterSelect
-              label="Autor"
-              placeholder="Todos os Autores"
+              label={t("comum.autor")}
+              placeholder={t("comum.todosAutores")}
               opcoes={opcoesAutores}
               selecionados={autorFiltro}
               onChange={setAutorFiltro}
@@ -183,8 +187,8 @@ export default function DocumentosDoSistemaTabela({
 
           <div className="lg:w-48">
             <FilterSelect
-              label="Tipo"
-              placeholder="Todos os Tipos"
+              label={t("sistemas.documentos.tipo")}
+              placeholder={t("comum.todosTipos")}
               opcoes={opcoesTipos}
               selecionados={tipoFiltro}
               onChange={setTipoFiltro}
@@ -196,7 +200,7 @@ export default function DocumentosDoSistemaTabela({
               onClick={limparFiltros}
               className="text-xs text-rose-600 font-semibold hover:underline px-1 py-1 rounded transition-colors self-end mb-1"
             >
-              Limpar filtros
+              {t("comum.limparFiltros")}
             </button>
           )}
         </div>
@@ -212,10 +216,10 @@ export default function DocumentosDoSistemaTabela({
                 <IconPasta className="text-blue-900 shrink-0 mt-0.5" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-sm text-slate-800 break-all">
-                    {doc.titulo || doc.nomeArquivo || "Ficheiro sem nome"}
+                    {doc.titulo || doc.nomeArquivo || t("sistemas.documentos.semNome")}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    {doc.usuario?.nome || "Sistema"} · {formatarTamanho(doc.tamanho)} · {dataDoc(doc)}
+                    {doc.usuario?.nome || t("sistemas.documentos.autorSistema")} · {formatarTamanho(doc.tamanho)} · {dataDoc(doc)}
                   </p>
                 </div>
               </div>
@@ -230,7 +234,7 @@ export default function DocumentosDoSistemaTabela({
           ))
         ) : (
           <li className="text-center py-10 px-4 text-slate-400 text-xs">
-            Nenhum documento encontrado para este sistema com os critérios selecionados.
+            {t("sistemas.documentos.vazio")}
           </li>
         )}
       </ul>
@@ -240,12 +244,12 @@ export default function DocumentosDoSistemaTabela({
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-400 uppercase text-[11px] border-b border-slate-100 tracking-wider">
             <tr>
-              <th className="py-3 px-4 font-semibold">Documento</th>
-              <th className="py-3 px-4 font-semibold">Estado</th>
-              <th className="py-3 px-4 font-semibold">Autor</th>
-              <th className="py-3 px-4 font-semibold">Tamanho</th>
-              <th className="py-3 px-4 font-semibold">Data</th>
-              <th className="py-3 px-4 font-semibold text-right">Ações</th>
+              <th className="py-3 px-4 font-semibold">{t("sistemas.documentos.colunas.documento")}</th>
+              <th className="py-3 px-4 font-semibold">{t("sistemas.documentos.colunas.estado")}</th>
+              <th className="py-3 px-4 font-semibold">{t("sistemas.documentos.colunas.autor")}</th>
+              <th className="py-3 px-4 font-semibold">{t("sistemas.documentos.colunas.tamanho")}</th>
+              <th className="py-3 px-4 font-semibold">{t("sistemas.documentos.colunas.data")}</th>
+              <th className="py-3 px-4 font-semibold text-right">{t("comum.acoes")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -258,7 +262,7 @@ export default function DocumentosDoSistemaTabela({
                   <td className="py-3.5 px-4 font-semibold text-slate-800 flex items-center gap-2.5">
                     <IconPasta className="text-blue-900 shrink-0" />
                     <span className="truncate max-w-xs sm:max-w-md">
-                      {doc.titulo || doc.nomeArquivo || "Ficheiro sem nome"}
+                      {doc.titulo || doc.nomeArquivo || t("sistemas.documentos.semNome")}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
@@ -270,7 +274,7 @@ export default function DocumentosDoSistemaTabela({
                     )}
                   </td>
                   <td className="py-3.5 px-4 text-xs text-slate-600">
-                    {doc.usuario?.nome || "Sistema"}
+                    {doc.usuario?.nome || t("sistemas.documentos.autorSistema")}
                   </td>
                   <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
                     {formatarTamanho(doc.tamanho)}
@@ -289,8 +293,7 @@ export default function DocumentosDoSistemaTabela({
                   colSpan={6}
                   className="text-center py-10 text-slate-400 text-xs"
                 >
-                  Nenhum documento encontrado para este sistema com os critérios
-                  selecionados.
+                  {t("sistemas.documentos.vazio")}
                 </td>
               </tr>
             )}

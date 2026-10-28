@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import logoNetline from "../../assets/netline.jpg";
 
+// Rótulos em home.navegacao.<chave>
 const LINKS = [
-  { href: "#inicio", rotulo: "Início" },
-  { href: "#sobrenos", rotulo: "A plataforma" },
-  { href: "#como-funciona", rotulo: "Como funciona" },
-  { href: "#suporte", rotulo: "Suporte" },
+  { href: "#inicio", chave: "inicio" },
+  { href: "#sobrenos", chave: "plataforma" },
+  { href: "#como-funciona", chave: "comoFunciona" },
+  { href: "#suporte", chave: "suporte" },
 ];
 
 // Barra flutuante: transparente sobre o hero, com fundo de vidro depois de fazer scroll
 export default function Header() {
+  const { t } = useTranslation();
   const [menuAberto, setMenuAberto] = useState(false);
   const [comScroll, setComScroll] = useState(false);
 
@@ -35,23 +38,23 @@ export default function Header() {
         <div className="flex justify-between items-center h-16 px-4 sm:px-5">
           <a href="#inicio" className="flex items-center gap-3 min-w-0">
             <span className="w-10 h-10 rounded-xl bg-[#f7f7f7] flex items-center justify-center shrink-0 ring-1 ring-black/5 overflow-hidden">
-              <img src={logoNetline} alt="Logótipo Netline" className="w-9 h-9 object-contain" />
+              <img src={logoNetline} alt={t("home.logotipo")} className="w-9 h-9 object-contain" />
             </span>
             <span className={`font-['Poppins'] text-lg font-bold tracking-tight truncate ${solido ? "text-slate-900" : "text-white"}`}>
-              Netline <span className="text-[#e3c234]">Serv</span>
+              Netline <span className="text-netline-amarelo">Serv</span>
             </span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-1" aria-label="Secções">
+          <nav className="hidden md:flex items-center gap-1" aria-label={t("home.navegacao.seccoes")}>
             {LINKS.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
                 className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  solido ? "text-slate-600 hover:text-[#18357a] hover:bg-slate-100" : "text-white/80 hover:text-white hover:bg-white/10"
+                  solido ? "text-slate-600 hover:text-netline-azul hover:bg-slate-100" : "text-white/80 hover:text-white hover:bg-white/10"
                 }`}
               >
-                {l.rotulo}
+                {t(`home.navegacao.${l.chave}`)}
               </a>
             ))}
           </nav>
@@ -59,9 +62,9 @@ export default function Header() {
           <div className="hidden md:block">
             <Link
               to="/autenticacao"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#e3c234] hover:bg-[#d4b225] text-[#0b1f4d] text-sm font-bold shadow-md shadow-[#e3c234]/25 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-netline-amarelo hover:bg-[#d4b225] text-netline-marinho text-sm font-bold shadow-md shadow-netline-amarelo/25 transition-colors"
             >
-              Iniciar sessão
+              {t("home.iniciarSessao")}
               <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -72,7 +75,7 @@ export default function Header() {
             className={`md:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
               solido ? "text-slate-700 hover:bg-slate-100" : "text-white hover:bg-white/10"
             }`}
-            aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
+            aria-label={menuAberto ? t("home.navegacao.fecharMenu") : t("home.navegacao.abrirMenu")}
             aria-expanded={menuAberto}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -94,15 +97,15 @@ export default function Header() {
                 onClick={() => setMenuAberto(false)}
                 className="block px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
-                {l.rotulo}
+                {t(`home.navegacao.${l.chave}`)}
               </a>
             ))}
             <Link
               to="/autenticacao"
               onClick={() => setMenuAberto(false)}
-              className="block mt-2 text-center px-4 py-3 rounded-xl bg-[#e3c234] text-[#0b1f4d] text-sm font-bold"
+              className="block mt-2 text-center px-4 py-3 rounded-xl bg-netline-amarelo text-netline-marinho text-sm font-bold"
             >
-              Iniciar sessão
+              {t("home.iniciarSessao")}
             </Link>
           </div>
         )}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { SistemaDaPlataforma } from "../../types/plataforma";
 import { IconSistemas, IconSetaDireita } from "../icons";
 import { rotuloStatus } from "../../utils/status";
@@ -8,6 +9,7 @@ const CLASSE_CAMADA = "px-2 py-0.5 rounded-md text-[11px] font-semibold border m
 
 // Um sistema que usa a plataforma, com o que lá está: o frontend e/ou o backend (por ambiente)
 export default function CartaoSistemaHospedado({ sistema }: { sistema: SistemaDaPlataforma }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={`/dashboard/sistemas/${sistema.id}`}
@@ -25,16 +27,22 @@ export default function CartaoSistemaHospedado({ sistema }: { sistema: SistemaDa
 
       <div className="flex flex-wrap gap-1.5">
         {sistema.frontend && (
-          <span className={`${CLASSE_CAMADA} bg-[#d99b26]/10 text-[#8a5f0e] border-[#d99b26]/25`}>Frontend</span>
+          <span className={`${CLASSE_CAMADA} bg-netline-dourado/10 text-[#8a5f0e] border-netline-dourado/25`}>{t("plataformas.comum.frontend")}</span>
         )}
         {sistema.backend.map((b, i) => (
           <span
             key={`${b.ambiente}-${i}`}
             className={`${CLASSE_CAMADA} bg-blue-50 text-blue-900 border-blue-100`}
-            title={b.viaImagem ? `Usa a imagem ${b.imagem}` : b.servidor ? `No servidor ${b.servidor}` : undefined}
+            title={
+              b.viaImagem
+                ? t("plataformas.cartoes.usaImagem", { imagem: b.imagem })
+                : b.servidor
+                  ? t("plataformas.cartoes.noServidor", { servidor: b.servidor })
+                  : undefined
+            }
           >
             {/* Num registo, o sistema usa uma imagem guardada aqui (mas corre noutra plataforma) */}
-            {b.viaImagem ? "Imagem" : "Backend"} · {ROTULO_AMBIENTE[b.ambiente]}
+            {b.viaImagem ? t("plataformas.comum.imagem") : t("plataformas.comum.backend")} · {ROTULO_AMBIENTE[b.ambiente]}
             {(b.viaImagem ? b.imagem : b.servidor) && (
               <span className="font-normal text-blue-900/70"> · {b.viaImagem ? b.imagem : b.servidor}</span>
             )}
@@ -43,7 +51,7 @@ export default function CartaoSistemaHospedado({ sistema }: { sistema: SistemaDa
       </div>
 
       <span className="mt-auto text-[11px] font-semibold text-blue-900 flex items-center gap-1">
-        Ver sistema <IconSetaDireita className="w-3 h-3" />
+        {t("plataformas.cartoes.verSistema")} <IconSetaDireita className="w-3 h-3" />
       </span>
     </Link>
   );

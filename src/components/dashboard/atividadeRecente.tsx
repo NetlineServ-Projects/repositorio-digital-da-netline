@@ -56,13 +56,13 @@ export default function AtividadeRecente({
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-800">
               {ehAdmin
-                ? t("dashboard.atividadeRecente.titulo", "Atividades Recentes do Sistema")
-                : t("dashboard.atividadeRecente.minhasAtividades", "Minhas Atividades")}
+                ? t("dashboard.atividadeRecente.tituloAdmin")
+                : t("dashboard.atividadeRecente.minhasAtividades")}
             </h3>
             <p className="text-[11px] text-slate-400">
               {ehAdmin
-                ? "Ações de todos os funcionários e administradores"
-                : "Apenas as ações realizadas pela sua conta"}
+                ? t("dashboard.atividadeRecente.subtituloAdmin")
+                : t("dashboard.atividadeRecente.subtituloProprio")}
             </p>
           </div>
 
@@ -78,7 +78,7 @@ export default function AtividadeRecente({
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                Todos
+                {t("dashboard.atividadeRecente.filtroTodos")}
               </button>
               <button
                 type="button"
@@ -89,7 +89,7 @@ export default function AtividadeRecente({
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                Funcionários
+                {t("dashboard.atividadeRecente.filtroFuncionarios")}
               </button>
               <button
                 type="button"
@@ -100,7 +100,7 @@ export default function AtividadeRecente({
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                Admins
+                {t("dashboard.atividadeRecente.filtroAdmins")}
               </button>
             </div>
           )}
@@ -111,7 +111,7 @@ export default function AtividadeRecente({
       <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
         {atividadesFiltradas.length === 0 ? (
           <p className="text-slate-400 text-xs py-8 text-center italic">
-            {t("dashboard.atividadeRecente.semAtividade", "Sem atividade recente.")}
+            {t("dashboard.atividadeRecente.semAtividade")}
           </p>
         ) : (
           atividadesFiltradas.map((item) => {
@@ -136,7 +136,7 @@ export default function AtividadeRecente({
                             : "bg-slate-100 text-slate-600"
                         }`}
                       >
-                        {ehItemAdmin ? "Admin" : "Funcionário"}
+                        {ehItemAdmin ? t("dashboard.atividadeRecente.perfilAdmin") : t("dashboard.atividadeRecente.perfilFuncionario")}
                       </span>
                     )}{" "}
                     <span className="text-slate-600">{item.acao}</span>{" "}

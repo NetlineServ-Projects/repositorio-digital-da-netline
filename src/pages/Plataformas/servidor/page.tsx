@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { fetchComToken } from "../../../utils/api";
 import { API_ENDPOINTS } from "../../../data/client/endpoint";
 import { revelarPasswordServidor } from "../../../hooks/usePlataformasData";
@@ -29,7 +30,10 @@ import {
   formatarRam,
 } from "../../../utils/servidor";
 import type { Servidor } from "../../../types/plataforma";
+import { localeDatas } from "../../../types/plataformaConstantes";
 import PlataformaFormularioPage from "../formulario/page";
+import { useCarregamento } from "../../../hooks/useCarregamento";
+import { EstadoCarregando, EstadoErro } from "../../../components/estados";
 
 interface DashboardContext {
   usuario: { id?: number; nome: string; perfil?: string } | null;
@@ -38,7 +42,7 @@ interface DashboardContext {
 const LISTA_SERVIDORES = "/dashboard/plataformas?aba=servidores";
 
 function formatarData(iso?: string) {
-  return iso ? new Date(iso).toLocaleDateString("pt-PT") : "-";
+  return iso ? new Date(iso).toLocaleDateString(localeDatas()) : "-";
 }
 
 const CLASSE_ICONE_ESTADO: Record<Servidor["estado"], string> = {
@@ -65,6 +69,7 @@ function Campo({ rotulo, children }: { rotulo: string; children: ReactNode }) {
 }
 
 export default function ServidorDetalhePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,22 +77,15 @@ export default function ServidorDetalhePage() {
   const ehAdmin = usuario?.perfil === "ADMIN";
 
   const [servidor, setServidor] = useState<Servidor | null>(null);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
 
-  const carregar = useCallback(async () => {
-    setCarregando(true);
-    setErro(null);
-    try {
-      setServidor(await fetchComToken(API_ENDPOINTS.SERVIDOR_BY_ID(id!)));
-    } catch (e) {
-      setErro(e instanceof Error ? e.message : "Não foi possível carregar o servidor.");
-    } finally {
-      setCarregando(false);
-    }
-  }, [id]);
+  // Depois de editar, a recarga corre por trás: se falhar, o servidor fica no ecrã e aparece um aviso
+  const { carregando, erro, executar } = useCarregamento(t("plataformas.servidor.erroCarregar"));
+  const carregar = useCallback(
+    () => executar(() => fetchComToken(API_ENDPOINTS.SERVIDOR_BY_ID(id!)), setServidor),
+    [executar, id],
+  );
 
   useEffect(() => {
     carregar();
@@ -104,33 +102,24 @@ export default function ServidorDetalhePage() {
     setConfirmarEliminar(false);
     try {
       await fetchComToken(API_ENDPOINTS.SERVIDOR_BY_ID(servidor.id), { method: "DELETE" });
-      toast.success("Servidor eliminado com sucesso.");
+      toast.success(t("plataformas.servidor.eliminado"));
       navigate(LISTA_SERVIDORES, { replace: true });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erro ao eliminar o servidor.");
+      toast.error(e instanceof Error ? e.message : t("plataformas.servidor.erroEliminar"));
     }
   };
 
   if (carregando && !servidor) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">A carregar servidor...</p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("plataformas.servidor.aCarregar")} />;
   }
 
   if (erro || !servidor) {
     return (
-      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-center space-y-3">
-        <p className="text-red-600 text-sm font-medium">{erro || "Servidor não encontrado."}</p>
-        <div className="flex justify-center gap-4">
-          <button onClick={carregar} className="text-sm text-[#18357a] font-semibold hover:underline cursor-pointer">
-            Tentar novamente
-          </button>
-          <Link to={LISTA_SERVIDORES} className="text-sm text-slate-500 font-semibold hover:underline">
-            Voltar aos servidores
-          </Link>
-        </div>
+      <div className="space-y-3 text-center">
+        <EstadoErro mensagem={erro || t("plataformas.servidor.naoEncontrado")} onTentarNovamente={carregar} />
+        <Link to={LISTA_SERVIDORES} className="text-sm text-slate-500 font-semibold hover:underline">
+          {t("plataformas.servidor.voltarServidores")}
+        </Link>
       </div>
     );
   }
@@ -150,12 +139,12 @@ export default function ServidorDetalhePage() {
   return (
     <div className="space-y-6 pb-12">
       {/* ================= CABEÇALHO ================= */}
-      <div className="bg-[#18357a] text-white p-5 sm:p-8 rounded-2xl shadow-sm space-y-5">
+      <div className="bg-netline-azul text-white p-5 sm:p-8 rounded-2xl shadow-sm space-y-5">
         <button
           onClick={voltar}
           className="text-xs font-semibold text-blue-100/80 hover:text-white transition-colors cursor-pointer"
         >
-          ← Voltar
+          {t("plataformas.servidor.voltar")}
         </button>
 
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -165,7 +154,7 @@ export default function ServidorDetalhePage() {
             </div>
             <div className="min-w-0">
               <span className="text-xs uppercase font-semibold text-blue-200/80 tracking-widest block mb-1">
-                Servidor{servidor.plataforma ? ` · ${servidor.plataforma.nome}` : ""}
+                {t("plataformas.servidor.sobretitulo")}{servidor.plataforma ? ` · ${servidor.plataforma.nome}` : ""}
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold break-words lg:truncate">{servidor.nome}</h2>
               <p className="text-sm text-blue-100/80 font-mono mt-1 truncate">{servidor.hostname}</p>
@@ -174,9 +163,9 @@ export default function ServidorDetalhePage() {
 
           {ehAdmin && (
             <div className="flex items-center gap-2">
-              <BotaoIconeCabecalho rotulo="Editar servidor" Icone={IconCaneta} onClick={() => setEditando(true)} />
+              <BotaoIconeCabecalho rotulo={t("plataformas.servidor.editar")} Icone={IconCaneta} onClick={() => setEditando(true)} />
               <BotaoIconeCabecalho
-                rotulo="Eliminar servidor"
+                rotulo={t("plataformas.servidor.eliminar")}
                 Icone={IconLixeira}
                 perigoso
                 onClick={() => setConfirmarEliminar(true)}
@@ -189,12 +178,12 @@ export default function ServidorDetalhePage() {
       {/* ================= RECURSOS E ESTADO ================= */}
       {/* 2 colunas no telemóvel/tablet (o "Estado", 5.º cartão, ocupa a linha toda), 3 a 1024px e 5 a partir de xl */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
-        <CartaoIndicador rotulo="CPU" valor={`${servidor.numeroCpu} vCPU`} Icone={IconCpu} />
-        <CartaoIndicador rotulo="Memória RAM" valor={formatarRam(servidor)} Icone={IconMemoria} />
-        <CartaoIndicador rotulo="Disco" valor={formatarDisco(servidor)} Icone={IconDisco} />
-        <CartaoIndicador rotulo="Largura de banda" valor={formatarBanda(servidor)} Icone={IconVelocidade} />
+        <CartaoIndicador rotulo={t("plataformas.servidor.indicadores.cpu")} valor={`${servidor.numeroCpu} vCPU`} Icone={IconCpu} />
+        <CartaoIndicador rotulo={t("plataformas.servidor.indicadores.memoriaRam")} valor={formatarRam(servidor)} Icone={IconMemoria} />
+        <CartaoIndicador rotulo={t("plataformas.servidor.indicadores.disco")} valor={formatarDisco(servidor)} Icone={IconDisco} />
+        <CartaoIndicador rotulo={t("plataformas.servidor.indicadores.larguraBanda")} valor={formatarBanda(servidor)} Icone={IconVelocidade} />
         <CartaoIndicador
-          rotulo="Estado"
+          rotulo={t("plataformas.servidor.indicadores.estado")}
           valor={ROTULO_ESTADO_SERVIDOR[servidor.estado]}
           Icone={IconEstado}
           classeIcone={CLASSE_ICONE_ESTADO[servidor.estado]}
@@ -203,21 +192,21 @@ export default function ServidorDetalhePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* ================= LIGAÇÃO E ACESSO ================= */}
-        <Secao titulo="Ligação e acesso">
+        <Secao titulo={t("plataformas.servidor.ligacaoAcesso")}>
           <dl>
-            <Campo rotulo="Endereço IP">
+            <Campo rotulo={t("plataformas.servidor.ip")}>
               <span className="font-mono">{servidor.ip || "-"}</span>
             </Campo>
-            <Campo rotulo="Hostname">
+            <Campo rotulo={t("plataformas.servidor.hostname")}>
               <span className="font-mono">{servidor.hostname}</span>
             </Campo>
-            <Campo rotulo="Utilizador SSH">
+            <Campo rotulo={t("plataformas.servidor.utilizadorSsh")}>
               <span className="font-mono">{servidor.usernameSsh}</span>
             </Campo>
-            <Campo rotulo="Password SSH">
+            <Campo rotulo={t("plataformas.servidor.passwordSsh")}>
               <div className="flex sm:justify-end">
                 <SegredoRevelavel
-                  descricao={`password SSH do servidor ${servidor.nome}`}
+                  descricao={t("plataformas.servidor.passwordDescricao", { nome: servidor.nome })}
                   obter={(tokenElevado) => revelarPasswordServidor(servidor.id, tokenElevado)}
                 />
               </div>
@@ -226,15 +215,15 @@ export default function ServidorDetalhePage() {
         </Secao>
 
         {/* ================= SISTEMA E LOCALIZAÇÃO ================= */}
-        <Secao titulo="Sistema operativo e localização">
+        <Secao titulo={t("plataformas.servidor.soLocalizacao")}>
           <dl>
-            <Campo rotulo="Sistema operativo">
+            <Campo rotulo={t("plataformas.servidor.sistemaOperativo")}>
               {servidor.sistemaOperativo}
               {servidor.versaoSo && <span className="text-slate-500"> {servidor.versaoSo}</span>}
             </Campo>
-            <Campo rotulo="Cloud">{servidor.cloud || "-"}</Campo>
-            <Campo rotulo="Região">{servidor.regiao || "-"}</Campo>
-            <Campo rotulo="Plataforma">
+            <Campo rotulo={t("plataformas.servidor.cloud")}>{servidor.cloud || "-"}</Campo>
+            <Campo rotulo={t("plataformas.servidor.regiao")}>{servidor.regiao || "-"}</Campo>
+            <Campo rotulo={t("plataformas.servidor.plataforma")}>
               {servidor.plataforma ? (
                 <Link
                   to={`/dashboard/plataformas?plataforma=${servidor.plataforma.id}`}
@@ -246,19 +235,18 @@ export default function ServidorDetalhePage() {
                 "-"
               )}
             </Campo>
-            <Campo rotulo="Registos DNS a apontar">{servidor.totais?.subdominios ?? 0}</Campo>
-            <Campo rotulo="Registado em">{formatarData(servidor.criadoEm)}</Campo>
+            <Campo rotulo={t("plataformas.servidor.registosDns")}>{servidor.totais?.subdominios ?? 0}</Campo>
+            <Campo rotulo={t("plataformas.servidor.registadoEm")}>{formatarData(servidor.criadoEm)}</Campo>
           </dl>
         </Secao>
       </div>
 
       {/* ================= SISTEMAS HOSPEDADOS ================= */}
-      <Secao titulo={`Sistemas hospedados (${sistemas.length})`}>
+      <Secao titulo={t("plataformas.servidor.sistemasHospedados", { total: sistemas.length })}>
         {sistemas.length === 0 ? (
           <div className="text-center py-8 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
             <p className="text-xs text-slate-400 italic">
-              Nenhum sistema está neste servidor: nem o backend (infraestrutura do sistema) nem
-              um endereço DNS apontam para ele.
+              {t("plataformas.servidor.semSistemas")}
             </p>
           </div>
         ) : (
@@ -278,8 +266,8 @@ export default function ServidorDetalhePage() {
                     {/* Como o sistema chega a este servidor */}
                     <p className="text-[11px] text-slate-500 truncate mt-0.5">
                       {[
-                        sistema.temBackend && "Backend",
-                        ...sistema.enderecos.map((e) => `DNS: ${e}`),
+                        sistema.temBackend && t("plataformas.comum.backend"),
+                        ...sistema.enderecos.map((e) => t("plataformas.servidor.dns", { endereco: e })),
                       ]
                         .filter(Boolean)
                         .join(" · ")}
@@ -307,9 +295,9 @@ export default function ServidorDetalhePage() {
       <ModalConfirmacao
         aberto={confirmarEliminar}
         perigoso
-        titulo="Eliminar Servidor"
-        mensagem={`Tem a certeza de que deseja eliminar "${servidor.nome}"? Esta ação é irreversível.`}
-        textoConfirmar="Eliminar Definitivamente"
+        titulo={t("plataformas.servidor.eliminarTitulo")}
+        mensagem={t("plataformas.servidor.eliminarMensagem", { nome: servidor.nome })}
+        textoConfirmar={t("plataformas.servidor.eliminarConfirmar")}
         onConfirmar={eliminar}
         onCancelar={() => setConfirmarEliminar(false)}
       />

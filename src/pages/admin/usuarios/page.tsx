@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import {
   useUsuariosData,
   type Usuario,
@@ -9,6 +11,8 @@ import UsuariosHeader from "./usuariosHeader";
 import UsuariosBusca from "./usuariosBusca";
 import UsuariosTabela from "./usuariosTabela";
 import UsuarioFormulario from "./usuarioFormulario";
+import { useConfirmacao } from "../../../components/confirmacao";
+import { EstadoCarregando, EstadoErro } from "../../../components/estados";
 
 const FORM_VAZIO: UsuarioFormData = {
   nome: "",
@@ -21,9 +25,14 @@ const FORM_VAZIO: UsuarioFormData = {
 };
 
 export default function UsuariosPage() {
+  const { t } = useTranslation();
   const {
     usuarios,
     carregando,
+    aAtualizar,
+    // "erro" local (mais abaixo) é o das ações (gravar/eliminar); este é o da primeira carga
+    erro: erroCarregamento,
+    carregarUsuarios,
     salvarUsuario,
     eliminarUsuario,
   } = useUsuariosData();
@@ -38,6 +47,9 @@ export default function UsuariosPage() {
   const [erro, setErro] = useState<string | null>(null);
   const [sucesso, setSucesso] = useState<string | null>(null);
   const [busca, setBusca] = useState("");
+  const confirmar = useConfirmacao();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // =========================================================
   // NOVO UTILIZADOR
@@ -79,6 +91,7 @@ export default function UsuariosPage() {
 
   const fecharFormulario = () => {
     setFormAberto(false);
+    if (searchParams.has("editar")) setSearchParams({}, { replace: true });
     setEditandoId(null);
     setFormData({ ...FORM_VAZIO });
     setErro(null);
@@ -107,21 +120,20 @@ export default function UsuariosPage() {
         resultado?.nome || formData.nome;
 
       setSucesso(
-        `Utilizador "${nome}" ${
-          editandoId
-            ? "atualizado"
-            : "criado"
-        } com sucesso.`,
+        editandoId
+          ? t("admin.usuarios.atualizado", { nome })
+          : t("admin.usuarios.criado", { nome }),
       );
 
       setFormAberto(false);
+      if (searchParams.has("editar")) setSearchParams({}, { replace: true });
       setEditandoId(null);
       setFormData({ ...FORM_VAZIO });
     } catch (error) {
       setErro(
         error instanceof Error
           ? error.message
-          : "Erro ao guardar utilizador.",
+          : t("admin.usuarios.erroGuardar"),
       );
     } finally {
       setSalvando(false);
@@ -136,31 +148,44 @@ export default function UsuariosPage() {
     id: number,
     nome: string,
   ) => {
-    const confirmar = window.confirm(
-      `Tem certeza que deseja eliminar o utilizador "${nome}"?`,
-    );
-
-    if (!confirmar) {
-      return;
-    }
-
     setErro(null);
     setSucesso(null);
 
     try {
-      await eliminarUsuario(id);
+      const eliminado = await confirmar({
+        titulo: t("admin.usuarios.modalEliminar.titulo"),
+        mensagem: (
+          <Trans
+            i18nKey="admin.usuarios.modalEliminar.mensagem"
+            values={{ nome }}
+            components={{ destaque: <span className="font-semibold text-slate-800" /> }}
+          />
+        ),
+        textoConfirmar: t("admin.usuarios.modalEliminar.confirmar"),
+        textoCarregando: t("admin.usuarios.modalEliminar.aEliminar"),
+        perigoso: true,
+        acao: () => eliminarUsuario(id),
+      });
+      if (!eliminado) return;
 
-      setSucesso(
-        `Utilizador "${nome}" eliminado com sucesso.`,
-      );
+      setSucesso(t("admin.usuarios.eliminado", { nome }));
     } catch (error) {
       setErro(
         error instanceof Error
           ? error.message
-          : "Erro ao eliminar utilizador.",
+          : t("admin.usuarios.erroEliminar"),
       );
     }
   };
+
+  // Vindo da página de detalhes ("Editar"): abre o formulário desse utilizador, uma vez
+  const editarPedido = searchParams.get("editar");
+  const [editarTratado, setEditarTratado] = useState<string | null>(null);
+  if (editarPedido && editarPedido !== editarTratado && !carregando) {
+    const alvo = usuarios.find((u) => String(u.id) === editarPedido);
+    setEditarTratado(editarPedido);
+    if (alvo) abrirEditar(alvo);
+  }
 
   // =========================================================
   // PESQUISA
@@ -242,16 +267,23 @@ export default function UsuariosPage() {
       <UsuariosBusca
         busca={busca}
         onBuscaChange={setBusca}
+        aAtualizar={aAtualizar}
       />
 
-      {/* Tabela */}
+      {/* Tabela (se a primeira carga falhar, mostra o erro em vez de uma lista vazia) */}
 
-      <UsuariosTabela
-        usuarios={usuariosFiltrados}
-        carregando={carregando}
-        onEditar={abrirEditar}
-        onEliminar={handleEliminar}
-      />
+      {carregando ? (
+        <EstadoCarregando mensagem={t("admin.usuarios.carregando")} />
+      ) : erroCarregamento ? (
+        <EstadoErro mensagem={erroCarregamento} onTentarNovamente={carregarUsuarios} />
+      ) : (
+        <UsuariosTabela
+          usuarios={usuariosFiltrados}
+          onVer={(u) => navigate(`/dashboard/usuarios/${u.id}`)}
+          onEditar={abrirEditar}
+          onEliminar={handleEliminar}
+        />
+      )}
 
     </div>
   );

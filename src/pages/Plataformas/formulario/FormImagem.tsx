@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type {
   Plataforma,
   ImagemContainer,
@@ -32,6 +33,7 @@ export default function FormImagem({
   onCancelar,
   onSubmit,
 }: FormImagemProps) {
+  const { t } = useTranslation();
   const plataformasContainerizacao = plataformas.filter(
     (p) => p.tipo === "CONTAINERIZACAO"
   );
@@ -62,17 +64,17 @@ export default function FormImagem({
     e.preventDefault();
 
     if (!plataformaId) {
-      toast.error("Selecione a plataforma da imagem.");
+      toast.error(t("plataformas.form.imagem.selecionePlataforma"));
       return;
     }
     if (!nome.trim()) {
-      toast.error("O nome da imagem é obrigatório.");
+      toast.error(t("plataformas.form.imagem.nomeObrigatorio"));
       return;
     }
 
     const porta = portaExposta.trim() ? Number(portaExposta) : null;
     if (porta !== null && (!Number.isInteger(porta) || porta < 1 || porta > 65535)) {
-      toast.error("A porta deve ser um número entre 1 e 65535.");
+      toast.error(t("plataformas.form.imagem.portaInvalida"));
       return;
     }
 
@@ -101,23 +103,23 @@ export default function FormImagem({
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-100 pb-4">
           <h3 className="text-lg font-bold text-slate-800">
-            {imagemExistente ? "Editar Imagem" : "Nova Imagem"}
+            {imagemExistente ? t("plataformas.form.imagem.tituloEditar") : t("plataformas.form.imagem.tituloNova")}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Registe uma imagem de container publicada num registry da plataforma
+            {t("plataformas.form.imagem.descricao")}
           </p>
         </div>
 
         {/* Plataforma */}
         <div>
-          <label htmlFor="imagem-plataforma" className={CLASSE_ROTULO}>Plataforma Associada *</label>
+          <label htmlFor="imagem-plataforma" className={CLASSE_ROTULO}>{t("plataformas.form.plataformaAssociada")}</label>
           <SelectPesquisavel
             id="imagem-plataforma"
             valor={String(plataformaId)}
             onChange={setPlataformaId}
             disabled={Boolean(imagemExistente)}
             required
-            placeholder="Selecione a plataforma..."
+            placeholder={t("plataformas.form.selecionePlataforma")}
             opcoes={plataformasContainerizacao.map((plat) => ({
               valor: String(plat.id),
               label: plat.nome,
@@ -125,7 +127,7 @@ export default function FormImagem({
           />
           {plataformasContainerizacao.length === 0 && (
             <p className="text-xs text-amber-600 mt-1.5">
-              Ainda não existe nenhuma plataforma de containerização. Crie uma primeiro.
+              {t("plataformas.form.imagem.semPlataformas")}
             </p>
           )}
         </div>
@@ -133,21 +135,21 @@ export default function FormImagem({
         {/* Identificação */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
-            <label className={CLASSE_ROTULO}>Nome da Imagem *</label>
+            <label className={CLASSE_ROTULO}>{t("plataformas.form.imagem.nome")}</label>
             <input
               type="text"
               required
-              placeholder="Ex: netline/repositorio-backend"
+              placeholder={t("plataformas.form.imagem.nomePlaceholder")}
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               className={CLASSE_CAMPO}
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              Caminho completo, em minúsculas (ex: moodlehq/moodle-php-apache).
+              {t("plataformas.form.imagem.nomeAjuda")}
             </p>
           </div>
           <div>
-            <label className={CLASSE_ROTULO}>Tag</label>
+            <label className={CLASSE_ROTULO}>{t("plataformas.form.imagem.tag")}</label>
             <input
               type="text"
               placeholder="latest"
@@ -161,7 +163,7 @@ export default function FormImagem({
         {/* Classificação */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label htmlFor="imagem-origem" className={CLASSE_ROTULO}>Origem</label>
+            <label htmlFor="imagem-origem" className={CLASSE_ROTULO}>{t("plataformas.form.imagem.origem")}</label>
             <SelectPesquisavel
               id="imagem-origem"
               valor={origem}
@@ -173,7 +175,7 @@ export default function FormImagem({
             />
           </div>
           <div>
-            <label htmlFor="imagem-visibilidade" className={CLASSE_ROTULO}>Visibilidade</label>
+            <label htmlFor="imagem-visibilidade" className={CLASSE_ROTULO}>{t("plataformas.form.imagem.visibilidade")}</label>
             <SelectPesquisavel
               id="imagem-visibilidade"
               valor={visibilidade}
@@ -184,12 +186,12 @@ export default function FormImagem({
             />
           </div>
           <div>
-            <label className={CLASSE_ROTULO}>Porta Exposta</label>
+            <label className={CLASSE_ROTULO}>{t("plataformas.form.imagem.porta")}</label>
             <input
               type="number"
               min="1"
               max="65535"
-              placeholder="Ex: 3000"
+              placeholder={t("plataformas.form.imagem.portaPlaceholder")}
               value={portaExposta}
               onChange={(e) => setPortaExposta(e.target.value)}
               className={CLASSE_CAMPO}
@@ -202,7 +204,7 @@ export default function FormImagem({
           <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Digest
+                {t("plataformas.form.imagem.digest")}
               </label>
               <input
                 type="text"
@@ -214,7 +216,7 @@ export default function FormImagem({
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                Data do Último Push
+                {t("plataformas.form.imagem.ultimoPush")}
               </label>
               <input
                 type="date"
@@ -232,9 +234,9 @@ export default function FormImagem({
             type="checkbox"
             checked={ativo}
             onChange={(e) => setAtivo(e.target.checked)}
-            className="w-4 h-4 accent-[#18357a]"
+            className="w-4 h-4 accent-netline-azul"
           />
-          <span className="text-sm font-medium text-slate-700">Imagem ativa</span>
+          <span className="text-sm font-medium text-slate-700">{t("plataformas.form.imagem.ativa")}</span>
         </label>
       </div>
 
@@ -246,14 +248,14 @@ export default function FormImagem({
           disabled={salvando}
           className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-xl transition-all cursor-pointer"
         >
-          Cancelar
+          {t("plataformas.comum.cancelar")}
         </button>
         <button
           type="submit"
           disabled={salvando}
-          className="px-6 py-2.5 bg-[#18357a] hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+          className="px-6 py-2.5 bg-netline-azul hover:bg-blue-900 text-white font-semibold text-sm rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
         >
-          {salvando ? "A salvar..." : imagemExistente ? "Atualizar Imagem" : "Criar Imagem"}
+          {salvando ? t("plataformas.comum.aGuardar") : imagemExistente ? t("plataformas.form.imagem.atualizar") : t("plataformas.form.imagem.criar")}
         </button>
       </div>
     </form>

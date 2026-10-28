@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useCarregamento } from "./useCarregamento";
 import { fetchComToken } from "../utils/api";
 import { API_ENDPOINTS } from "../data/client/endpoint";
 import type { Documento, Categoria } from "../types/documento";
@@ -252,25 +253,20 @@ export function useSistemasData() {
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Antes uma falha só ia para a consola e a página mostrava "nenhum sistema"
+  const { carregando: loading, aAtualizar, erro, executar } = useCarregamento(
+    "Não foi possível carregar os sistemas.",
+  );
 
-  const fetchDados = async () => {
-    setLoading(true);
-    try {
-      const [sist, docs, cats] = await Promise.all([
-        fetchComToken("/sistemas"),
-        fetchComToken("/documentos"),
-        fetchComToken("/categorias"),
-      ]);
-      setSistemas(Array.isArray(sist) ? sist.map(comTecnologiasCombinadas) : []);
-      setDocumentos(Array.isArray(docs) ? docs : []);
-      setCategorias(Array.isArray(cats) ? cats : []);
-    } catch (error) {
-      console.error("Erro ao carregar dados do servidor:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchDados = () =>
+    executar(
+      () => Promise.all([fetchComToken("/sistemas"), fetchComToken("/documentos"), fetchComToken("/categorias")]),
+      ([sist, docs, cats]) => {
+        setSistemas(Array.isArray(sist) ? sist.map(comTecnologiasCombinadas) : []);
+        setDocumentos(Array.isArray(docs) ? docs : []);
+        setCategorias(Array.isArray(cats) ? cats : []);
+      },
+    );
 
   useEffect(() => {
     fetchDados();
@@ -320,6 +316,8 @@ export function useSistemasData() {
     documentos,
     categorias,
     loading,
+    aAtualizar,
+    erro,
     criarSistema,
     editarSistema,
     apagarSistema,

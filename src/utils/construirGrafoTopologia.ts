@@ -1,6 +1,11 @@
 import dagre from "@dagrejs/dagre";
 import { Position, type Edge, type Node } from "@xyflow/react";
-import { ROTULOS_TIPO_PLATAFORMA } from "../types/plataformaConstantes";
+import i18n from "../lang/i18n";
+import {
+  ROTULOS_TIPO_PLATAFORMA,
+  ROTULOS_ORIGEM_IMAGEM,
+  ROTULOS_VISIBILIDADE_IMAGEM,
+} from "../types/plataformaConstantes";
 import type {
   PlataformaArvore,
   ServidorArvore,
@@ -38,11 +43,9 @@ export const ALTURA_NO = 84;
 // Peso alto mantém as plataformas todas na mesma linha, logo abaixo da raiz
 const PESO_LIGACAO_DA_RAIZ = 10;
 
-const ROTULO_AMBIENTE: Record<string, string> = {
-  PRODUCAO: "Produção",
-  TESTES: "Testes",
-  DESENVOLVIMENTO: "Desenvolvimento",
-};
+// Ambiente desconhecido: mostra-se o valor tal como vem da API
+const rotuloAmbiente = (ambiente: string) =>
+  i18n.t(`plataformas.ambientes.${ambiente}`, { defaultValue: ambiente });
 
 const ESTILO_LIGACAO: Record<
   RelacaoLigacao,
@@ -55,8 +58,8 @@ const ESTILO_LIGACAO: Record<
 
 function descreverExpiracao(dominio: DominioArvore): string {
   if (dominio.diasParaExpirar === null) return "";
-  if (dominio.expirado) return "Expirado";
-  return `Expira em ${dominio.diasParaExpirar} dias`;
+  if (dominio.expirado) return i18n.t("plataformas.topologia.expirado");
+  return i18n.t("plataformas.topologia.expiraEmDias", { count: dominio.diasParaExpirar });
 }
 
 export function construirGrafoTopologia(
@@ -95,7 +98,7 @@ export function construirGrafoTopologia(
     });
   };
 
-  const adicionarSistema = (infra: InfraestruturaArvore, idPai: string) => {
+  const adicionarSistema = (infra: InfraestruturaArvore, idPai: string, sufixo = "") => {
     const idSistema = `sistema-${infra.sistema.id}`;
     adicionarNo(idSistema, {
       tipo: "sistema",
@@ -107,7 +110,7 @@ export function construirGrafoTopologia(
       idPai,
       idSistema,
       "hospedagem",
-      ROTULO_AMBIENTE[infra.ambiente] ?? infra.ambiente,
+      `${rotuloAmbiente(infra.ambiente)}${sufixo}`,
     );
   };
 
@@ -129,7 +132,7 @@ export function construirGrafoTopologia(
       idPai,
       idServidor,
       relacao,
-      relacao === "dns" ? "aponta para" : "hospeda",
+      relacao === "dns" ? i18n.t("plataformas.topologia.apontaPara") : i18n.t("plataformas.topologia.hospeda"),
     );
     servidor.infraestruturas?.forEach((infra) =>
       adicionarSistema(infra, idServidor),
@@ -139,7 +142,7 @@ export function construirGrafoTopologia(
   adicionarNo("raiz", {
     tipo: "raiz",
     titulo: "Netline",
-    subtitulo: "Infraestrutura",
+    subtitulo: i18n.t("plataformas.topologia.raizSubtitulo"),
   });
 
   arvore.forEach((plataforma) => {
@@ -188,12 +191,20 @@ export function construirGrafoTopologia(
         tipo: "imagem",
         titulo: imagem.nome,
         subtitulo: `:${imagem.tag}`,
-        detalhe: `${imagem.origem === "PROPRIA" ? "Própria" : "Terceiros"} • ${
-          imagem.visibilidade === "PRIVADA" ? "Privada" : "Pública"
+        detalhe: `${ROTULOS_ORIGEM_IMAGEM[imagem.origem === "PROPRIA" ? "PROPRIA" : "TERCEIROS"]} • ${
+          ROTULOS_VISIBILIDADE_IMAGEM[imagem.visibilidade === "PRIVADA" ? "PRIVADA" : "PUBLICA"]
         }`,
         inativo: !imagem.ativo,
       });
       ligar(idPlataforma, idImagem);
+      // O sistema corre noutra plataforma, a partir desta imagem
+      imagem.infraestruturas?.forEach((infra) => adicionarSistema(infra, idImagem, i18n.t("plataformas.topologia.viaImagem")));
+    });
+
+    plataforma.sistemasFrontend?.forEach((sistema) => {
+      const idSistema = `sistema-${sistema.id}`;
+      adicionarNo(idSistema, { tipo: "sistema", titulo: sistema.nome, subtitulo: sistema.status });
+      ligar(idPlataforma, idSistema, "hospedagem", i18n.t("plataformas.topologia.frontend"));
     });
   });
 

@@ -7,6 +7,8 @@ import {
   useParams,
 } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../lang/i18n";
 import {
   adicionarCredencial,
   atualizarCredencial,
@@ -21,8 +23,10 @@ import {
   TIPOS_CREDENCIAL,
   caminhosInfraestrutura,
   rotuloAmbiente,
+  rotuloTipoCredencial,
 } from "../constantes";
 import SelectPesquisavel from "../../../../components/selectPesquisavel";
+import { EstadoCarregando } from "../../../../components/estados";
 
 interface DashboardContext {
   usuario: { nome: string; perfil?: string } | null;
@@ -35,6 +39,7 @@ export default function CredencialPage() {
     credencialId,
   } = useParams<{ id: string; ambiente: string; credencialId?: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { usuario } = useOutletContext<DashboardContext>();
   const ehAdmin = usuario?.perfil === "ADMIN";
   const { comAcesso } = useAcessoInfraestrutura();
@@ -64,7 +69,7 @@ export default function CredencialPage() {
 
         const credencial = dados?.credenciais.find((c) => String(c.id) === credencialId);
         if (!credencial) {
-          toast.error("Credencial não encontrada.");
+          toast.error(i18n.t("sistemas.credenciais.naoEncontrada"));
           navigate(caminhosInfraestrutura(sistemaId, ambiente).sistema, { replace: true });
           return;
         }
@@ -74,7 +79,7 @@ export default function CredencialPage() {
       } catch (erro) {
         if (cancelado) return;
         if (!(erro instanceof AcessoCancelado)) {
-          toast.error(erro instanceof Error ? erro.message : "Erro ao carregar a credencial.");
+          toast.error(erro instanceof Error ? erro.message : i18n.t("sistemas.credenciais.erroCarregar"));
         }
         navigate(caminhosInfraestrutura(sistemaId, ambiente).sistema, { replace: true });
       } finally {
@@ -106,22 +111,19 @@ export default function CredencialPage() {
           ? atualizarCredencial(sistemaId, ambiente, Number(credencialId), dados, token)
           : adicionarCredencial(sistemaId, ambiente, dados, token),
       );
-      toast.success(emEdicao ? "Credencial atualizada com sucesso." : "Credencial adicionada com sucesso.");
+      toast.success(emEdicao ? t("sistemas.credenciais.atualizada") : t("sistemas.credenciais.adicionada"));
       navigate(caminhos.sistema);
     } catch (erro) {
       if (erro instanceof AcessoCancelado) return; // fica na página, sem perder nada
-      toast.error(erro instanceof Error ? erro.message : "Erro ao guardar a credencial.");
+      toast.error(erro instanceof Error ? erro.message : t("sistemas.credenciais.erroGuardar"));
     } finally {
       setSalvando(false);
     }
   };
 
+  // Se a credencial não carregar, volta-se ao sistema com um aviso (não há formulário para mostrar)
   if (carregando) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <p className="text-slate-500 font-medium animate-pulse text-sm">A carregar...</p>
-      </div>
-    );
+    return <EstadoCarregando mensagem={t("comum.estados.carregando")} />;
   }
 
   return (
@@ -130,7 +132,7 @@ export default function CredencialPage() {
         to={caminhos.sistema}
         className="inline-flex items-center text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors"
       >
-        ← Voltar ao sistema
+        ← {t("sistemas.comum.voltarAoSistema")}
       </Link>
 
       <form
@@ -138,39 +140,39 @@ export default function CredencialPage() {
         className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-5"
       >
         <h1 className="font-bold text-slate-800 text-lg">
-          {emEdicao ? "Editar credencial" : "Nova credencial"} — Backend, {rotuloAmbiente(ambiente)}
+          {t(emEdicao ? "sistemas.credenciais.tituloEditar" : "sistemas.credenciais.tituloNova", { ambiente: rotuloAmbiente(ambiente) })}
         </h1>
 
         <div className="space-y-1.5">
-          <label htmlFor="credencial-tipo" className={CLASSE_ROTULO}>Tipo</label>
+          <label htmlFor="credencial-tipo" className={CLASSE_ROTULO}>{t("sistemas.credenciais.tipo")}</label>
           <SelectPesquisavel
             id="credencial-tipo"
             valor={tipo}
             onChange={(v) => setTipo(v as TipoCredencial)}
-            opcoes={TIPOS_CREDENCIAL.map((t) => ({ valor: t.valor, label: t.label }))}
+            opcoes={TIPOS_CREDENCIAL.map((valorTipo) => ({ valor: valorTipo, label: rotuloTipoCredencial(valorTipo) }))}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className={CLASSE_ROTULO}>Rótulo</label>
+          <label className={CLASSE_ROTULO}>{t("sistemas.credenciais.rotulo")}</label>
           <input
             type="text"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Ex: .env do backend"
+            placeholder={t("sistemas.credenciais.rotuloPlaceholder")}
             className={CLASSE_CAMPO}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className={CLASSE_ROTULO}>Valor</label>
+          <label className={CLASSE_ROTULO}>{t("sistemas.credenciais.valor")}</label>
           <textarea
             value={valor}
             onChange={(e) => setValor(e.target.value)}
             rows={10}
             spellCheck={false}
             autoComplete="off"
-            placeholder="Cole aqui o conteúdo (variáveis de ambiente, chave, token...)"
+            placeholder={t("sistemas.credenciais.valorPlaceholder")}
             className={`${CLASSE_CAMPO} font-mono`}
           />
         </div>
@@ -180,14 +182,14 @@ export default function CredencialPage() {
             to={caminhos.sistema}
             className="flex-1 text-center py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-sm font-semibold rounded-lg transition-colors"
           >
-            Cancelar
+            {t("sistemas.comum.cancelar")}
           </Link>
           <button
             type="submit"
             disabled={salvando || formularioInvalido}
-            className="flex-1 py-2.5 bg-[#18357a] hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+            className="flex-1 py-2.5 bg-netline-azul hover:bg-slate-800 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
           >
-            {salvando ? "A guardar..." : "Guardar"}
+            {salvando ? t("sistemas.comum.aGuardar") : t("sistemas.comum.guardar")}
           </button>
         </div>
       </form>
