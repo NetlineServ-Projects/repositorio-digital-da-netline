@@ -35,6 +35,7 @@ export default function DocumentosPage() {
   const [tipoFiltro, setTipoFiltro] = useState<string[]>([]);
   const [mesFiltro, setMesFiltro] = useState<string[]>([]);
   const [anoFiltro, setAnoFiltro] = useState<string[]>([]);
+  const [sistemaFiltro, setSistemaFiltro] = useState<string[]>([]);
   const [modoExibicao, setModoExibicao] = useState<"tabela" | "cards">("tabela");
   const [documentoParaApagar, setDocumentoParaApagar] = useState<number | null>(null);
 
@@ -42,6 +43,14 @@ export default function DocumentosPage() {
     const nomes = documentos.map((d) => d.usuario?.nome).filter((n): n is string => !!n);
     return Array.from(new Set(nomes)).sort();
   }, [documentos]);
+
+  // Sistemas a que pertencem os documentos listados, mais "Sem sistema" para os restantes
+  const SEM_SISTEMA = "__sem_sistema";
+  const opcoesSistema = useMemo(() => {
+    const porId = new Map(documentos.flatMap((d) => (d.sistema ? [[String(d.sistema.id), d.sistema.nome] as const] : [])));
+    const lista = [...porId].sort((a, b) => a[1].localeCompare(b[1])).map(([valor, label]) => ({ valor, label }));
+    return documentos.some((d) => !d.sistema) ? [...lista, { valor: SEM_SISTEMA, label: t("componentes.documento.semSistema") }] : lista;
+  }, [documentos, t]);
 
   const anosUnicos = useMemo(() => {
     const anos = documentos.map((d) => d.dataSubmissao?.slice(0, 4)).filter((a): a is string => !!a);
@@ -91,7 +100,10 @@ export default function DocumentosPage() {
       atendeData = false;
     }
 
-    return atendeBusca && atendeCategoria && atendeAutor && atendeTipo && atendeData;
+    const atendeSistema =
+      sistemaFiltro.length === 0 || sistemaFiltro.includes(doc.sistema ? String(doc.sistema.id) : SEM_SISTEMA);
+
+    return atendeBusca && atendeCategoria && atendeAutor && atendeTipo && atendeData && atendeSistema;
   });
 
   const limparFiltros = () => {
@@ -101,9 +113,10 @@ export default function DocumentosPage() {
     setTipoFiltro([]);
     setMesFiltro([]);
     setAnoFiltro([]);
+    setSistemaFiltro([]);
   };
 
-  const totalFiltrosSelecionados = [categoriaFiltro, autorFiltro, tipoFiltro, mesFiltro, anoFiltro].filter(
+  const totalFiltrosSelecionados = [categoriaFiltro, autorFiltro, tipoFiltro, mesFiltro, anoFiltro, sistemaFiltro].filter(
     (f) => f.length > 0
   ).length;
 
@@ -113,7 +126,8 @@ export default function DocumentosPage() {
     autorFiltro.length > 0 ||
     tipoFiltro.length > 0 ||
     mesFiltro.length > 0 ||
-    anoFiltro.length > 0;
+    anoFiltro.length > 0 ||
+    sistemaFiltro.length > 0;
 
   if (loading) {
     return <EstadoCarregando mensagem={t("documentos.carregando")} />;
@@ -157,13 +171,21 @@ export default function DocumentosPage() {
 
         {/* Grid dos Custom Selects (recolhidos atrás de "Filtros" no telemóvel) */}
         <PainelFiltros ativos={totalFiltrosSelecionados}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 items-end md:pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 items-end md:pt-2">
             <FilterSelect
               label={t("documentos.categoria")}
               placeholder={t("documentos.todasCategorias")}
               opcoes={categorias.map((c) => ({ valor: c.nome, label: c.nome }))}
               selecionados={categoriaFiltro}
               onChange={setCategoriaFiltro}
+            />
+
+            <FilterSelect
+              label={t("componentes.documento.filtroSistema")}
+              placeholder={t("componentes.documento.todosSistemas")}
+              opcoes={opcoesSistema}
+              selecionados={sistemaFiltro}
+              onChange={setSistemaFiltro}
             />
 
             <FilterSelect

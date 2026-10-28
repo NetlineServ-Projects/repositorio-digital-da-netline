@@ -99,26 +99,37 @@ export default function FilterSelect({
           )}
 
           {/* Lista de Opções com Checkbox */}
-          <div className="max-h-48 overflow-y-auto space-y-0.5">
+          {/* Um botão por opção (e não <label> + checkbox): com o label, um clique podia
+              contar duas vezes e a opção marcava e desmarcava logo a seguir */}
+          <div role="listbox" aria-multiselectable="true" className="max-h-48 overflow-y-auto space-y-0.5">
             {opcoesFiltradas.length > 0 ? (
               opcoesFiltradas.map((op) => {
                 const marcado = selecionados.includes(op.valor);
                 return (
-                  <label
+                  <button
                     key={op.valor}
+                    type="button"
+                    role="option"
+                    aria-selected={marcado}
                     onClick={() => toggleOpcao(op.valor)}
-                    className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left rounded-lg cursor-pointer transition-colors ${
                       marcado ? "bg-netline-dourado/10 text-netline-dourado font-medium" : "text-slate-600 hover:bg-slate-50"
                     }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={marcado}
-                      readOnly
-                      className="rounded border-slate-300 text-netline-dourado focus:ring-netline-dourado"
-                    />
+                    <span
+                      aria-hidden="true"
+                      className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
+                        marcado ? "bg-netline-dourado border-netline-dourado text-white" : "border-slate-300 bg-white"
+                      }`}
+                    >
+                      {marcado && (
+                        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
                     <span className="truncate">{op.label}</span>
-                  </label>
+                  </button>
                 );
               })
             ) : (
