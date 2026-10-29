@@ -1,0 +1,37 @@
+name: CI - Frontend
+
+# Verifica cada push e pull request: se os tipos ou a compilação falharem, fica visível
+# no GitHub antes de chegar ao servidor. O deploy em si continua fora deste ficheiro.
+on:
+  push:
+    branches: [main, demo]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+
+      # --frozen-lockfile: falha se o yarn.lock não corresponder ao package.json
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck
+        run: npx tsc -b
+
+      - name: Build
+        run: yarn build
+        env:
+          VITE_API_BASE_URL: https://api.example.invalid
